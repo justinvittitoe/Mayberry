@@ -1,0 +1,311 @@
+{
+    "planType": 0,
+    "name": "Beacon",
+    "basePrice": 399000,
+    "elevations": [
+        {
+            "name": "Farmhouse",
+            "price": 3000.00,
+            "classification": "elevation",
+            "description": "",
+            "img": ""
+        },
+        {
+            "name": "Praire",
+            "price": 3000.00,
+            "classification": "elevation",
+            "description": "",
+            "img": ""
+        },
+        {
+            "name": "Craftsman",
+            "price": 3000.00,
+            "classification": "elevation",
+            "description": "",
+            "img": ""
+        }
+    ],
+    "colorScheme": [1,2,3,4,5],
+    "interiors": [
+        {
+            "name": "Casual",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "yes"
+        },
+        {
+            "name": "Farmhouse",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "yes"
+        },
+        {
+            "name": "Prairie",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "yes"
+        },
+        {
+            "name": "Modern",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "yes"
+        },
+        {
+            "name": "Modern Eclectic",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "yes"
+        },
+        {
+            "name": "Casual",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "no"
+        },
+        {
+            "name": "Farmhouse",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "no"
+        },
+        {
+            "name": "Prairie",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "no"
+        },
+        {
+            "name": "Modern",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "no"
+        },
+        {
+            "name": "Modern Eclectic",
+            "totalPrice": 0,
+            "fitures": "Casual",
+            "lvp": "Mohawk Emerald Creek",
+            "carpet": "Mohawk ...",
+            "kitchenBackspash": "Emser Catch Glossy - Gray",
+            "masterBathTile": "standard",
+            "countertop": "quartz white",
+            "primaryCabinets": "winstead",
+            "secondaryCabinets": "Winstead",
+            "upgrade": "no"
+        }
+    ],
+    "structural": [
+        {
+            "name": "Loft",
+            "price": 3000,
+            "classification": "structural",
+            "description": "remove the 4th bedroom and add a loft",
+            "img": "..."
+        },
+        {
+            "name": "side access swing door",
+            "price": 500,
+            "classification": "structural",
+            "description": "add an additional door from the garage to the side yard",
+            "img": "..."
+        }
+    ],
+    "additional": [
+        {
+            "name": "A/C",
+            "price": 5000,
+            "classification": "additional",
+            "description": "add air conditioning to the home",
+            "img": "..."
+        },
+        {
+            "name": "laundry upgrade",
+            "price": 5000,
+            "classification": "additional",
+            "description": "add air conditioning to the home",
+            "img": "..."
+        },
+        {
+            "name": "finish upgrade",
+            "price": 5000,
+            "classification": "additional",
+            "description": "add air conditioning to the home",
+            "img": "..."
+        },
+        {
+            "name": "Faux wood window coverings",
+            "price": 5000,
+            "classification": "additional",
+            "description": "add air conditioning to the home",
+            "img": "..."
+        },
+        {
+            "name": "roller shades - window coverings",
+            "price": 5000,
+            "classification": "additional",
+            "description": "add air conditioning to the home",
+            "img": "..."
+        },
+        {
+            "name": "electrical upgrade 1",
+            "price": 5000,
+            "classification": "additional",
+            "description": "",
+            "img": "..."
+        },
+        {
+            "name": "deck",
+            "price": 5000,
+            "classification": "additional",
+            "description": "",
+            "img": "..."
+        }
+    ],
+    "kitchenAppliance": [
+        {
+            "name": "Package 0",
+            "price": 5000,
+            "classification": "kitchenAppiance",
+            "description": "",
+            "img": "..."
+        },
+        {
+            "name": "Package 1",
+            "price": 5000,
+            "classification": "kitchenAppiance",
+            "description": "",
+            "img": "..."
+        },
+        {
+            "name": "Package 2",
+            "price": 5000,
+            "classification": "kitchenAppiance",
+            "description": "",
+            "img": "..."
+        }
+    ],
+    "laundryAppliance": [
+        {
+            "name": "Package A",
+            "price": 5000,
+            "classification": "kitchenAppiance",
+            "description": "",
+            "img": "..."
+        },
+        {
+            "name": "Package B",
+            "price": 5000,
+            "classification": "kitchenAppiance",
+            "description": "",
+            "img": "..."
+        },
+        {
+            "name": "Package C",
+            "price": 5000,
+            "classification": "kitchenAppiance",
+            "description": "",
+            "img": "..."
+        },
+        {
+            "name": "Package D",
+            "price": 5000,
+            "classification": "kitchenAppiance",
+            "description": "",
+            "img": "..."
+        }
+    ],
+    "lotPremium": [
+        {
+            "filing": 3,
+            "lot": 26,
+            "width": 50,
+            "length": 100,
+            "price": 2000
+        },
+        {
+            "filing": 3,
+            "lot": 27,
+            "width": 50,
+            "length": 100,
+            "price": 2000
+        },
+        {
+            "filing": 3,
+            "lot": 28,
+            "width": 50,
+            "length": 100,
+            "price": 2000
+        },
+        {
+            "filing": 3,
+            "lot": 29,
+            "width": 50,
+            "length": 100,
+            "price": 2000
+        }
+    ]
+}
