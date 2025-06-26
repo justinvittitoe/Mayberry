@@ -1,6 +1,6 @@
-import { Schema } from 'mongoose';
+import { Schema, model, type Document } from 'mongoose';
 
-export interface Option {
+export interface OptionDocument extends Document {
   name: string;
   price: number;
   classification?: string;
@@ -8,7 +8,7 @@ export interface Option {
   img?: string;
 }
 
-const optionSchema = new Schema<Option>({
+const optionSchema = new Schema<OptionDocument>({
   name: { type: String, required: true },
   price: { type: Number, required: true },
   classification: String,
@@ -16,4 +16,6 @@ const optionSchema = new Schema<Option>({
   img: String,
 });
 
-export default optionSchema
+const Option = model<OptionDocument>('Option', optionSchema);
+
+export default Option;

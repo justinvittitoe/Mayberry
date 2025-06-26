@@ -3,8 +3,12 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 import App from './App.jsx'
-import SearchBooks from './pages/Home.js'
-import SavedBooks from './pages/SavedBooks'
+import Home from './pages/Home.js'
+import SavedHomes from './pages/SavedHomes'
+import CustomizeHome from './pages/CustomizeHome'
+import LoginForm from './components/LoginForm'
+import SignupForm from './components/SignupForm'
+import ProtectedRoute from './components/ProtectedRoute'
 
 const router = createBrowserRouter([
   {
@@ -14,10 +18,23 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <SearchBooks />
-      }, {
-        path: '/saved',
-        element: <SavedBooks />
+        element: <ProtectedRoute><Home /></ProtectedRoute>
+      },
+      {
+        path: '/login',
+        element: <LoginForm />
+      },
+      {
+        path: '/signup',
+        element: <SignupForm />
+      },
+      {
+        path: '/saved-homes',
+        element: <ProtectedRoute><SavedHomes /></ProtectedRoute>
+      },
+      {
+        path: '/customize/:planId',
+        element: <ProtectedRoute><CustomizeHome /></ProtectedRoute>
       }
     ]
   }

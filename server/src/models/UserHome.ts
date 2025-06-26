@@ -1,12 +1,4 @@
-import { Schema, type Document, Types } from 'mongoose';
-import { model } from 'mongoose';
-
-import type { Option } from './Option';
-import type { InteriorPackage } from './InteriorPackage';
-import type { LotPremium } from './LotPremium';
-import lotPremiumSchema from './LotPremium';
-import interiorPackageSchema from './InteriorPackage';
-import optionSchema from './Option';
+import { Schema, type Document, Types, model } from 'mongoose';
 
 // Main user home selection schema
 export interface UserHomeSelection extends Document {
@@ -14,14 +6,14 @@ export interface UserHomeSelection extends Document {
     planTypeId: Types.ObjectId;
     planTypeName: string;
     basePrice: number;
-    elevation: Option;
+    elevation: Types.ObjectId;
     colorScheme: number;
-    interior: InteriorPackage;
-    structural: Option[]; // Array of selected
-    additional: Option[];
-    kitchenAppliance: Option;
-    laundryAppliance: Option;
-    lotPremium: LotPremium;
+    interior: Types.ObjectId;
+    structural: Types.ObjectId[]; // Array of selected option IDs
+    additional: Types.ObjectId[];
+    kitchenAppliance: Types.ObjectId;
+    laundryAppliance: Types.ObjectId;
+    lotPremium: Types.ObjectId;
     totalPrice?: number;
     createdAt: Date;
     updatedAt: Date;
@@ -29,35 +21,26 @@ export interface UserHomeSelection extends Document {
 
 const userHomeSelectionSchema = new Schema<UserHomeSelection>({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    planTypeId: { type: Schema.Types.ObjectId, ref: 'PlanType', required: true },
+    planTypeId: { type: Schema.Types.ObjectId, ref: 'Plan', required: true },
     planTypeName: { type: String, required: true },
     basePrice: { type: Number, required: true },
-    elevation: { type: optionSchema, required: true },
+    elevation: { type: Schema.Types.ObjectId, ref: 'Option', required: true },
     colorScheme: { type: Number, required: true },
-    interior: { type: interiorPackageSchema, required: true },
-    structural: [optionSchema],
-    additional: [optionSchema],
-    kitchenAppliance: { type: optionSchema, required: true },
-    laundryAppliance: { type: optionSchema, required: true },
-    lotPremium: { type: lotPremiumSchema, required: true },
+    interior: { type: Schema.Types.ObjectId, ref: 'InteriorPackage', required: true },
+    structural: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
+    additional: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
+    kitchenAppliance: { type: Schema.Types.ObjectId, ref: 'Option', required: true },
+    laundryAppliance: { type: Schema.Types.ObjectId, ref: 'Option', required: true },
+    lotPremium: { type: Schema.Types.ObjectId, ref: 'LotPremium', required: true },
 }, { timestamps: true });
 
-// Virtual for total price
+// Virtual for total price - this will need to be calculated in resolvers
 userHomeSelectionSchema.virtual('totalPrice').get(function (this: UserHomeSelection) {
-    const structuralTotal = (this.structural || []).reduce((sum, o) => sum + (o.price || 0), 0);
-    const additionalTotal = (this.additional || []).reduce((sum, o) => sum + (o.price || 0), 0);
-    return (
-        (this.basePrice || 0) +
-        (this.elevation?.price || 0) +
-        (this.interior?.totalPrice || 0) +
-        structuralTotal +
-        additionalTotal +
-        (this.kitchenAppliance?.price || 0) +
-        (this.laundryAppliance?.price || 0) +
-        (this.lotPremium?.price || 0)
-    );
+    // This will be calculated in resolvers when we populate the references
+    return 0; // Placeholder
 });
 
-
 const UserHome = model<UserHomeSelection>('UserHome', userHomeSelectionSchema);
-export default { UserHome };
+
+export { userHomeSelectionSchema };
+export default UserHome;

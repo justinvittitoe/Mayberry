@@ -6,12 +6,12 @@ import {
   ApolloProvider,
   createHttpLink
 } from '@apollo/client';
-import { setContext} from '@apollo/client/link/context';
+import { setContext } from '@apollo/client/link/context';
 
 import Navbar from './components/Navbar';
 
 const httpLink = createHttpLink({
-  uri: '/graphql',
+  uri: 'http://localhost:4000/graphql',
 })
 
 const authLink = setContext((_, { headers }) => {
@@ -29,15 +29,16 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 })
 
-
 function App() {
   return (
-    <>
-    <ApolloProvider client={client}>
-      <Navbar />
-      <Outlet />
-    </ApolloProvider>
-    </>
+    <div className="app">
+      <ApolloProvider client={client}>
+        <Navbar />
+        <main className="main-content">
+          <Outlet />
+        </main>
+      </ApolloProvider>
+    </div>
   );
 }
 

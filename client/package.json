@@ -1,8 +1,9 @@
 {
-  "name": "client",
+  "name": "mayberry-home-builder-client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "Frontend React application for the Mayberry Home Builder",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

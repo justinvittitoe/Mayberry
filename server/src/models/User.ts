@@ -1,12 +1,13 @@
 import { Schema, model, type Document } from 'mongoose';
 import bcrypt from 'bcrypt';
-import userHomeSelectionSchema from './UserHome.js';
+import { userHomeSelectionSchema } from './UserHome.js';
 import type { UserHomeSelection } from './UserHome.js';
 
 export interface UserDocument extends Document {
   username: string;
   email: string;
   password: string;
+  role: 'admin' | 'user';
   savedHomes: UserHomeSelection[];
   isCorrectPassword(password: string): Promise<boolean>;
   homeCount: number;
@@ -29,7 +30,12 @@ const userSchema = new Schema<UserDocument>(
       type: String,
       required: true,
     },
-    // set savedBooks to be an array of data that adheres to the bookSchema
+    role: {
+      type: String,
+      enum: ['admin', 'user'],
+      default: 'user',
+    },
+    // set savedHomes to be an array of data that adheres to the userHomeSelectionSchema
     savedHomes: [userHomeSelectionSchema],
   },
   // set this to use virtual below

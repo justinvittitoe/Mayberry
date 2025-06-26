@@ -1,6 +1,6 @@
-import { Schema } from 'mongoose';
+import { Schema, model, type Document } from 'mongoose';
 
-export interface InteriorPackage {
+export interface InteriorPackageDocument extends Document {
   name: string;
   totalPrice: number;
   fitures: string;
@@ -14,7 +14,7 @@ export interface InteriorPackage {
   upgrade: string;
 }
 
-const interiorPackageSchema = new Schema<InteriorPackage>({
+const interiorPackageSchema = new Schema<InteriorPackageDocument>({
   name: { type: String, required: true },
   totalPrice: { type: Number, required: true },
   fitures: String,
@@ -28,4 +28,6 @@ const interiorPackageSchema = new Schema<InteriorPackage>({
   upgrade: String,
 });
 
-export default interiorPackageSchema
+const InteriorPackage = model<InteriorPackageDocument>('InteriorPackage', interiorPackageSchema);
+
+export default InteriorPackage;

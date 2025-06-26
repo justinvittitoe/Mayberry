@@ -1,7 +1,7 @@
 {
-  "name": "googlebooks-app",
+  "name": "mayberry-home-builder",
   "version": "1.0.0",
-  "description": "",
+  "description": "A comprehensive home builder application for customizing and managing home plans",
   "main": "server/server.js",
   "scripts": {
     "start": "cd server && npm run start",
@@ -10,7 +10,13 @@
     "build": "concurrently \"cd server && npm run build\" \"cd client && npm run build\"",
     "render-build": "npm install && npm run build"
   },
-  "keywords": [],
+  "keywords": [
+    "home-builder",
+    "real-estate",
+    "customization",
+    "graphql",
+    "react"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {

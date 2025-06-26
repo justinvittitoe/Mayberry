@@ -1,7 +1,7 @@
 {
-  "name": "server",
+  "name": "mayberry-home-builder-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "GraphQL backend server for the Mayberry Home Builder application",
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
@@ -10,7 +10,13 @@
     "watch": "nodemon dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "graphql",
+    "apollo-server",
+    "mongodb",
+    "home-builder",
+    "backend"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {

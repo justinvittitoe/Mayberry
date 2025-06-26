@@ -1,6 +1,6 @@
-import { Schema } from 'mongoose';
+import { Schema, model, type Document } from 'mongoose';
 
-export interface LotPremium {
+export interface LotPremiumDocument extends Document {
   filing: number;
   lot: number;
   width: number;
@@ -8,7 +8,7 @@ export interface LotPremium {
   price: number;
 }
 
-const lotPremiumSchema = new Schema<LotPremium>({
+const lotPremiumSchema = new Schema<LotPremiumDocument>({
   filing: { type: Number, required: true },
   lot: { type: Number, required: true },
   width: { type: Number, required: true },
@@ -16,4 +16,6 @@ const lotPremiumSchema = new Schema<LotPremium>({
   price: { type: Number, required: true },
 });
 
-export default lotPremiumSchema;
+const LotPremium = model<LotPremiumDocument>('LotPremium', lotPremiumSchema);
+
+export default LotPremium;

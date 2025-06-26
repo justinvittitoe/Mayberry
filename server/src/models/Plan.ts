@@ -1,37 +1,34 @@
-import { Schema, model } from 'mongoose';
-import type { Option } from './Option';
-import type { InteriorPackage } from './InteriorPackage';
-import type { LotPremium } from './LotPremium';
-import optionSchema from './Option.js';
-import interiorPackageSchema from './InteriorPackage.js';
-import lotPremiumSchema from './LotPremium.js';
+import { Schema, model, type Document } from 'mongoose';
+import type { OptionDocument } from './Option.js';
+import type { InteriorPackageDocument } from './InteriorPackage.js';
+import type { LotPremiumDocument } from './LotPremium.js';
 
 export interface PlanTypeDocument extends Document {
   planType: number;
   name: string;
   basePrice: number;
-  elevations: Option[];
+  elevations: OptionDocument[];
   colorScheme: number[];
-  interiors: InteriorPackage[];
-  structural: Option[];
-  additional: Option[];
-  kitchenAppliance: Option[];
-  laundryAppliance: Option[];
-  lotPremium: LotPremium[];
+  interiors: InteriorPackageDocument[];
+  structural: OptionDocument[];
+  additional: OptionDocument[];
+  kitchenAppliance: OptionDocument[];
+  laundryAppliance: OptionDocument[];
+  lotPremium: LotPremiumDocument[];
 }
 
 const planTypeSchema = new Schema({
   planType: { type: Number, required: true, unique: true },
   name: { type: String, required: true },
   basePrice: { type: Number, required: true },
-  elevations: [optionSchema],
+  elevations: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
   colorScheme: [Number],
-  interiors: [interiorPackageSchema],
-  structural: [optionSchema],
-  additional: [optionSchema],
-  kitchenAppliance: [optionSchema],
-  laundryAppliance: [optionSchema],
-  lotPremium: [lotPremiumSchema],
+  interiors: [{ type: Schema.Types.ObjectId, ref: 'InteriorPackage' }],
+  structural: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
+  additional: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
+  kitchenAppliance: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
+  laundryAppliance: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
+  lotPremium: [{ type: Schema.Types.ObjectId, ref: 'LotPremium' }],
 });
 
 const Plan = model<PlanTypeDocument>('Plan', planTypeSchema);

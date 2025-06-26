@@ -7,6 +7,8 @@ export const LOGIN_USER = gql`
             user {
                 _id
                 username
+                email
+                role
             }
         }
     }
@@ -19,32 +21,115 @@ export const ADD_USER = gql`
             user {
                 _id
                 username
+                email
+                role
             }
         }
     }
 `;
 
-export const SAVE_BOOK = gql`
-    mutation saveBook($book: BookInput!) {
-        saveBook(book: $book) {
+export const SAVE_USER_HOME = gql`
+    mutation saveUserHome($userHome: UserHomeInput!) {
+        saveUserHome(userHome: $userHome) {
             _id
             username
-            savedBooks {
-                bookId
-                title
+            homeCount
+            savedHomes {
+                _id
+                planTypeName
+                basePrice
+                totalPrice
             }
         }
     }
 `;
 
-export const REMOVE_BOOK = gql`
-    mutation deleteBook($bookId: String!) {
-        deleteBook(bookId: $bookId) {
+export const UPDATE_USER_HOME = gql`
+    mutation updateUserHome($id: ID!, $userHome: UserHomeInput!) {
+        updateUserHome(id: $id, userHome: $userHome) {
+            _id
+            planTypeName
+            basePrice
+            totalPrice
+            elevation {
+                name
+                price
+            }
+            interior {
+                name
+                totalPrice
+            }
+            kitchenAppliance {
+                name
+                price
+            }
+            laundryAppliance {
+                name
+                price
+            }
+            lotPremium {
+                filing
+                lot
+                price
+            }
+        }
+    }
+`;
+
+export const DELETE_USER_HOME = gql`
+    mutation deleteUserHome($id: ID!) {
+        deleteUserHome(id: $id) {
             _id
             username
-            savedBooks {
-                bookId
+            homeCount
+            savedHomes {
+                _id
+                planTypeName
             }
+        }
+    }
+`;
+
+// Admin mutations (for future use)
+export const CREATE_PLAN = gql`
+    mutation createPlan($plan: PlanInput!) {
+        createPlan(plan: $plan) {
+            _id
+            planType
+            name
+            basePrice
+        }
+    }
+`;
+
+export const CREATE_OPTION = gql`
+    mutation createOption($option: OptionInput!) {
+        createOption(option: $option) {
+            _id
+            name
+            price
+            classification
+        }
+    }
+`;
+
+export const CREATE_INTERIOR_PACKAGE = gql`
+    mutation createInteriorPackage($interiorPackage: InteriorPackageInput!) {
+        createInteriorPackage(interiorPackage: $interiorPackage) {
+            _id
+            name
+            totalPrice
+        }
+    }
+`;
+
+export const CREATE_LOT_PREMIUM = gql`
+    mutation createLotPremium($lotPremium: LotPremiumInput!) {
+        createLotPremium(lotPremium: $lotPremium) {
+            _id
+            filing
+            lot
+            price
         }
     }
 `;

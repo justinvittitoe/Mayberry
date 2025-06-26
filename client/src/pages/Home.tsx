@@ -1,156 +1,96 @@
-import { useState, useEffect } from 'react';
-import type { FormEvent } from 'react';
-import {
-  Container,
-  Col,
-  Form,
-  Button,
-  Card,
-  Row
-} from 'react-bootstrap';
-import { useMutation } from '@apollo/client'
-import { SAVE_BOOK } from '../utils/mutations'
-import Auth from '../utils/auth';
-import { searchGoogleBooks } from '../utils/API';
-import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
-import type { Book } from '../models/Book';
-import type { GoogleAPIBook } from '../models/GoogleAPIBook';
+import React from 'react';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { useQuery } from '@apollo/client';
+import { GET_PLANS } from '../utils/queries';
+import { Link } from 'react-router-dom';
 
-const SearchBooks = () => {
-  // create state for holding returned google api data
-  const [searchedBooks, setSearchedBooks] = useState<Book[]>([]);
-  // create state for holding our search field data
-  const [searchInput, setSearchInput] = useState('');
-  const [savedBookMutation] = useMutation(SAVE_BOOK);
-  // create state to hold saved bookId values
-  const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
+const Home = () => {
+  const { loading, data } = useQuery(GET_PLANS);
 
-  // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
-  // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
-  useEffect(() => {
-    return () => saveBookIds(savedBookIds);
-  });
+  const plans = data?.plans || [];
 
-  // create method to search for books and set state on form submit
-  const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!searchInput) {
-      return false;
-    }
-
-    try {
-      const response = await searchGoogleBooks(searchInput);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const { items } = await response.json();
-
-      const bookData = items.map((book: GoogleAPIBook) => ({
-        bookId: book.id,
-        authors: book.volumeInfo.authors || ['No author to display'],
-        title: book.volumeInfo.title,
-        description: book.volumeInfo.description,
-        image: book.volumeInfo.imageLinks?.thumbnail || '',
-      }));
-
-      setSearchedBooks(bookData);
-      setSearchInput('');
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // create function to handle saving a book to our database
-  const handleSaveBook = async (bookId: string) => {
-    // find the book in `searchedBooks` state by the matching id
-    const bookToSave: Book = searchedBooks.find((book) => book.bookId === bookId)!;
-
-    // get token
-    const token = Auth.loggedIn() ? Auth.getToken() : null;
-
-    if (!token) {
-      return false;
-    }
-
-    try {
-      await savedBookMutation({
-        variables: { book: bookToSave },
-      })
-
-      // if book successfully saves to user's account, save book id to state
-      setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="loading-spinner">
+        <div className="spinner"></div>
+        <p className="mt-3 text-muted">Loading available plans...</p>
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="text-light bg-dark p-5">
-        <Container>
-          <h1>Find Your Home!</h1>
-          <Form onSubmit={handleFormSubmit}>
-            <Row>
-              <Col xs={12} md={8}>
-                <Form.Control
-                  name='searchInput'
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  type='text'
-                  size='lg'
-                  placeholder='Search for a book'
-                />
-              </Col>
-              <Col xs={12} md={4}>
-                <Button type='submit' variant='success' size='lg'>
-                  Submit Search
-                </Button>
+      <div className="hero-section">
+        <div className="hero-content">
+          <Container>
+            <Row className="justify-content-center text-center">
+              <Col lg={8}>
+                <h1 className="hero-title">🏠 Mayberry Home Builder</h1>
+                <p className="hero-subtitle">
+                  Design your dream home with our customizable floor plans and premium options.
+                </p>
+                <p className="mb-0 opacity-75">
+                  Choose from our selection of beautiful home designs and customize every detail to match your lifestyle.
+                </p>
               </Col>
             </Row>
-          </Form>
-        </Container>
+          </Container>
+        </div>
       </div>
 
-      <Container>
-        <h2 className='pt-5'>
-          {searchedBooks.length
-            ? `Viewing ${searchedBooks.length} results:`
-            : 'Search for a book to begin'}
-        </h2>
+      <Container className="py-5">
         <Row>
-          {searchedBooks.map((book) => {
-            return (
-              <Col md="4" key={book.bookId}>
-                <Card border='dark'>
-                  {book.image ? (
-                    <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' />
-                  ) : null}
-                  <Card.Body>
-                    <Card.Title>{book.title}</Card.Title>
-                    <p className='small'>Authors: {book.authors}</p>
-                    <Card.Text>{book.description}</Card.Text>
-                    {Auth.loggedIn() && (
-                      <Button
-                        disabled={savedBookIds?.some((savedBookId: string) => savedBookId === book.bookId)}
-                        className='btn-block btn-info'
-                        onClick={() => handleSaveBook(book.bookId)}>
-                        {savedBookIds?.some((savedBookId: string) => savedBookId === book.bookId)
-                          ? 'This book has already been saved!'
-                          : 'Save this Book!'}
-                      </Button>
-                    )}
-                  </Card.Body>
-                </Card>
-              </Col>
-            );
-          })}
+          <Col>
+            <h2 className="text-center mb-5">Available Home Plans</h2>
+          </Col>
         </Row>
+
+        <Row>
+          {plans.map((plan: any) => (
+            <Col key={plan._id} lg={4} md={6} className="mb-4">
+              <Card className="h-100 plan-card fade-in">
+                <Card.Body className="d-flex flex-column">
+                  <Card.Title className="text-center mb-3">{plan.name}</Card.Title>
+                  <div className="text-center mb-3">
+                    <span className="badge bg-primary mb-2">{plan.planType}</span>
+                    <div className="plan-price">
+                      Starting at ${plan.basePrice?.toLocaleString()}
+                    </div>
+                  </div>
+
+                  <ul className="plan-features">
+                    <li>{plan.elevations?.length || 0} Elevation Options</li>
+                    <li>{plan.interiors?.length || 0} Interior Packages</li>
+                    <li>{plan.structural?.length || 0} Structural Options</li>
+                    <li>{plan.additional?.length || 0} Additional Features</li>
+                  </ul>
+
+                  <div className="mt-auto text-center">
+                    <Link to={`/customize/${plan._id}`}>
+                      <Button variant="primary" className="w-100">
+                        Customize This Plan
+                      </Button>
+                    </Link>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        {plans.length === 0 && (
+          <Row>
+            <Col className="text-center">
+              <div className="py-5">
+                <h3 className="text-muted">No plans available at the moment.</h3>
+                <p className="text-muted">Please check back later or contact us for more information.</p>
+              </div>
+            </Col>
+          </Row>
+        )}
       </Container>
     </>
   );
 };
 
-export default SearchBooks;
+export default Home;
