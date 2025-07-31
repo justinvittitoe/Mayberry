@@ -4,10 +4,11 @@ import { useQuery } from '@apollo/client';
 import { GET_PLANS } from '../utils/queries';
 import { Link, useNavigate } from 'react-router-dom';
 import FloorPlanSelector from '../components/FloorPlanSelector';
+import LoadingSpinner from '../components/LoadingSpinner';
 import AuthService from '../utils/auth';
 
 const Home = () => {
-  const { loading, data } = useQuery(GET_PLANS);
+  const { loading, data, error } = useQuery(GET_PLANS);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const navigate = useNavigate();
   const isAuthenticated = AuthService.loggedIn();
@@ -39,10 +40,24 @@ const Home = () => {
   };
 
   if (loading) {
+    return <LoadingSpinner message="Loading available plans..." fullPage />;
+  }
+
+  if (error) {
     return (
-      <div className="loading-spinner">
-        <div className="spinner"></div>
-        <p className="mt-3 text-muted">Loading available plans...</p>
+      <div className="error-container">
+        <Container>
+          <div className="text-center py-5">
+            <div className="alert alert-danger">
+              <h4>Unable to Load Plans</h4>
+              <p>We're having trouble loading the available floor plans. Please try refreshing the page.</p>
+              <p className="mb-0"><small>Error: {error.message}</small></p>
+            </div>
+            <Button variant="primary" onClick={() => window.location.reload()}>
+              Refresh Page
+            </Button>
+          </div>
+        </Container>
       </div>
     );
   }

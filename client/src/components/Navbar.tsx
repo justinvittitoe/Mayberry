@@ -3,7 +3,6 @@ import { Navbar, Nav, Container } from 'react-bootstrap';
 import AuthService from '../utils/auth';
 
 const AppNavbar = () => {
-  ;
 
   return (
       <Navbar bg='light' variant='light' expand='lg'>

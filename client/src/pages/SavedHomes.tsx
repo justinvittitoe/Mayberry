@@ -2,11 +2,12 @@ import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_ME } from '../utils/queries';
 import { DELETE_USER_HOME } from '../utils/mutations';
+import LoadingSpinner from '../components/LoadingSpinner';
 import AuthService from '../utils/auth';
 import { removeHomeId } from '../utils/localStorage';
 
 const SavedHomes = () => {
-  const { loading, data } = useQuery(GET_ME);
+  const { loading, data, error } = useQuery(GET_ME);
   const [deleteHome] = useMutation(DELETE_USER_HOME);
   const { getProfile } = AuthService;
 
@@ -40,11 +41,23 @@ const SavedHomes = () => {
   };
 
   if (loading) {
+    return <LoadingSpinner message="Loading your saved homes..." fullPage />;
+  }
+
+  if (error) {
     return (
-      <div className="loading-spinner">
-        <div className="spinner"></div>
-        <p className="mt-3 text-muted">Loading your saved homes...</p>
-      </div>
+      <Container className="py-5">
+        <div className="text-center">
+          <Alert variant="danger">
+            <h4>Unable to Load Your Saved Homes</h4>
+            <p>We're having trouble accessing your saved homes. Please try again.</p>
+            <p className="mb-0"><small>Error: {error.message}</small></p>
+          </Alert>
+          <Button variant="primary" onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      </Container>
     );
   }
 

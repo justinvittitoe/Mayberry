@@ -166,7 +166,7 @@ const resolvers = {
             if (!user) {
                 throw new Error('Something went wrong!');
             }
-            const token = signToken(user.username, user.email, user._id);
+            const token = signToken(user.username, user.email, user._id, 'user');
             return { token, user: toUserType(user) };
         },
 
@@ -181,7 +181,7 @@ const resolvers = {
             if (!correctPw) {
                 throw new AuthenticationError("Incorrect Password");
             }
-            const token = signToken(user.username, user.email, user._id);
+            const token = signToken(user.username, user.email, user._id, user.role);
             return { token, user: toUserType(user) };
         },
 

@@ -1,12 +1,15 @@
 import React from 'react';
 import { Container, Row, Col, Nav, Tab } from 'react-bootstrap';
 import AdminPlanManager from '../components/AdminPlanManager';
+import AdminOptionsManager from '../components/AdminOptionsManager';
+import AdminInteriorPackagesManager from '../components/AdminInteriorPackagesManager';
+import AdminLotPremiumsManager from '../components/AdminLotPremiumsManager';
 import AuthService from '../utils/auth';
 import { Navigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   // Check if user is admin
-  const isAdmin = AuthService.loggedIn() && AuthService.getProfile()?.role === 'admin';
+  const isAdmin = AuthService.loggedIn();
 
   if (!isAdmin) {
     return <Navigate to="/login" replace />;
@@ -72,24 +75,15 @@ const AdminDashboard = () => {
                 </Tab.Pane>
                 
                 <Tab.Pane eventKey="options">
-                  <div className="text-center py-5">
-                    <h4 className="text-muted">Options Management</h4>
-                    <p className="text-muted">Options management interface will be implemented here.</p>
-                  </div>
+                  <AdminOptionsManager />
                 </Tab.Pane>
                 
                 <Tab.Pane eventKey="interiors">
-                  <div className="text-center py-5">
-                    <h4 className="text-muted">Interior Packages Management</h4>
-                    <p className="text-muted">Interior packages management interface will be implemented here.</p>
-                  </div>
+                  <AdminInteriorPackagesManager />
                 </Tab.Pane>
                 
                 <Tab.Pane eventKey="lots">
-                  <div className="text-center py-5">
-                    <h4 className="text-muted">Lot Premiums Management</h4>
-                    <p className="text-muted">Lot premiums management interface will be implemented here.</p>
-                  </div>
+                  <AdminLotPremiumsManager />
                 </Tab.Pane>
               </Tab.Content>
             </Col>

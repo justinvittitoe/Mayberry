@@ -2,14 +2,15 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
-import App from './App.jsx'
-import Home from './pages/Home.js'
+import App from './App.tsx'
+import Home from './pages/Home.tsx'
 import SavedHomes from './pages/SavedHomes'
 import CustomizeHome from './pages/CustomizeHome'
 import AdminDashboard from './pages/AdminDashboard'
 import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
 import ProtectedRoute from './components/ProtectedRoute'
+import RoleBasedRoute from './components/RoleBasedRoute'
 
 
 const router = createBrowserRouter([
@@ -40,7 +41,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/admin',
-        element: <AdminDashboard />
+        element: <RoleBasedRoute allowedRoles={['admin']}><AdminDashboard /></RoleBasedRoute>
       }
     ]
   }

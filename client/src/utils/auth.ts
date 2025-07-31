@@ -1,13 +1,12 @@
 // use this to decode a token and get the user's information out of it
 import { jwtDecode } from 'jwt-decode';
+import { User } from '../models/User';
 
 
 interface UserToken {
-  name: string;
-  email: string;
-  role: string;
-  _id: string;
+  data: User;
   exp: number;
+  iat: number;
 }
 
 // create a new class to instantiate for a user
@@ -15,7 +14,7 @@ class AuthService {
   // get user data
   getProfile() {
     try {
-      return jwtDecode(this.getToken() || '');
+      return jwtDecode<UserToken>(this.getToken() || '');
     } catch (error) {
       return null;
     }
