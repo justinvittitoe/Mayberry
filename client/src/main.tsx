@@ -10,6 +10,7 @@ import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
 import ProtectedRoute from './components/ProtectedRoute'
 
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -41,5 +42,5 @@ const router = createBrowserRouter([
 ])
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <RouterProvider router={router} />
+    <RouterProvider router={router} />
 )

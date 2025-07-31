@@ -4,7 +4,7 @@ import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap'
 import { useMutation } from '@apollo/client'
 import { Link, useNavigate } from 'react-router-dom';
 import { ADD_USER } from '../utils/mutations';
-import { useAuth } from '../utils/auth';
+import AuthService from '../utils/auth';
 
 const SignupForm = () => {
   // set initial form state
@@ -15,7 +15,7 @@ const SignupForm = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = AuthService;
 
   const [addUser] = useMutation(ADD_USER);
 
