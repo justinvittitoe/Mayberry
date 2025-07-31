@@ -1,25 +1,25 @@
-import React from 'react';
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_ME } from '../utils/queries';
 import { DELETE_USER_HOME } from '../utils/mutations';
-import { useAuth } from '../utils/auth';
+import AuthService from '../utils/auth';
 import { removeHomeId } from '../utils/localStorage';
 
 const SavedHomes = () => {
   const { loading, data } = useQuery(GET_ME);
   const [deleteHome] = useMutation(DELETE_USER_HOME);
-  const { user } = useAuth();
+  const { getProfile } = AuthService;
 
   const userData = data?.me;
 
-  // create function that accepts the home's mongo _id value as param and deletes the home from the database
+  // CHECK THIS FUNTION THIS DOESN'T LOOK RIGHT create function that accepts the home's mongo _id value as param and deletes the home from the database
   const handleDeleteHome = async (homeId: string) => {
     try {
       await deleteHome({
         variables: { id: homeId },
         update: cache => {
-          const { me } = cache.readQuery({ query: GET_ME }) || {};
+          const data = cache.readQuery<{ me?: any }>({ query: GET_ME }) || {};
+          const me = data.me || {};
           cache.writeQuery({
             query: GET_ME,
             data: {
@@ -74,7 +74,8 @@ const SavedHomes = () => {
                   {userData.savedHomes.length} Saved {userData.savedHomes.length === 1 ? 'Home' : 'Homes'}
                 </h2>
                 <p className="text-center text-muted mt-2">
-                  Welcome back, {user?.name || 'User'}!
+                  {/* Bug need to check what is returned from get profile */}
+                  Welcome back, {getProfile?.name || 'User'}!
                 </p>
               </Col>
             </Row>

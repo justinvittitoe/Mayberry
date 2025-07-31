@@ -90,14 +90,119 @@ export const DELETE_USER_HOME = gql`
     }
 `;
 
-// Admin mutations (for future use)
+// Admin mutations for CRUD operations
 export const CREATE_PLAN = gql`
     mutation createPlan($plan: PlanInput!) {
         createPlan(plan: $plan) {
             _id
             planType
             name
+            bedrooms
+            bathrooms
+            squareFootage
+            garageType
             basePrice
+            description
+            elevations {
+                _id
+                name
+                price
+                classification
+            }
+            interiors {
+                _id
+                name
+                totalPrice
+            }
+            structural {
+                _id
+                name
+                price
+            }
+            additional {
+                _id
+                name
+                price
+            }
+            kitchenAppliance {
+                _id
+                name
+                price
+            }
+            laundryAppliance {
+                _id
+                name
+                price
+            }
+            lotPremium {
+                _id
+                filing
+                lot
+                price
+            }
+        }
+    }
+`;
+
+export const UPDATE_PLAN = gql`
+    mutation updatePlan($id: ID!, $plan: PlanInput!) {
+        updatePlan(id: $id, plan: $plan) {
+            _id
+            planType
+            name
+            bedrooms
+            bathrooms
+            squareFootage
+            garageType
+            basePrice
+            description
+            elevations {
+                _id
+                name
+                price
+                classification
+            }
+            interiors {
+                _id
+                name
+                totalPrice
+            }
+            structural {
+                _id
+                name
+                price
+            }
+            additional {
+                _id
+                name
+                price
+            }
+            kitchenAppliance {
+                _id
+                name
+                price
+            }
+            laundryAppliance {
+                _id
+                name
+                price
+            }
+            lotPremium {
+                _id
+                filing
+                lot
+                price
+            }
+        }
+    }
+`;
+
+export const DELETE_PLAN = gql`
+    mutation deletePlan($id: ID!) {
+        deletePlan(id: $id) {
+            _id
+            name
+            planType
         }
     }
 `;
@@ -109,6 +214,31 @@ export const CREATE_OPTION = gql`
             name
             price
             classification
+            description
+            img
+        }
+    }
+`;
+
+export const UPDATE_OPTION = gql`
+    mutation updateOption($id: ID!, $option: OptionInput!) {
+        updateOption(id: $id, option: $option) {
+            _id
+            name
+            price
+            classification
+            description
+            img
+        }
+    }
+`;
+
+export const DELETE_OPTION = gql`
+    mutation deleteOption($id: ID!) {
+        deleteOption(id: $id) {
+            _id
+            name
+            classification
         }
     }
 `;
@@ -119,6 +249,43 @@ export const CREATE_INTERIOR_PACKAGE = gql`
             _id
             name
             totalPrice
+            fitures
+            lvp
+            carpet
+            kitchenBackspash
+            masterBathTile
+            countertop
+            primaryCabinets
+            secondaryCabinets
+            upgrade
+        }
+    }
+`;
+
+export const UPDATE_INTERIOR_PACKAGE = gql`
+    mutation updateInteriorPackage($id: ID!, $interiorPackage: InteriorPackageInput!) {
+        updateInteriorPackage(id: $id, interiorPackage: $interiorPackage) {
+            _id
+            name
+            totalPrice
+            fitures
+            lvp
+            carpet
+            kitchenBackspash
+            masterBathTile
+            countertop
+            primaryCabinets
+            secondaryCabinets
+            upgrade
+        }
+    }
+`;
+
+export const DELETE_INTERIOR_PACKAGE = gql`
+    mutation deleteInteriorPackage($id: ID!) {
+        deleteInteriorPackage(id: $id) {
+            _id
+            name
         }
     }
 `;
@@ -129,7 +296,32 @@ export const CREATE_LOT_PREMIUM = gql`
             _id
             filing
             lot
+            width
+            length
             price
+        }
+    }
+`;
+
+export const UPDATE_LOT_PREMIUM = gql`
+    mutation updateLotPremium($id: ID!, $lotPremium: LotPremiumInput!) {
+        updateLotPremium(id: $id, lotPremium: $lotPremium) {
+            _id
+            filing
+            lot
+            width
+            length
+            price
+        }
+    }
+`;
+
+export const DELETE_LOT_PREMIUM = gql`
+    mutation deleteLotPremium($id: ID!) {
+        deleteLotPremium(id: $id) {
+            _id
+            filing
+            lot
         }
     }
 `;

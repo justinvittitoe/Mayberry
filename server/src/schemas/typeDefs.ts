@@ -37,7 +37,12 @@ const typeDefs = gql`
         _id: ID!
         planType: Int!
         name: String!
+        bedrooms: Int!
+        bathrooms: Float!
+        squareFootage: Int!
+        garageType: String!
         basePrice: Float!
+        description: String
         elevations: [Option]
         colorScheme: [Int]
         interiors: [InteriorPackage]
@@ -139,7 +144,12 @@ const typeDefs = gql`
     input PlanInput {
         planType: Int!
         name: String!
+        bedrooms: Int!
+        bathrooms: Float!
+        squareFootage: Int!
+        garageType: String!
         basePrice: Float!
+        description: String
         elevations: [OptionInput]
         colorScheme: [Int]
         interiors: [InteriorPackageInput]

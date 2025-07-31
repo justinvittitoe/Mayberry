@@ -90,7 +90,12 @@ export const GET_PLANS = gql`
             _id
             planType
             name
+            bedrooms
+            bathrooms
+            squareFootage
+            garageType
             basePrice
+            description
             elevations {
                 _id
                 name

@@ -5,7 +5,7 @@ import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap'
 import { useMutation } from '@apollo/client';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LOGIN_USER } from '../utils/mutations';
-import { useAuth } from '../utils/auth';
+import AuthService from '../utils/auth';
 
 const LoginForm = () => {
   const [userFormData, setUserFormData] = useState({ email: '', password: '' });
@@ -14,7 +14,6 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
 
   const [loginUser] = useMutation(LOGIN_USER);
 
@@ -43,9 +42,10 @@ const LoginForm = () => {
       const { data } = await loginUser({
         variables: { email: userFormData.email, password: userFormData.password }
       });
+      console.log(data);
 
-      // Use the login function from useAuth hook
-      login(data.login.token);
+      // Use the login function from AuthService
+      AuthService.login(data.login.token);
 
       // Add a small delay to ensure auth state is updated
       setTimeout(() => {

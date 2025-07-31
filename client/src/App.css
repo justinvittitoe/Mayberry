@@ -1,29 +1,35 @@
 /* Modern Home Builder App Styling */
 
 :root {
-  --primary-color: #2563eb;
-  --primary-dark: #1d4ed8;
-  --secondary-color: #64748b;
-  --accent-color: #f59e0b;
-  --success-color: #10b981;
-  --danger-color: #ef4444;
-  --warning-color: #f59e0b;
-  --info-color: #3b82f6;
+  /* Minimalist Green/Brown/White/Black Color Scheme */
+  --primary-color: #2d5016;
+  --primary-light: #4a7c27;
+  --primary-dark: #1a3009;
+  --secondary-color: #8b7355;
+  --accent-color: #6b5b47;
+  --success-color: #4a7c27;
+  --danger-color: #8b4513;
+  --warning-color: #cd853f;
+  --info-color: #2d5016;
 
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-light: #94a3b8;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-light: #707070;
+  --text-muted: #999999;
 
   --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-dark: #1e293b;
+  --bg-secondary: #f8f6f3;
+  --bg-tertiary: #f0ede8;
+  --bg-dark: #1a1a1a;
+  --bg-card: #fefefe;
 
-  --border-color: #e2e8f0;
-  --border-radius: 12px;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --border-color: #e8e3dc;
+  --border-light: #f2efea;
+  --border-radius: 8px;
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.06);
 }
 
 * {
@@ -48,42 +54,63 @@ body {
 
 .main-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Modern Navbar Styling */
+/* Centered Content Wrapper */
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
+}
+
+/* Main Container Overrides for Better Centering */
+.container {
+  max-width: 1200px;
+}
+
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Minimalist Navbar Styling */
 .navbar {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
-  box-shadow: var(--shadow-lg);
+  background: var(--bg-primary) !important;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
   padding: 1rem 0;
 }
 
 .navbar-brand {
   font-weight: 700;
   font-size: 1.5rem;
-  color: white !important;
+  color: var(--primary-color) !important;
   text-decoration: none;
 }
 
 .navbar-nav .nav-link {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: var(--text-secondary) !important;
   font-weight: 500;
   transition: all 0.3s ease;
   padding: 0.5rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   margin: 0 0.25rem;
 }
 
 .navbar-nav .nav-link:hover {
-  color: white !important;
-  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--primary-color) !important;
+  background-color: var(--bg-tertiary);
   transform: translateY(-1px);
 }
 
-/* Hero Section */
+/* Minimalist Hero Section */
 .hero-section {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-  color: white;
-  padding: 4rem 0;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  color: var(--text-primary);
+  padding: 6rem 0 4rem;
   position: relative;
   overflow: hidden;
 }
@@ -95,8 +122,8 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-  opacity: 0.3;
+  background: linear-gradient(45deg, transparent 48%, var(--border-light) 49%, transparent 51%);
+  opacity: 0.5;
 }
 
 .hero-content {
@@ -118,25 +145,26 @@ body {
   opacity: 0.9;
 }
 
-/* Card Styling */
+/* Minimalist Card Styling */
 .card {
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
   overflow: hidden;
-  background: var(--bg-primary);
+  background: var(--bg-card);
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
 }
 
 .card-header {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-  color: white;
-  border: none;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
   padding: 1.5rem;
   font-weight: 600;
 }
@@ -145,13 +173,13 @@ body {
   padding: 2rem;
 }
 
-/* Button Styling */
+/* Minimalist Button Styling */
 .btn {
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   font-weight: 600;
   padding: 0.75rem 1.5rem;
   transition: all 0.3s ease;
-  border: none;
+  border: 2px solid transparent;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -160,36 +188,59 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  background: var(--primary-color);
   color: white;
+  border-color: var(--primary-color);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+  box-shadow: var(--shadow-md);
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: white;
 }
 
 .btn-success {
-  background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+  background: var(--success-color);
   color: white;
+  border-color: var(--success-color);
 }
 
 .btn-success:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, #059669 0%, var(--success-color) 100%);
+  box-shadow: var(--shadow-md);
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: white;
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
+  background: var(--danger-color);
   color: white;
+  border-color: var(--danger-color);
 }
 
 .btn-danger:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, #dc2626 0%, var(--danger-color) 100%);
+  box-shadow: var(--shadow-md);
+  background: #6b3410;
+  border-color: #6b3410;
+  color: white;
+}
+
+.btn-outline-primary {
+  background: transparent;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 /* Form Styling */
@@ -488,4 +539,415 @@ body {
   color: var(--text-secondary);
   font-size: 0.9rem;
   margin-top: 0.5rem;
+}
+
+/* Minimalist Floor Plan Selector Styling */
+.floor-plan-selector {
+  padding: 4rem 0;
+  background: var(--bg-secondary);
+}
+
+.floor-plan-card {
+  position: relative;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+  height: 100%;
+  background: var(--bg-card);
+}
+
+.floor-plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-color);
+}
+
+.floor-plan-card.selected {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, rgba(45, 80, 22, 0.05) 0%, rgba(45, 80, 22, 0.02) 100%);
+}
+
+.floor-plan-card.selected::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-color);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.plan-details {
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  background: var(--bg-tertiary);
+}
+
+.plan-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.plan-price {
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+
+.selected-indicator {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Floor Plan Card Responsive Design */
+@media (max-width: 768px) {
+  .floor-plan-selector {
+    padding: 2rem 0;
+  }
+  
+  .plan-details {
+    padding: 1rem;
+  }
+  
+  .plan-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Minimalist Modern Home Page Styling */
+.modern-hero-section {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  color: var(--text-primary);
+  padding: 8rem 0 6rem;
+  position: relative;
+  overflow: hidden;
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.modern-hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 20%, var(--primary-color) 0%, transparent 70%),
+              radial-gradient(circle at 70% 80%, var(--accent-color) 0%, transparent 70%);
+  opacity: 0.03;
+}
+
+.modern-hero-section .hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.modern-hero-section .hero-title {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 2rem;
+}
+
+.modern-hero-section .hero-subtitle {
+  font-size: 1.4rem;
+  font-weight: 400;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+.hero-cta .btn {
+  font-weight: 600;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  border-radius: var(--border-radius);
+  text-transform: none;
+  border: 2px solid transparent;
+}
+
+.btn-outline-light {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+}
+
+.btn-outline-light:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Admin Access Section */
+.admin-access-section {
+  padding: 3rem 0;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.admin-access-card {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 3rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+}
+
+.admin-access-card h3 {
+  color: white;
+}
+
+.admin-access-card .btn-primary {
+  background: white;
+  color: var(--primary-color);
+  border-color: white;
+}
+
+.admin-access-card .btn-primary:hover {
+  background: var(--bg-tertiary);
+  color: var(--primary-dark);
+  border-color: var(--bg-tertiary);
+}
+
+/* Sign In Prompt */
+.sign-in-prompt {
+  padding: 3rem 0;
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* Selected Plan Action */
+.selected-plan-action {
+  padding: 3rem 0;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.action-card {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 3rem 2rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+
+/* Features Section */
+.features-section {
+  padding: 5rem 0;
+  background: var(--bg-primary);
+}
+
+.feature-card {
+  padding: 2rem 1.5rem;
+  border-radius: var(--border-radius);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+}
+
+.feature-icon {
+  color: var(--primary-color);
+  margin: 0 auto;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+  border-radius: 50%;
+}
+
+.feature-card h4 {
+  color: var(--text-primary);
+  font-size: 1.4rem;
+}
+
+.feature-card p {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 4rem 0;
+  background: var(--bg-secondary);
+}
+
+/* Responsive Design for Modern Home */
+@media (max-width: 992px) {
+  .modern-hero-section {
+    padding: 4rem 0 3rem;
+    min-height: 60vh;
+  }
+  
+  .modern-hero-section .hero-title {
+    font-size: 3rem;
+  }
+  
+  .modern-hero-section .hero-subtitle {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .modern-hero-section {
+    padding: 3rem 0 2rem;
+    min-height: 50vh;
+  }
+  
+  .modern-hero-section .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .modern-hero-section .hero-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .hero-cta .btn {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .hero-cta .btn:last-child {
+    margin-bottom: 0;
+  }
+  
+  .action-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .features-section {
+    padding: 3rem 0;
+  }
+  
+  .feature-card {
+    padding: 1.5rem 1rem;
+    margin-bottom: 2rem;
+  }
+}
+
+/* Minimalist Admin Dashboard Styling */
+.admin-dashboard {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.admin-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 3rem 0 2rem;
+  text-align: center;
+}
+
+.admin-nav {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  padding: 1rem;
+  position: sticky;
+  top: 2rem;
+}
+
+.admin-nav .nav-link {
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.admin-nav .nav-link:hover {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.admin-nav .nav-link.active {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.admin-nav .nav-link.active:hover {
+  transform: none;
+}
+
+/* Admin Table Styling */
+.admin-dashboard .table {
+  font-size: 0.9rem;
+}
+
+.admin-dashboard .table th {
+  background: var(--bg-secondary);
+  border-top: none;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 1rem 0.75rem;
+}
+
+.admin-dashboard .table td {
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+}
+
+.admin-dashboard .table tbody tr:hover {
+  background: rgba(37, 99, 235, 0.05);
+}
+
+/* Admin Modal Styling */
+.admin-dashboard .modal-content {
+  border: none;
+  box-shadow: var(--shadow-xl);
+}
+
+.admin-dashboard .modal-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: white;
+  border-bottom: none;
+}
+
+.admin-dashboard .modal-title {
+  font-weight: 700;
+}
+
+.admin-dashboard .btn-close {
+  filter: invert(1);
+}
+
+/* Responsive Admin Dashboard */
+@media (max-width: 992px) {
+  .admin-header {
+    padding: 2rem 0 1.5rem;
+  }
+  
+  .admin-nav {
+    margin-bottom: 2rem;
+    position: static;
+  }
+  
+  .admin-nav .nav-link {
+    justify-content: center;
+  }
 }

@@ -14,7 +14,7 @@ import {
 } from 'react-bootstrap';
 import { GET_PLAN, GET_OPTIONS, GET_INTERIOR_PACKAGES, GET_LOT_PREMIUMS } from '../utils/queries';
 import { SAVE_USER_HOME } from '../utils/mutations';
-import { useAuth } from '../utils/auth';
+
 
 interface CustomizationState {
     elevation: any;
@@ -30,7 +30,7 @@ interface CustomizationState {
 const CustomizeHome = () => {
     const { planId } = useParams<{ planId: string }>();
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
+    
 
     const [customization, setCustomization] = useState<CustomizationState>({
         elevation: null,
@@ -133,10 +133,6 @@ const CustomizeHome = () => {
     };
 
     const handleSaveHome = async () => {
-        if (!isAuthenticated) {
-            setShowAlert(true);
-            return;
-        }
 
         try {
             await saveHome({

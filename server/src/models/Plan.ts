@@ -6,7 +6,12 @@ import type { LotPremiumDocument } from './LotPremium.js';
 export interface PlanTypeDocument extends Document {
   planType: number;
   name: string;
+  bedrooms: number;
+  bathrooms: number;
+  squareFootage: number;
+  garageType: string;
   basePrice: number;
+  description?: string;
   elevations: OptionDocument[];
   colorScheme: number[];
   interiors: InteriorPackageDocument[];
@@ -20,7 +25,12 @@ export interface PlanTypeDocument extends Document {
 const planTypeSchema = new Schema({
   planType: { type: Number, required: true, unique: true },
   name: { type: String, required: true },
+  bedrooms: { type: Number, required: true },
+  bathrooms: { type: Number, required: true },
+  squareFootage: { type: Number, required: true },
+  garageType: { type: String, required: true },
   basePrice: { type: Number, required: true },
+  description: { type: String },
   elevations: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
   colorScheme: [Number],
   interiors: [{ type: Schema.Types.ObjectId, ref: 'InteriorPackage' }],
