@@ -6,6 +6,7 @@ import App from './App.jsx'
 import Home from './pages/Home.js'
 import SavedHomes from './pages/SavedHomes'
 import CustomizeHome from './pages/CustomizeHome'
+import AdminDashboard from './pages/AdminDashboard'
 import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -19,7 +20,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <ProtectedRoute><Home /></ProtectedRoute>
+        element: <Home />
       },
       {
         path: '/login',
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
       {
         path: '/customize/:planId',
         element: <ProtectedRoute><CustomizeHome /></ProtectedRoute>
+      },
+      {
+        path: '/admin',
+        element: <AdminDashboard />
       }
     ]
   }

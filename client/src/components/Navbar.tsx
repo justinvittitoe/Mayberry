@@ -6,7 +6,7 @@ const AppNavbar = () => {
   ;
 
   return (
-      <Navbar bg='dark' variant='dark' expand='lg'>
+      <Navbar bg='light' variant='light' expand='lg'>
         <Container fluid>
           <Navbar.Brand as={Link} to='/'>
           🏠 Mayberry Home Builder
@@ -23,6 +23,12 @@ const AppNavbar = () => {
                 <Nav.Link as={Link} to='/saved-homes'>
                   My Saved Homes
                   </Nav.Link>
+                  {/* Show admin link only for admin users */}
+                  {AuthService.getProfile()?.role === 'admin' && (
+                    <Nav.Link as={Link} to='/admin'>
+                      Admin Dashboard
+                    </Nav.Link>
+                  )}
                 <Nav.Link onClick={AuthService.logout}>Logout</Nav.Link>
                 </>
               ) : (

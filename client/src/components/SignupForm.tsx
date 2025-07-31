@@ -118,6 +118,19 @@ const SignupForm = () => {
                     <Form.Control.Feedback type='invalid'>Password is required!</Form.Control.Feedback>
                   </Form.Group>
 
+                  <Form.Group className='mb-4'>
+                    <Form.Label htmlFor='password'>Confirm Password</Form.Label>
+                    <Form.Control
+                      type='confirmPassword'
+                      placeholder='Repeat password'
+                      name='confirmPassword'
+                      onChange={handleInputChange}
+                      value={userFormData.confirmPassword}
+                      required
+                    />
+                    <Form.Control.Feedback type='invalid'>Password is required!</Form.Control.Feedback>
+                  </Form.Group>
+
                   <Button
                     disabled={!(userFormData.username && userFormData.email && userFormData.password) || loading}
                     type='submit'

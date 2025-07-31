@@ -94,16 +94,38 @@ const resolvers = {
 
         // Plan queries
         plans: async (): Promise<PlanType[]> => {
-            return (await Plan.find({})).map(toPlanType);
+            const plans = await Plan.find({})
+                .populate('elevations')
+                .populate('interiors')
+                .populate('structural')
+                .populate('additional')
+                .populate('kitchenAppliance')
+                .populate('laundryAppliance')
+                .populate('lotPremium');
+            return plans.map(toPlanType);
         },
 
         plan: async (_parent: unknown, args: { id: string }): Promise<PlanType | null> => {
-            const plan = await Plan.findById(args.id);
+            const plan = await Plan.findById(args.id)
+                .populate('elevations')
+                .populate('interiors')
+                .populate('structural')
+                .populate('additional')
+                .populate('kitchenAppliance')
+                .populate('laundryAppliance')
+                .populate('lotPremium');
             return plan ? toPlanType(plan) : null;
         },
 
         planByType: async (_parent: unknown, args: { planType: number }): Promise<PlanType | null> => {
-            const plan = await Plan.findOne({ planType: args.planType });
+            const plan = await Plan.findOne({ planType: args.planType })
+                .populate('elevations')
+                .populate('interiors')
+                .populate('structural')
+                .populate('additional')
+                .populate('kitchenAppliance')
+                .populate('laundryAppliance')
+                .populate('lotPremium');
             return plan ? toPlanType(plan) : null;
         },
 
