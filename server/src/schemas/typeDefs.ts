@@ -23,14 +23,24 @@ const typeDefs = gql`
         _id: ID
         name: String!
         totalPrice: Float!
-        options: [Option]
+        fixtures: [Option]
+        lvp: [Option]
+        carpet: [Option]
+        backsplash: [Option]
+        masterBathTile: [Option]
+        countertop: [Option]
+        primaryCabinets: [Option]
+        secondaryCabinets: [Option]
+        upgrade: Boolean
     }
     
     type LotPremium {
         _id: ID
-        name: String!
+        filing: Int!
+        lot: Int!
+        width: Int!
+        length: Int!
         price: Float!
-        description: String
     }
     
     type Plan {
@@ -132,13 +142,23 @@ const typeDefs = gql`
     input InteriorPackageInput {
         name: String!
         totalPrice: Float!
-        options: [OptionInput]
+        fixtures: [OptionInput]
+        lvp: [OptionInput]
+        carpet: [OptionInput]
+        backsplash: [OptionInput]
+        masterBathTile: [OptionInput]
+        countertop: [OptionInput]
+        primaryCabinets: [OptionInput]
+        secondaryCabinets: [OptionInput]
+        upgrade: Boolean
     }
     
     input LotPremiumInput {
-        name: String!
+        filing: Int!
+        lot: Int!
+        width: Float!
+        length: Float!
         price: Float!
-        description: String
     }
     
     input PlanInput {

@@ -249,14 +249,70 @@ export const CREATE_INTERIOR_PACKAGE = gql`
             _id
             name
             totalPrice
-            fitures
-            lvp
-            carpet
-            kitchenBackspash
-            masterBathTile
-            countertop
-            primaryCabinets
-            secondaryCabinets
+            fixtures {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            lvp {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            carpet {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            backsplash {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            masterBathTile {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            countertop {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            primaryCabinets {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            secondaryCabinets {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
             upgrade
         }
     }
@@ -268,14 +324,70 @@ export const UPDATE_INTERIOR_PACKAGE = gql`
             _id
             name
             totalPrice
-            fitures
-            lvp
-            carpet
-            kitchenBackspash
-            masterBathTile
-            countertop
-            primaryCabinets
-            secondaryCabinets
+            fixtures {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            lvp {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            carpet {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            backsplash {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            masterBathTile {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            countertop {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            primaryCabinets {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
+            secondaryCabinets {
+                _id
+                name
+                price
+                classification
+                description
+                img
+            }
             upgrade
         }
     }

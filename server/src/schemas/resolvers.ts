@@ -150,7 +150,17 @@ const resolvers = {
 
         // Interior package queries
         interiorPackages: async (): Promise<InteriorPackageType[]> => {
-            return (await InteriorPackage.find({})).map(toInteriorPackageType);
+            const interior = await InteriorPackage.find({})
+                .populate('fixtures')
+                .populate('lvp')
+                .populate('carpet')
+                .populate('backsplash')
+                .populate('masterBathTile')
+                .populate('countertop')
+                .populate('primaryCabinets')
+                .populate('secondaryCabinets')
+            
+            return interior.map(toInteriorPackageType);
         },
 
         // Lot premium queries
