@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Modal, Form, Alert, Table, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, Form, Alert, Table, Badge, Tabs, Tab } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_PLANS, GET_OPTIONS, GET_INTERIOR_PACKAGES, GET_LOT_PREMIUMS } from '../utils/queries';
 import { CREATE_PLAN, UPDATE_PLAN, DELETE_PLAN } from '../utils/mutations';
+import OptionSelector from './OptionSelector';
+import { calculatePlanTotalPricing, formatPrice, getPriceBreakdown, getSelectedOptionsCount } from '../utils/priceCalculator';
+import './AdminPlanManager.css';
 
 interface Plan {
   _id: string;
@@ -40,6 +43,18 @@ const AdminPlanManager = () => {
     description: '',
     colorScheme: [1, 2, 3]
   });
+
+  const [selectedOptions, setSelectedOptions] = useState({
+    elevations: [] as string[],
+    interiors: [] as string[],
+    structural: [] as string[],
+    additional: [] as string[],
+    kitchenAppliance: [] as string[],
+    laundryAppliance: [] as string[],
+    lotPremiums: [] as string[]
+  });
+
+  const [activeTab, setActiveTab] = useState<string>('basic');
 
   // Queries
   const { data: plansData, loading: plansLoading, refetch: refetchPlans } = useQuery(GET_PLANS);
@@ -94,6 +109,15 @@ const AdminPlanManager = () => {
     if (plan) {
       setSelectedPlan(plan);
       setFormData(plan);
+      setSelectedOptions({
+        elevations: plan.elevations?.map(e => e._id) || [],
+        interiors: plan.interiors?.map(i => i._id) || [],
+        structural: plan.structural?.map(s => s._id) || [],
+        additional: plan.additional?.map(a => a._id) || [],
+        kitchenAppliance: plan.kitchenAppliance?.map(k => k._id) || [],
+        laundryAppliance: plan.laundryAppliance?.map(l => l._id) || [],
+        lotPremiums: plan.lotPremium?.map(lp => lp._id) || []
+      });
       setIsEditing(true);
     } else {
       setSelectedPlan(null);
@@ -108,8 +132,18 @@ const AdminPlanManager = () => {
         description: '',
         colorScheme: [1, 2, 3]
       });
+      setSelectedOptions({
+        elevations: [],
+        interiors: [],
+        structural: [],
+        additional: [],
+        kitchenAppliance: [],
+        laundryAppliance: [],
+        lotPremiums: []
+      });
       setIsEditing(false);
     }
+    setActiveTab('basic');
     setShowModal(true);
   };
 
@@ -117,6 +151,16 @@ const AdminPlanManager = () => {
     setShowModal(false);
     setSelectedPlan(null);
     setFormData({});
+    setSelectedOptions({
+      elevations: [],
+      interiors: [],
+      structural: [],
+      additional: [],
+      kitchenAppliance: [],
+      laundryAppliance: [],
+      lotPremiums: []
+    });
+    setActiveTab('basic');
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -126,6 +170,55 @@ const AdminPlanManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Convert selected option IDs to option inputs
+    const getOptionInputs = (selectedIds: string[], availableOptions: any[]) => {
+      return selectedIds.map(id => {
+        const option = availableOptions.find(opt => opt._id === id);
+        if (!option) return null;
+        return {
+          name: option.name,
+          price: option.price || option.totalPrice,
+          classification: option.classification,
+          description: option.description,
+          img: option.img
+        };
+      }).filter(Boolean);
+    };
+
+    const getLotPremiumInputs = (selectedIds: string[], availableLots: any[]) => {
+      return selectedIds.map(id => {
+        const lot = availableLots.find(l => l._id === id);
+        if (!lot) return null;
+        return {
+          filing: lot.filing,
+          lot: lot.lot,
+          width: lot.width,
+          length: lot.length,
+          price: lot.price
+        };
+      }).filter(Boolean);
+    };
+
+    const getInteriorInputs = (selectedIds: string[], availableInteriors: any[]) => {
+      return selectedIds.map(id => {
+        const interior = availableInteriors.find(int => int._id === id);
+        if (!interior) return null;
+        return {
+          name: interior.name,
+          totalPrice: interior.totalPrice,
+          fixtures: interior.fixtures || [],
+          lvp: interior.lvp || [],
+          carpet: interior.carpet || [],
+          backsplash: interior.backsplash || [],
+          masterBathTile: interior.masterBathTile || [],
+          countertop: interior.countertop || [],
+          primaryCabinets: interior.primaryCabinets || [],
+          secondaryCabinets: interior.secondaryCabinets || [],
+          upgrade: interior.upgrade || false
+        };
+      }).filter(Boolean);
+    };
+
     const planInput = {
       planType: formData.planType!,
       name: formData.name!,
@@ -136,13 +229,13 @@ const AdminPlanManager = () => {
       basePrice: formData.basePrice!,
       description: formData.description || '',
       colorScheme: formData.colorScheme || [1, 2, 3],
-      elevations: [],
-      interiors: [],
-      structural: [],
-      additional: [],
-      kitchenAppliance: [],
-      laundryAppliance: [],
-      lotPremium: []
+      elevations: getOptionInputs(selectedOptions.elevations, options),
+      interiors: getInteriorInputs(selectedOptions.interiors, interiors),
+      structural: getOptionInputs(selectedOptions.structural, options),
+      additional: getOptionInputs(selectedOptions.additional, options),
+      kitchenAppliance: getOptionInputs(selectedOptions.kitchenAppliance, options),
+      laundryAppliance: getOptionInputs(selectedOptions.laundryAppliance, options),
+      lotPremium: getLotPremiumInputs(selectedOptions.lotPremiums, lotPremiums)
     };
 
     if (isEditing && selectedPlan) {
@@ -169,7 +262,28 @@ const AdminPlanManager = () => {
     }
   };
 
-  const formatPrice = (price: number) => {
+  const handleOptionSelectionChange = (category: keyof typeof selectedOptions, selectedIds: string[]) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [category]: selectedIds
+    }));
+  };
+
+  // Calculate current plan pricing
+  const currentPricing = calculatePlanTotalPricing(
+    formData.basePrice || 0,
+    selectedOptions,
+    {
+      options,
+      interiors,
+      lotPremiums
+    }
+  );
+
+  const priceBreakdown = getPriceBreakdown(currentPricing);
+  const totalSelectedOptions = getSelectedOptionsCount(selectedOptions);
+
+  const formatPriceDisplay = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -257,7 +371,7 @@ const AdminPlanManager = () => {
                       </td>
                       <td>
                         <div className="fw-semibold text-success">
-                          {formatPrice(plan.basePrice)}
+                          {formatPriceDisplay(plan.basePrice)}
                         </div>
                       </td>
                       <td>
@@ -294,12 +408,35 @@ const AdminPlanManager = () => {
       </Row>
 
       {/* Create/Edit Plan Modal */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
+      <Modal show={showModal} onHide={handleCloseModal} size="xl" scrollable>
         <Modal.Header closeButton>
-          <Modal.Title>{isEditing ? 'Edit Floor Plan' : 'Create New Floor Plan'}</Modal.Title>
+          <Modal.Title className="d-flex justify-content-between align-items-center w-100">
+            <span>{isEditing ? 'Edit Floor Plan' : 'Create New Floor Plan'}</span>
+            <div className="d-flex align-items-center gap-3">
+              {totalSelectedOptions > 0 && (
+                <Badge bg="info">
+                  {totalSelectedOptions} options selected
+                </Badge>
+              )}
+              <div className="text-end">
+                <div className="small text-muted">Estimated Total</div>
+                <div className="fw-bold text-primary h5 mb-0">
+                  {formatPrice(currentPricing.grandTotal)}
+                </div>
+              </div>
+            </div>
+          </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
-          <Modal.Body>
+          <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            <div className="tabs-container">
+              <Tabs
+                activeKey={activeTab}
+                onSelect={(k) => setActiveTab(k || 'basic')}
+                className="mb-4"
+              >
+              <Tab eventKey="basic" title="Basic Info">
+                <div className="basic-info-tab">
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -410,6 +547,164 @@ const AdminPlanManager = () => {
                 onChange={(e) => handleInputChange('description', e.target.value)}
               />
             </Form.Group>
+                </div>
+              </Tab>
+
+              <Tab eventKey="elevations" title="Elevations">
+                <OptionSelector
+                  title="Elevation Options"
+                  options={options.filter(opt => opt.classification === 'elevation')}
+                  selectedIds={selectedOptions.elevations}
+                  onSelectionChange={(ids) => handleOptionSelectionChange('elevations', ids)}
+                  type="option"
+                  multiSelect={true}
+                />
+              </Tab>
+
+              <Tab eventKey="interiors" title="Interior Packages">
+                <OptionSelector
+                  title="Interior Package Options"
+                  options={interiors}
+                  selectedIds={selectedOptions.interiors}
+                  onSelectionChange={(ids) => handleOptionSelectionChange('interiors', ids)}
+                  type="interior"
+                  multiSelect={true}
+                />
+              </Tab>
+
+              <Tab eventKey="structural" title="Structural">
+                <OptionSelector
+                  title="Structural Options"
+                  options={options.filter(opt => opt.classification === 'structural')}
+                  selectedIds={selectedOptions.structural}
+                  onSelectionChange={(ids) => handleOptionSelectionChange('structural', ids)}
+                  type="option"
+                  multiSelect={true}
+                />
+              </Tab>
+
+              <Tab eventKey="additional" title="Additional">
+                <OptionSelector
+                  title="Additional Options"
+                  options={options.filter(opt => opt.classification === 'additional')}
+                  selectedIds={selectedOptions.additional}
+                  onSelectionChange={(ids) => handleOptionSelectionChange('additional', ids)}
+                  type="option"
+                  multiSelect={true}
+                />
+              </Tab>
+
+              <Tab eventKey="appliances" title="Appliances">
+                <Row>
+                  <Col md={6}>
+                    <OptionSelector
+                      title="Kitchen Appliances"
+                      options={options.filter(opt => opt.classification === 'kitchen-appliance')}
+                      selectedIds={selectedOptions.kitchenAppliance}
+                      onSelectionChange={(ids) => handleOptionSelectionChange('kitchenAppliance', ids)}
+                      type="option"
+                      multiSelect={true}
+                    />
+                  </Col>
+                  <Col md={6}>
+                    <OptionSelector
+                      title="Laundry Appliances"
+                      options={options.filter(opt => opt.classification === 'laundry-appliance')}
+                      selectedIds={selectedOptions.laundryAppliance}
+                      onSelectionChange={(ids) => handleOptionSelectionChange('laundryAppliance', ids)}
+                      type="option"
+                      multiSelect={true}
+                    />
+                  </Col>
+                </Row>
+              </Tab>
+
+              <Tab eventKey="lots" title="Lot Premiums">
+                <OptionSelector
+                  title="Available Lot Premiums"
+                  options={lotPremiums}
+                  selectedIds={selectedOptions.lotPremiums}
+                  onSelectionChange={(ids) => handleOptionSelectionChange('lotPremiums', ids)}
+                  type="lot"
+                  multiSelect={true}
+                />
+              </Tab>
+
+              <Tab eventKey="pricing" title="Pricing Summary">
+                <div className="pricing-summary">
+                  <Row>
+                    <Col md={8}>
+                      <h5 className="mb-3">Price Breakdown</h5>
+                      <Table striped>
+                        <tbody>
+                          {priceBreakdown.map((item, index) => (
+                            <tr key={index} className={item.isBase ? 'table-primary' : ''}>
+                              <td className={item.isBase ? 'fw-bold' : ''}>{item.label}</td>
+                              <td className="text-end">
+                                <span className={item.isBase ? 'fw-bold' : ''}>
+                                  {formatPrice(item.amount)}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="table-success">
+                            <td className="fw-bold">Grand Total</td>
+                            <td className="text-end fw-bold h5">
+                              {formatPrice(currentPricing.grandTotal)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </Table>
+                    </Col>
+                    <Col md={4}>
+                      <div className="summary-card">
+                        <Card className="bg-light">
+                          <Card.Body>
+                            <h6 className="mb-3">Selection Summary</h6>
+                            <div className="d-flex justify-content-between mb-2">
+                              <span>Elevations:</span>
+                              <Badge bg="secondary">{selectedOptions.elevations.length}</Badge>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2">
+                              <span>Interior Packages:</span>
+                              <Badge bg="secondary">{selectedOptions.interiors.length}</Badge>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2">
+                              <span>Structural:</span>
+                              <Badge bg="secondary">{selectedOptions.structural.length}</Badge>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2">
+                              <span>Additional:</span>
+                              <Badge bg="secondary">{selectedOptions.additional.length}</Badge>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2">
+                              <span>Kitchen Appliances:</span>
+                              <Badge bg="secondary">{selectedOptions.kitchenAppliance.length}</Badge>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2">
+                              <span>Laundry Appliances:</span>
+                              <Badge bg="secondary">{selectedOptions.laundryAppliance.length}</Badge>
+                            </div>
+                            <div className="d-flex justify-content-between mb-3">
+                              <span>Lot Premiums:</span>
+                              <Badge bg="secondary">{selectedOptions.lotPremiums.length}</Badge>
+                            </div>
+                            <hr />
+                            <div className="d-flex justify-content-between">
+                              <strong>Total Options:</strong>
+                              <Badge bg="primary">{totalSelectedOptions}</Badge>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              </Tab>
+              </Tabs>
+            </div>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>

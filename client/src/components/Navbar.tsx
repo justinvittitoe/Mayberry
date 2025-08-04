@@ -23,7 +23,7 @@ const AppNavbar = () => {
                   My Saved Homes
                   </Nav.Link>
                   {/* Show admin link only for admin users */}
-                  {AuthService.getProfile()?.role === 'admin' && (
+                  {AuthService.getProfile()?.data.role === 'admin' && (
                     <Nav.Link as={Link} to='/admin'>
                       Admin Dashboard
                     </Nav.Link>
