@@ -43,6 +43,13 @@ export const calculateOptionTotal = (
   }, 0);
 };
 
+// New function for calculating totals from actual option objects
+export const calculateDirectOptionTotal = (options: any[]): number => {
+  return options.reduce((total, option) => {
+    return total + (option?.price || 0);
+  }, 0);
+};
+
 export const calculateInteriorTotal = (
   selectedIds: string[],
   availableInteriors: InteriorPackage[]
@@ -53,12 +60,26 @@ export const calculateInteriorTotal = (
   }, 0);
 };
 
+// New function for calculating totals from actual interior objects
+export const calculateDirectInteriorTotal = (interiors: any[]): number => {
+  return interiors.reduce((total, interior) => {
+    return total + (interior?.totalPrice || 0);
+  }, 0);
+};
+
 export const calculateLotPremiumTotal = (
   selectedIds: string[],
   availableLots: LotPremium[]
 ): number => {
   return selectedIds.reduce((total, id) => {
     const lot = availableLots.find(lot => lot._id === id);
+    return total + (lot?.price || 0);
+  }, 0);
+};
+
+// New function for calculating totals from actual lot premium objects
+export const calculateDirectLotPremiumTotal = (lots: any[]): number => {
+  return lots.reduce((total, lot) => {
     return total + (lot?.price || 0);
   }, 0);
 };
@@ -87,6 +108,49 @@ export const calculatePlanTotalPricing = (
   const kitchenApplianceTotal = calculateOptionTotal(selectedOptions.kitchenAppliance, availableData.options);
   const laundryApplianceTotal = calculateOptionTotal(selectedOptions.laundryAppliance, availableData.options);
   const lotPremiumTotal = calculateLotPremiumTotal(selectedOptions.lotPremiums, availableData.lotPremiums);
+
+  const grandTotal = basePrice + 
+    elevationsTotal + 
+    interiorsTotal + 
+    structuralTotal + 
+    additionalTotal + 
+    kitchenApplianceTotal + 
+    laundryApplianceTotal + 
+    lotPremiumTotal;
+
+  return {
+    basePrice,
+    elevationsTotal,
+    interiorsTotal,
+    structuralTotal,
+    additionalTotal,
+    kitchenApplianceTotal,
+    laundryApplianceTotal,
+    lotPremiumTotal,
+    grandTotal
+  };
+};
+
+// New function for direct option objects
+export const calculatePlanDirectPricing = (
+  basePrice: number,
+  selectedOptions: {
+    elevations: any[];
+    interiors: any[];
+    structural: any[];
+    additional: any[];
+    kitchenAppliance: any[];
+    laundryAppliance: any[];
+    lotPremiums: any[];
+  }
+): PlanPricing => {
+  const elevationsTotal = calculateDirectOptionTotal(selectedOptions.elevations);
+  const interiorsTotal = calculateDirectInteriorTotal(selectedOptions.interiors);
+  const structuralTotal = calculateDirectOptionTotal(selectedOptions.structural);
+  const additionalTotal = calculateDirectOptionTotal(selectedOptions.additional);
+  const kitchenApplianceTotal = calculateDirectOptionTotal(selectedOptions.kitchenAppliance);
+  const laundryApplianceTotal = calculateDirectOptionTotal(selectedOptions.laundryAppliance);
+  const lotPremiumTotal = calculateDirectLotPremiumTotal(selectedOptions.lotPremiums);
 
   const grandTotal = basePrice + 
     elevationsTotal + 
@@ -142,6 +206,19 @@ export const getSelectedOptionsCount = (selectedOptions: {
   kitchenAppliance: string[];
   laundryAppliance: string[];
   lotPremiums: string[];
+}): number => {
+  return Object.values(selectedOptions).reduce((total, arr) => total + arr.length, 0);
+};
+
+// New function for direct option objects
+export const getDirectOptionsCount = (selectedOptions: {
+  elevations: any[];
+  interiors: any[];
+  structural: any[];
+  additional: any[];
+  kitchenAppliance: any[];
+  laundryAppliance: any[];
+  lotPremiums: any[];
 }): number => {
   return Object.values(selectedOptions).reduce((total, arr) => total + arr.length, 0);
 };

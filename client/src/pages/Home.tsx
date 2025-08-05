@@ -26,11 +26,12 @@ const Home = () => {
     basePrice: plan.basePrice,
     description: plan.description
   }));
-
+  //Floor plan selected state management
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
   };
-
+  
+  //Customize selected floor plan
   const handleCustomizeClick = () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: { pathname: `/customize/${selectedPlan.id}` } } });
@@ -38,11 +39,11 @@ const Home = () => {
     }
     navigate(`/customize/${selectedPlan.id}`);
   };
-
+  //loading
   if (loading) {
     return <LoadingSpinner message="Loading available plans..." fullPage />;
   }
-
+  //Error loading
   if (error) {
     return (
       <div className="error-container">
@@ -97,7 +98,7 @@ const Home = () => {
       </div>
 
       {/* Admin Access Section */}
-      {isAuthenticated && AuthService.getProfile()?.role === 'admin' && (
+      {isAuthenticated && AuthService.getProfile()?.data.role === 'admin' && (
         <div className="admin-access-section">
           <Container>
             <Row className="justify-content-center">

@@ -3,8 +3,8 @@ import { Container, Row, Col, Card, Button, Modal, Form, Alert, Table, Badge, Ta
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_PLANS, GET_OPTIONS, GET_INTERIOR_PACKAGES, GET_LOT_PREMIUMS } from '../utils/queries';
 import { CREATE_PLAN, UPDATE_PLAN, DELETE_PLAN } from '../utils/mutations';
-import OptionSelector from './OptionSelector';
-import { calculatePlanTotalPricing, formatPrice, getPriceBreakdown, getSelectedOptionsCount } from '../utils/priceCalculator';
+import PlanOptionEditor from './PlanOptionEditor';
+import { calculatePlanDirectPricing, formatPrice, getPriceBreakdown, getDirectOptionsCount } from '../utils/priceCalculator';
 import './AdminPlanManager.css';
 
 interface Plan {
@@ -45,13 +45,13 @@ const AdminPlanManager = () => {
   });
 
   const [selectedOptions, setSelectedOptions] = useState({
-    elevations: [] as string[],
-    interiors: [] as string[],
-    structural: [] as string[],
-    additional: [] as string[],
-    kitchenAppliance: [] as string[],
-    laundryAppliance: [] as string[],
-    lotPremiums: [] as string[]
+    elevations: [] as any[],
+    interiors: [] as any[],
+    structural: [] as any[],
+    additional: [] as any[],
+    kitchenAppliance: [] as any[],
+    laundryAppliance: [] as any[],
+    lotPremiums: [] as any[]
   });
 
   const [activeTab, setActiveTab] = useState<string>('basic');
@@ -100,29 +100,35 @@ const AdminPlanManager = () => {
   const interiors = interiorsData?.interiorPackages || [];
   const lotPremiums = lotPremumsData?.lotPremiums || [];
 
+  // Ensure all data is available before allowing interactions
+  const isDataReady = !plansLoading && options && interiors && lotPremiums;
+
   const showAlert = (type: string, message: string) => {
     setAlert({ type, message });
     setTimeout(() => setAlert(null), 5000);
   };
 
   const handleShowModal = (plan?: Plan) => {
+    // Ensure data is loaded before opening modal
+    if (!isDataReady) return;
+    
     if (plan) {
       setSelectedPlan(plan);
       setFormData(plan);
       setSelectedOptions({
-        elevations: plan.elevations?.map(e => e._id) || [],
-        interiors: plan.interiors?.map(i => i._id) || [],
-        structural: plan.structural?.map(s => s._id) || [],
-        additional: plan.additional?.map(a => a._id) || [],
-        kitchenAppliance: plan.kitchenAppliance?.map(k => k._id) || [],
-        laundryAppliance: plan.laundryAppliance?.map(l => l._id) || [],
-        lotPremiums: plan.lotPremium?.map(lp => lp._id) || []
+        elevations: plan.elevations || [],
+        interiors: plan.interiors || [],
+        structural: plan.structural || [],
+        additional: plan.additional || [],
+        kitchenAppliance: plan.kitchenAppliance || [],
+        laundryAppliance: plan.laundryAppliance || [],
+        lotPremiums: plan.lotPremium || []
       });
       setIsEditing(true);
     } else {
       setSelectedPlan(null);
       setFormData({
-        planType: Math.max(...plans.map((p: Plan) => p.planType), -1) + 1,
+        planType: plans.length > 0 ? Math.max(...plans.map((p: Plan) => p.planType), -1) + 1 : 1,
         name: '',
         bedrooms: 3,
         bathrooms: 2,
@@ -170,53 +176,37 @@ const AdminPlanManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Convert selected option IDs to option inputs
-    const getOptionInputs = (selectedIds: string[], availableOptions: any[]) => {
-      return selectedIds.map(id => {
-        const option = availableOptions.find(opt => opt._id === id);
-        if (!option) return null;
-        return {
-          name: option.name,
-          price: option.price || option.totalPrice,
-          classification: option.classification,
-          description: option.description,
-          img: option.img
-        };
-      }).filter(Boolean);
+    // Use plan-specific option data directly
+    const getCleanedOptions = (options: any[]) => {
+      return options.map(option => {
+        // Remove any _id fields to ensure these are treated as new data
+        const { _id, ...cleanOption } = option;
+        return cleanOption;
+      });
     };
 
-    const getLotPremiumInputs = (selectedIds: string[], availableLots: any[]) => {
-      return selectedIds.map(id => {
-        const lot = availableLots.find(l => l._id === id);
-        if (!lot) return null;
+    const getCleanedInteriors = (interiors: any[]) => {
+      return interiors.map(interior => {
+        const { _id, ...cleanInterior } = interior;
         return {
-          filing: lot.filing,
-          lot: lot.lot,
-          width: lot.width,
-          length: lot.length,
-          price: lot.price
+          ...cleanInterior,
+          fixtures: cleanInterior.fixtures?.map(({ _id, ...f }: any) => f) || [],
+          lvp: cleanInterior.lvp?.map(({ _id, ...l }: any) => l) || [],
+          carpet: cleanInterior.carpet?.map(({ _id, ...c }: any) => c) || [],
+          backsplash: cleanInterior.backsplash?.map(({ _id, ...b }: any) => b) || [],
+          masterBathTile: cleanInterior.masterBathTile?.map(({ _id, ...m }: any) => m) || [],
+          countertop: cleanInterior.countertop?.map(({ _id, ...ct }: any) => ct) || [],
+          primaryCabinets: cleanInterior.primaryCabinets?.map(({ _id, ...pc }: any) => pc) || [],
+          secondaryCabinets: cleanInterior.secondaryCabinets?.map(({ _id, ...sc }: any) => sc) || []
         };
-      }).filter(Boolean);
+      });
     };
 
-    const getInteriorInputs = (selectedIds: string[], availableInteriors: any[]) => {
-      return selectedIds.map(id => {
-        const interior = availableInteriors.find(int => int._id === id);
-        if (!interior) return null;
-        return {
-          name: interior.name,
-          totalPrice: interior.totalPrice,
-          fixtures: interior.fixtures || [],
-          lvp: interior.lvp || [],
-          carpet: interior.carpet || [],
-          backsplash: interior.backsplash || [],
-          masterBathTile: interior.masterBathTile || [],
-          countertop: interior.countertop || [],
-          primaryCabinets: interior.primaryCabinets || [],
-          secondaryCabinets: interior.secondaryCabinets || [],
-          upgrade: interior.upgrade || false
-        };
-      }).filter(Boolean);
+    const getCleanedLotPremiums = (lots: any[]) => {
+      return lots.map(lot => {
+        const { _id, ...cleanLot } = lot;
+        return cleanLot;
+      });
     };
 
     const planInput = {
@@ -229,13 +219,13 @@ const AdminPlanManager = () => {
       basePrice: formData.basePrice!,
       description: formData.description || '',
       colorScheme: formData.colorScheme || [1, 2, 3],
-      elevations: getOptionInputs(selectedOptions.elevations, options),
-      interiors: getInteriorInputs(selectedOptions.interiors, interiors),
-      structural: getOptionInputs(selectedOptions.structural, options),
-      additional: getOptionInputs(selectedOptions.additional, options),
-      kitchenAppliance: getOptionInputs(selectedOptions.kitchenAppliance, options),
-      laundryAppliance: getOptionInputs(selectedOptions.laundryAppliance, options),
-      lotPremium: getLotPremiumInputs(selectedOptions.lotPremiums, lotPremiums)
+      elevations: getCleanedOptions(selectedOptions.elevations),
+      interiors: getCleanedInteriors(selectedOptions.interiors),
+      structural: getCleanedOptions(selectedOptions.structural),
+      additional: getCleanedOptions(selectedOptions.additional),
+      kitchenAppliance: getCleanedOptions(selectedOptions.kitchenAppliance),
+      laundryAppliance: getCleanedOptions(selectedOptions.laundryAppliance),
+      lotPremium: getCleanedLotPremiums(selectedOptions.lotPremiums)
     };
 
     if (isEditing && selectedPlan) {
@@ -262,26 +252,21 @@ const AdminPlanManager = () => {
     }
   };
 
-  const handleOptionSelectionChange = (category: keyof typeof selectedOptions, selectedIds: string[]) => {
+  const handleOptionSelectionChange = (category: keyof typeof selectedOptions, newOptions: any[]) => {
     setSelectedOptions(prev => ({
       ...prev,
-      [category]: selectedIds
+      [category]: newOptions
     }));
   };
 
   // Calculate current plan pricing
-  const currentPricing = calculatePlanTotalPricing(
+  const currentPricing = calculatePlanDirectPricing(
     formData.basePrice || 0,
-    selectedOptions,
-    {
-      options,
-      interiors,
-      lotPremiums
-    }
+    selectedOptions
   );
 
   const priceBreakdown = getPriceBreakdown(currentPricing);
-  const totalSelectedOptions = getSelectedOptionsCount(selectedOptions);
+  const totalSelectedOptions = getDirectOptionsCount(selectedOptions);
 
   const formatPriceDisplay = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -307,7 +292,11 @@ const AdminPlanManager = () => {
         <Col>
           <div className="d-flex justify-content-between align-items-center">
             <h2 className="mb-0">Floor Plan Management</h2>
-            <Button variant="primary" onClick={() => handleShowModal()}>
+            <Button 
+              variant="primary" 
+              onClick={() => handleShowModal()}
+              disabled={!isDataReady}
+            >
               Add New Plan
             </Button>
           </div>
@@ -380,6 +369,7 @@ const AdminPlanManager = () => {
                             variant="outline-primary"
                             size="sm"
                             onClick={() => handleShowModal(plan)}
+                            disabled={!isDataReady}
                           >
                             Edit
                           </Button>
@@ -551,82 +541,75 @@ const AdminPlanManager = () => {
               </Tab>
 
               <Tab eventKey="elevations" title="Elevations">
-                <OptionSelector
+                <PlanOptionEditor
                   title="Elevation Options"
-                  options={options.filter(opt => opt.classification === 'elevation')}
-                  selectedIds={selectedOptions.elevations}
-                  onSelectionChange={(ids) => handleOptionSelectionChange('elevations', ids)}
+                  options={selectedOptions.elevations}
+                  onOptionsChange={(opts) => handleOptionSelectionChange('elevations', opts)}
+                  globalOptions={options.filter(opt => opt.classification === 'elevation')}
                   type="option"
-                  multiSelect={true}
                 />
               </Tab>
 
               <Tab eventKey="interiors" title="Interior Packages">
-                <OptionSelector
+                <PlanOptionEditor
                   title="Interior Package Options"
-                  options={interiors}
-                  selectedIds={selectedOptions.interiors}
-                  onSelectionChange={(ids) => handleOptionSelectionChange('interiors', ids)}
+                  options={selectedOptions.interiors}
+                  onOptionsChange={(opts) => handleOptionSelectionChange('interiors', opts)}
+                  globalOptions={interiors}
                   type="interior"
-                  multiSelect={true}
                 />
               </Tab>
 
               <Tab eventKey="structural" title="Structural">
-                <OptionSelector
+                <PlanOptionEditor
                   title="Structural Options"
-                  options={options.filter(opt => opt.classification === 'structural')}
-                  selectedIds={selectedOptions.structural}
-                  onSelectionChange={(ids) => handleOptionSelectionChange('structural', ids)}
+                  options={selectedOptions.structural}
+                  onOptionsChange={(opts) => handleOptionSelectionChange('structural', opts)}
+                  globalOptions={options.filter(opt => opt.classification === 'structural')}
                   type="option"
-                  multiSelect={true}
                 />
               </Tab>
 
               <Tab eventKey="additional" title="Additional">
-                <OptionSelector
+                <PlanOptionEditor
                   title="Additional Options"
-                  options={options.filter(opt => opt.classification === 'additional')}
-                  selectedIds={selectedOptions.additional}
-                  onSelectionChange={(ids) => handleOptionSelectionChange('additional', ids)}
+                  options={selectedOptions.additional}
+                  onOptionsChange={(opts) => handleOptionSelectionChange('additional', opts)}
+                  globalOptions={options.filter(opt => opt.classification === 'additional')}
                   type="option"
-                  multiSelect={true}
                 />
               </Tab>
 
               <Tab eventKey="appliances" title="Appliances">
                 <Row>
                   <Col md={6}>
-                    <OptionSelector
+                    <PlanOptionEditor
                       title="Kitchen Appliances"
-                      options={options.filter(opt => opt.classification === 'kitchen-appliance')}
-                      selectedIds={selectedOptions.kitchenAppliance}
-                      onSelectionChange={(ids) => handleOptionSelectionChange('kitchenAppliance', ids)}
+                      options={selectedOptions.kitchenAppliance}
+                      onOptionsChange={(opts) => handleOptionSelectionChange('kitchenAppliance', opts)}
+                      globalOptions={options.filter(opt => opt.classification === 'kitchen-appliance')}
                       type="option"
-                      multiSelect={true}
                     />
                   </Col>
                   <Col md={6}>
-                    <OptionSelector
+                    <PlanOptionEditor
                       title="Laundry Appliances"
-                      options={options.filter(opt => opt.classification === 'laundry-appliance')}
-                      selectedIds={selectedOptions.laundryAppliance}
-                      onSelectionChange={(ids) => handleOptionSelectionChange('laundryAppliance', ids)}
+                      options={selectedOptions.laundryAppliance}
+                      onOptionsChange={(opts) => handleOptionSelectionChange('laundryAppliance', opts)}
+                      globalOptions={options.filter(opt => opt.classification === 'laundry-appliance')}
                       type="option"
-                      multiSelect={true}
                     />
                   </Col>
                 </Row>
               </Tab>
 
               <Tab eventKey="lots" title="Lot Premiums">
-                <OptionSelector
+                <PlanOptionEditor
                   title="Available Lot Premiums"
-                  options={lotPremiums}
-                  selectedIds={selectedOptions.lotPremiums}
-                  onSelectionChange={(ids) => handleOptionSelectionChange('lotPremiums', ids)}
+                  options={selectedOptions.lotPremiums}
+                  onOptionsChange={(opts) => handleOptionSelectionChange('lotPremiums', opts)}
+                  globalOptions={lotPremiums}
                   type="lot"
-                  multiSelect={true}
                 />
               </Tab>
 
