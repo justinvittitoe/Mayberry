@@ -5,6 +5,7 @@ import { GET_PLANS, GET_OPTIONS, GET_INTERIOR_PACKAGES, GET_LOT_PREMIUMS } from 
 import { CREATE_PLAN, UPDATE_PLAN, DELETE_PLAN } from '../utils/mutations';
 import PlanOptionEditor from './PlanOptionEditor';
 import { calculatePlanDirectPricing, formatPrice, getPriceBreakdown, getDirectOptionsCount } from '../utils/priceCalculator';
+import { getCompatibleLots, getLotCompatibilityInfo } from '../utils/lotCompatibility';
 import './AdminPlanManager.css';
 
 interface Plan {
@@ -25,6 +26,8 @@ interface Plan {
   laundryAppliance?: any[];
   lotPremium?: any[];
   colorScheme?: number[];
+  width: number;
+  length: number;
 }
 
 const AdminPlanManager = () => {
@@ -41,7 +44,9 @@ const AdminPlanManager = () => {
     garageType: '2-Car Garage',
     basePrice: 300000,
     description: '',
-    colorScheme: [1, 2, 3]
+    colorScheme: [1, 2, 3],
+    width: 35,
+    length: 41,
   });
 
   const [selectedOptions, setSelectedOptions] = useState({
@@ -60,7 +65,7 @@ const AdminPlanManager = () => {
   const { data: plansData, loading: plansLoading, refetch: refetchPlans } = useQuery(GET_PLANS);
   const { data: optionsData } = useQuery(GET_OPTIONS);
   const { data: interiorsData } = useQuery(GET_INTERIOR_PACKAGES);
-  const { data: lotPremumsData } = useQuery(GET_LOT_PREMIUMS);
+  const { data: lotPremiumsData } = useQuery(GET_LOT_PREMIUMS);
 
   // Mutations
   const [createPlan] = useMutation(CREATE_PLAN, {
@@ -98,7 +103,7 @@ const AdminPlanManager = () => {
   const plans = plansData?.plans || [];
   const options = optionsData?.options || [];
   const interiors = interiorsData?.interiorPackages || [];
-  const lotPremiums = lotPremumsData?.lotPremiums || [];
+  const lotPremiums = lotPremiumsData?.lotPremiums || [];
 
   // Ensure all data is available before allowing interactions
   const isDataReady = !plansLoading && options && interiors && lotPremiums;
@@ -108,21 +113,28 @@ const AdminPlanManager = () => {
     setTimeout(() => setAlert(null), 5000);
   };
 
+  // Helper function to clean GraphQL objects and remove __typename
+  const cleanGraphQLObject = (obj: any) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    const { __typename, ...cleaned } = obj;
+    return cleaned;
+  };
+
   const handleShowModal = (plan?: Plan) => {
     // Ensure data is loaded before opening modal
     if (!isDataReady) return;
-    
+
     if (plan) {
       setSelectedPlan(plan);
       setFormData(plan);
       setSelectedOptions({
-        elevations: plan.elevations || [],
-        interiors: plan.interiors || [],
-        structural: plan.structural || [],
-        additional: plan.additional || [],
-        kitchenAppliance: plan.kitchenAppliance || [],
-        laundryAppliance: plan.laundryAppliance || [],
-        lotPremiums: plan.lotPremium || []
+        elevations: Array.isArray(plan.elevations) ? plan.elevations.map(opt => cleanGraphQLObject(opt)) : [],
+        interiors: Array.isArray(plan.interiors) ? plan.interiors.map(opt => cleanGraphQLObject(opt)) : [],
+        structural: Array.isArray(plan.structural) ? plan.structural.map(opt => cleanGraphQLObject(opt)) : [],
+        additional: Array.isArray(plan.additional) ? plan.additional.map(opt => cleanGraphQLObject(opt)) : [],
+        kitchenAppliance: Array.isArray(plan.kitchenAppliance) ? plan.kitchenAppliance.map(opt => cleanGraphQLObject(opt)) : [],
+        laundryAppliance: Array.isArray(plan.laundryAppliance) ? plan.laundryAppliance.map(opt => cleanGraphQLObject(opt)) : [],
+        lotPremiums: Array.isArray(plan.lotPremium) ? plan.lotPremium.map(opt => cleanGraphQLObject(opt)) : []
       });
       setIsEditing(true);
     } else {
@@ -175,7 +187,7 @@ const AdminPlanManager = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Use plan-specific option data directly
     const getCleanedOptions = (options: any[]) => {
       return options.map(option => {
@@ -219,6 +231,8 @@ const AdminPlanManager = () => {
       basePrice: formData.basePrice!,
       description: formData.description || '',
       colorScheme: formData.colorScheme || [1, 2, 3],
+      width: formData.width!,
+      length: formData.length!,
       elevations: getCleanedOptions(selectedOptions.elevations),
       interiors: getCleanedInteriors(selectedOptions.interiors),
       structural: getCleanedOptions(selectedOptions.structural),
@@ -268,6 +282,12 @@ const AdminPlanManager = () => {
   const priceBreakdown = getPriceBreakdown(currentPricing);
   const totalSelectedOptions = getDirectOptionsCount(selectedOptions);
 
+  // Filter lots based on floor plan dimensions
+  const compatibleLots = getCompatibleLots(
+    { width: formData.width || 35, length: formData.length || 41 },
+    lotPremiums
+  );
+
   const formatPriceDisplay = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -292,8 +312,8 @@ const AdminPlanManager = () => {
         <Col>
           <div className="d-flex justify-content-between align-items-center">
             <h2 className="mb-0">Floor Plan Management</h2>
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               onClick={() => handleShowModal()}
               disabled={!isDataReady}
             >
@@ -337,30 +357,30 @@ const AdminPlanManager = () => {
                   {plans.map((plan: Plan) => (
                     <tr key={plan._id}>
                       <td>
-                        <Badge bg="primary">{plan.planType}</Badge>
+                        <Badge bg="primary">{typeof plan.planType === 'number' ? plan.planType : '?'}</Badge>
                       </td>
                       <td>
-                        <strong>{plan.name}</strong>
-                        {plan.description && (
+                        <strong>{typeof plan.name === 'string' ? plan.name : 'Unknown Plan'}</strong>
+                        {plan.description && typeof plan.description === 'string' && (
                           <div className="small text-muted">{plan.description}</div>
                         )}
                       </td>
                       <td>
                         <div className="small">
-                          <div>{plan.bedrooms} BR / {plan.bathrooms} BA</div>
+                          <div>{typeof plan.bedrooms === 'number' ? plan.bedrooms : 0} BR / {typeof plan.bathrooms === 'number' ? plan.bathrooms : 0} BA</div>
                         </div>
                       </td>
                       <td>
                         <div className="fw-semibold">
-                          {plan.squareFootage.toLocaleString()} sq ft
+                          {typeof plan.squareFootage === 'number' ? plan.squareFootage.toLocaleString() : '0'} sq ft
                         </div>
                       </td>
                       <td>
-                        <div className="small">{plan.garageType}</div>
+                        <div className="small">{typeof plan.garageType === 'string' ? plan.garageType : 'Unknown'}</div>
                       </td>
                       <td>
                         <div className="fw-semibold text-success">
-                          {formatPriceDisplay(plan.basePrice)}
+                          {formatPriceDisplay(typeof plan.basePrice === 'number' ? plan.basePrice : 0)}
                         </div>
                       </td>
                       <td>
@@ -386,7 +406,7 @@ const AdminPlanManager = () => {
                   ))}
                 </tbody>
               </Table>
-              
+
               {plans.length === 0 && (
                 <div className="text-center py-5">
                   <p className="text-muted">No floor plans found. Create your first plan to get started.</p>
@@ -425,267 +445,303 @@ const AdminPlanManager = () => {
                 onSelect={(k) => setActiveTab(k || 'basic')}
                 className="mb-4"
               >
-              <Tab eventKey="basic" title="Basic Info">
-                <div className="basic-info-tab">
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Plan Type Number</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={formData.planType || ''}
-                    onChange={(e) => handleInputChange('planType', parseInt(e.target.value))}
-                    required
+                <Tab eventKey="basic" title="Basic Info">
+                  <div className="basic-info-tab">
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Plan Type Number</Form.Label>
+                          <Form.Control
+                            type="number"
+                            value={formData.planType !== undefined ? formData.planType : ''}
+                            onChange={(e) => handleInputChange('planType', parseInt(e.target.value))}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Plan Name</Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="e.g., The Aspen"
+                            value={formData.name || ''}
+                            onChange={(e) => handleInputChange('name', e.target.value)}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col md={4}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Bedrooms</Form.Label>
+                          <Form.Control
+                            type="number"
+                            min="1"
+                            max="10"
+                            value={formData.bedrooms || ''}
+                            onChange={(e) => handleInputChange('bedrooms', parseInt(e.target.value))}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={4}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Bathrooms</Form.Label>
+                          <Form.Control
+                            type="number"
+                            step="0.5"
+                            min="1"
+                            max="10"
+                            value={formData.bathrooms || ''}
+                            onChange={(e) => handleInputChange('bathrooms', parseFloat(e.target.value))}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={4}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Square Footage</Form.Label>
+                          <Form.Control
+                            type="number"
+                            min="500"
+                            value={formData.squareFootage || ''}
+                            onChange={(e) => handleInputChange('squareFootage', parseInt(e.target.value))}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Garage Type</Form.Label>
+                          <Form.Select
+                            value={formData.garageType || ''}
+                            onChange={(e) => handleInputChange('garageType', e.target.value)}
+                            required
+                          >
+                            <option value="">Select garage type</option>
+                            <option value="2-Car Garage">2-Car Garage</option>
+                            <option value="3-Car Garage">3-Car Garage</option>
+                            <option value="4-Car Garage">4-Car Garage</option>
+                            <option value="5-Car Garage">5-Car Garage</option>
+                            <option value="RV Garage">RV Garage</option>
+                          </Form.Select>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Base Price</Form.Label>
+                          <Form.Control
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={formData.basePrice || ''}
+                            onChange={(e) => handleInputChange('basePrice', parseInt(e.target.value))}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Width</Form.Label>
+                          <Form.Control
+                            type="number"
+                            min="0"
+                            value={formData.width || ''}
+                            onChange={(e) => handleInputChange('width', parseInt(e.target.value))}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Depth</Form.Label>
+                          <Form.Control
+                            type="number"
+                            min="0"
+                            value={formData.length || ''}
+                            onChange={(e) => handleInputChange('length', parseInt(e.target.value))}
+                            required
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+
+                    <Form.Group className="mb-3">
+                      <Form.Label>Description</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        placeholder="Brief description of the floor plan..."
+                        value={formData.description || ''}
+                        onChange={(e) => handleInputChange('description', e.target.value)}
+                      />
+                    </Form.Group>
+                  </div>
+                </Tab>
+
+                <Tab eventKey="elevations" title="Elevations">
+                  <PlanOptionEditor
+                    title="Elevation Options"
+                    options={selectedOptions.elevations}
+                    onOptionsChange={(opts) => handleOptionSelectionChange('elevations', opts)}
+                    globalOptions={options.filter(opt => opt.classification === 'elevation')}
+                    type="option"
                   />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Plan Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="e.g., The Aspen"
-                    value={formData.name || ''}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    required
+                </Tab>
+
+                <Tab eventKey="interiors" title="Interior Packages">
+                  <PlanOptionEditor
+                    title="Interior Package Options"
+                    options={selectedOptions.interiors}
+                    onOptionsChange={(opts) => handleOptionSelectionChange('interiors', opts)}
+                    globalOptions={interiors}
+                    type="interior"
                   />
-                </Form.Group>
-              </Col>
-            </Row>
+                </Tab>
 
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bedrooms</Form.Label>
-                  <Form.Control
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={formData.bedrooms || ''}
-                    onChange={(e) => handleInputChange('bedrooms', parseInt(e.target.value))}
-                    required
+                <Tab eventKey="structural" title="Structural">
+                  <PlanOptionEditor
+                    title="Structural Options"
+                    options={selectedOptions.structural}
+                    onOptionsChange={(opts) => handleOptionSelectionChange('structural', opts)}
+                    globalOptions={options.filter(opt => opt.classification === 'structural')}
+                    type="option"
                   />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bathrooms</Form.Label>
-                  <Form.Control
-                    type="number"
-                    step="0.5"
-                    min="1"
-                    max="10"
-                    value={formData.bathrooms || ''}
-                    onChange={(e) => handleInputChange('bathrooms', parseFloat(e.target.value))}
-                    required
+                </Tab>
+
+                <Tab eventKey="additional" title="Additional">
+                  <PlanOptionEditor
+                    title="Additional Options"
+                    options={selectedOptions.additional}
+                    onOptionsChange={(opts) => handleOptionSelectionChange('additional', opts)}
+                    globalOptions={options.filter(opt => opt.classification === 'additional')}
+                    type="option"
                   />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Square Footage</Form.Label>
-                  <Form.Control
-                    type="number"
-                    min="500"
-                    value={formData.squareFootage || ''}
-                    onChange={(e) => handleInputChange('squareFootage', parseInt(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+                </Tab>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Garage Type</Form.Label>
-                  <Form.Select
-                    value={formData.garageType || ''}
-                    onChange={(e) => handleInputChange('garageType', e.target.value)}
-                    required
-                  >
-                    <option value="">Select garage type</option>
-                    <option value="2-Car Garage">2-Car Garage</option>
-                    <option value="3-Car Garage">3-Car Garage</option>
-                    <option value="4-Car Garage">4-Car Garage</option>
-                    <option value="RV Garage">RV Garage</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Base Price</Form.Label>
-                  <Form.Control
-                    type="number"
-                    min="0"
-                    step="1000"
-                    value={formData.basePrice || ''}
-                    onChange={(e) => handleInputChange('basePrice', parseInt(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                placeholder="Brief description of the floor plan..."
-                value={formData.description || ''}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-              />
-            </Form.Group>
-                </div>
-              </Tab>
-
-              <Tab eventKey="elevations" title="Elevations">
-                <PlanOptionEditor
-                  title="Elevation Options"
-                  options={selectedOptions.elevations}
-                  onOptionsChange={(opts) => handleOptionSelectionChange('elevations', opts)}
-                  globalOptions={options.filter(opt => opt.classification === 'elevation')}
-                  type="option"
-                />
-              </Tab>
-
-              <Tab eventKey="interiors" title="Interior Packages">
-                <PlanOptionEditor
-                  title="Interior Package Options"
-                  options={selectedOptions.interiors}
-                  onOptionsChange={(opts) => handleOptionSelectionChange('interiors', opts)}
-                  globalOptions={interiors}
-                  type="interior"
-                />
-              </Tab>
-
-              <Tab eventKey="structural" title="Structural">
-                <PlanOptionEditor
-                  title="Structural Options"
-                  options={selectedOptions.structural}
-                  onOptionsChange={(opts) => handleOptionSelectionChange('structural', opts)}
-                  globalOptions={options.filter(opt => opt.classification === 'structural')}
-                  type="option"
-                />
-              </Tab>
-
-              <Tab eventKey="additional" title="Additional">
-                <PlanOptionEditor
-                  title="Additional Options"
-                  options={selectedOptions.additional}
-                  onOptionsChange={(opts) => handleOptionSelectionChange('additional', opts)}
-                  globalOptions={options.filter(opt => opt.classification === 'additional')}
-                  type="option"
-                />
-              </Tab>
-
-              <Tab eventKey="appliances" title="Appliances">
-                <Row>
-                  <Col md={6}>
-                    <PlanOptionEditor
-                      title="Kitchen Appliances"
-                      options={selectedOptions.kitchenAppliance}
-                      onOptionsChange={(opts) => handleOptionSelectionChange('kitchenAppliance', opts)}
-                      globalOptions={options.filter(opt => opt.classification === 'kitchen-appliance')}
-                      type="option"
-                    />
-                  </Col>
-                  <Col md={6}>
-                    <PlanOptionEditor
-                      title="Laundry Appliances"
-                      options={selectedOptions.laundryAppliance}
-                      onOptionsChange={(opts) => handleOptionSelectionChange('laundryAppliance', opts)}
-                      globalOptions={options.filter(opt => opt.classification === 'laundry-appliance')}
-                      type="option"
-                    />
-                  </Col>
-                </Row>
-              </Tab>
-
-              <Tab eventKey="lots" title="Lot Premiums">
-                <PlanOptionEditor
-                  title="Available Lot Premiums"
-                  options={selectedOptions.lotPremiums}
-                  onOptionsChange={(opts) => handleOptionSelectionChange('lotPremiums', opts)}
-                  globalOptions={lotPremiums}
-                  type="lot"
-                />
-              </Tab>
-
-              <Tab eventKey="pricing" title="Pricing Summary">
-                <div className="pricing-summary">
+                <Tab eventKey="appliances" title="Appliances">
                   <Row>
-                    <Col md={8}>
-                      <h5 className="mb-3">Price Breakdown</h5>
-                      <Table striped>
-                        <tbody>
-                          {priceBreakdown.map((item, index) => (
-                            <tr key={index} className={item.isBase ? 'table-primary' : ''}>
-                              <td className={item.isBase ? 'fw-bold' : ''}>{item.label}</td>
-                              <td className="text-end">
-                                <span className={item.isBase ? 'fw-bold' : ''}>
-                                  {formatPrice(item.amount)}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                        <tfoot>
-                          <tr className="table-success">
-                            <td className="fw-bold">Grand Total</td>
-                            <td className="text-end fw-bold h5">
-                              {formatPrice(currentPricing.grandTotal)}
-                            </td>
-                          </tr>
-                        </tfoot>
-                      </Table>
+                    <Col md={6}>
+                      <PlanOptionEditor
+                        title="Kitchen Appliances"
+                        options={selectedOptions.kitchenAppliance}
+                        onOptionsChange={(opts) => handleOptionSelectionChange('kitchenAppliance', opts)}
+                        globalOptions={options.filter(opt => opt.classification === 'kitchen-appliance')}
+                        type="option"
+                      />
                     </Col>
-                    <Col md={4}>
-                      <div className="summary-card">
-                        <Card className="bg-light">
-                          <Card.Body>
-                            <h6 className="mb-3">Selection Summary</h6>
-                            <div className="d-flex justify-content-between mb-2">
-                              <span>Elevations:</span>
-                              <Badge bg="secondary">{selectedOptions.elevations.length}</Badge>
-                            </div>
-                            <div className="d-flex justify-content-between mb-2">
-                              <span>Interior Packages:</span>
-                              <Badge bg="secondary">{selectedOptions.interiors.length}</Badge>
-                            </div>
-                            <div className="d-flex justify-content-between mb-2">
-                              <span>Structural:</span>
-                              <Badge bg="secondary">{selectedOptions.structural.length}</Badge>
-                            </div>
-                            <div className="d-flex justify-content-between mb-2">
-                              <span>Additional:</span>
-                              <Badge bg="secondary">{selectedOptions.additional.length}</Badge>
-                            </div>
-                            <div className="d-flex justify-content-between mb-2">
-                              <span>Kitchen Appliances:</span>
-                              <Badge bg="secondary">{selectedOptions.kitchenAppliance.length}</Badge>
-                            </div>
-                            <div className="d-flex justify-content-between mb-2">
-                              <span>Laundry Appliances:</span>
-                              <Badge bg="secondary">{selectedOptions.laundryAppliance.length}</Badge>
-                            </div>
-                            <div className="d-flex justify-content-between mb-3">
-                              <span>Lot Premiums:</span>
-                              <Badge bg="secondary">{selectedOptions.lotPremiums.length}</Badge>
-                            </div>
-                            <hr />
-                            <div className="d-flex justify-content-between">
-                              <strong>Total Options:</strong>
-                              <Badge bg="primary">{totalSelectedOptions}</Badge>
-                            </div>
-                          </Card.Body>
-                        </Card>
-                      </div>
+                    <Col md={6}>
+                      <PlanOptionEditor
+                        title="Laundry Appliances"
+                        options={selectedOptions.laundryAppliance}
+                        onOptionsChange={(opts) => handleOptionSelectionChange('laundryAppliance', opts)}
+                        globalOptions={options.filter(opt => opt.classification === 'laundry-appliance')}
+                        type="option"
+                      />
                     </Col>
                   </Row>
-                </div>
-              </Tab>
+                </Tab>
+
+                <Tab eventKey="lots" title="Lot Premiums">
+                  <div className="mb-3">
+                    <Alert variant="info">
+                      <strong>Floor Plan Dimensions:</strong> {formData.width || 35}ft × {formData.length || 41}ft
+                      <br />
+                      <small>Only lots that can accommodate this floor plan are shown below.</small>
+                    </Alert>
+                  </div>
+                  <PlanOptionEditor
+                    title={`Compatible Lot Premiums (${compatibleLots.length} of ${lotPremiums.length})`}
+                    options={selectedOptions.lotPremiums}
+                    onOptionsChange={(opts) => handleOptionSelectionChange('lotPremiums', opts)}
+                    globalOptions={compatibleLots}
+                    type="lot"
+                    planDimensions={{ width: formData.width || 35, length: formData.length || 41 }}
+                  />
+                </Tab>
+
+                <Tab eventKey="pricing" title="Pricing Summary">
+                  <div className="pricing-summary">
+                    <Row>
+                      <Col md={8}>
+                        <h5 className="mb-3">Price Breakdown</h5>
+                        <Table striped>
+                          <tbody>
+                            {priceBreakdown.map((item, index) => (
+                              <tr key={index} className={item.isBase ? 'table-primary' : ''}>
+                                <td className={item.isBase ? 'fw-bold' : ''}>{item.label}</td>
+                                <td className="text-end">
+                                  <span className={item.isBase ? 'fw-bold' : ''}>
+                                    {formatPrice(item.amount)}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr className="table-success">
+                              <td className="fw-bold">Grand Total</td>
+                              <td className="text-end fw-bold h5">
+                                {formatPrice(currentPricing.grandTotal)}
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </Table>
+                      </Col>
+                      <Col md={4}>
+                        <div className="summary-card">
+                          <Card className="bg-light">
+                            <Card.Body>
+                              <h6 className="mb-3">Selection Summary</h6>
+                              <div className="d-flex justify-content-between mb-2">
+                                <span>Elevations:</span>
+                                <Badge bg="secondary">{selectedOptions.elevations.length}</Badge>
+                              </div>
+                              <div className="d-flex justify-content-between mb-2">
+                                <span>Interior Packages:</span>
+                                <Badge bg="secondary">{selectedOptions.interiors.length}</Badge>
+                              </div>
+                              <div className="d-flex justify-content-between mb-2">
+                                <span>Structural:</span>
+                                <Badge bg="secondary">{selectedOptions.structural.length}</Badge>
+                              </div>
+                              <div className="d-flex justify-content-between mb-2">
+                                <span>Additional:</span>
+                                <Badge bg="secondary">{selectedOptions.additional.length}</Badge>
+                              </div>
+                              <div className="d-flex justify-content-between mb-2">
+                                <span>Kitchen Appliances:</span>
+                                <Badge bg="secondary">{selectedOptions.kitchenAppliance.length}</Badge>
+                              </div>
+                              <div className="d-flex justify-content-between mb-2">
+                                <span>Laundry Appliances:</span>
+                                <Badge bg="secondary">{selectedOptions.laundryAppliance.length}</Badge>
+                              </div>
+                              <div className="d-flex justify-content-between mb-3">
+                                <span>Lot Premiums:</span>
+                                <Badge bg="secondary">{selectedOptions.lotPremiums.length}</Badge>
+                              </div>
+                              <hr />
+                              <div className="d-flex justify-content-between">
+                                <strong>Total Options:</strong>
+                                <Badge bg="primary">{totalSelectedOptions}</Badge>
+                              </div>
+                            </Card.Body>
+                          </Card>
+                        </div>
+                      </Col>
+                    </Row>
+                  </div>
+                </Tab>
               </Tabs>
             </div>
           </Modal.Body>

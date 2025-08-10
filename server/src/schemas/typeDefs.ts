@@ -17,6 +17,8 @@ const typeDefs = gql`
         classification: String
         description: String
         img: String
+        width: Int
+        length: Int
     }
     
     type InteriorPackage {
@@ -61,6 +63,8 @@ const typeDefs = gql`
         kitchenAppliance: [Option]
         laundryAppliance: [Option]
         lotPremium: [LotPremium]
+        width: Int!
+        length: Int!
     }
     
     type UserHome {
@@ -76,6 +80,8 @@ const typeDefs = gql`
         additional: [Option]
         kitchenAppliance: Option
         laundryAppliance: Option
+        width: Int!
+        length: Int!
         lotPremium: LotPremium
         totalPrice: Float
         createdAt: String
@@ -137,6 +143,8 @@ const typeDefs = gql`
         classification: String
         description: String
         img: String
+        width: Int
+        length: Int
     }
     
     input InteriorPackageInput {
@@ -178,6 +186,8 @@ const typeDefs = gql`
         kitchenAppliance: [OptionInput]
         laundryAppliance: [OptionInput]
         lotPremium: [LotPremiumInput]
+        width: Int!
+        length: Int!
     }
     
     input UserHomeInput {

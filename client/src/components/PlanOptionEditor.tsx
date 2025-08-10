@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Card, Button, Form, Row, Col, Modal, Badge, Alert } from 'react-bootstrap';
+import { Card, Button, Form, Row, Col, Modal, Badge, Alert, Image } from 'react-bootstrap';
+import ImageUpload from './ImageUpload';
+import { getLotCompatibilityInfo } from '../utils/lotCompatibility';
 
 interface Option {
   name: string;
@@ -7,6 +9,8 @@ interface Option {
   classification?: string;
   description?: string;
   img?: string;
+  width?: number;
+  length?: number;
 }
 
 interface InteriorPackage {
@@ -37,6 +41,7 @@ interface PlanOptionEditorProps {
   onOptionsChange: (options: (Option | InteriorPackage | LotPremium)[]) => void;
   globalOptions: any[];
   type: 'option' | 'interior' | 'lot';
+  planDimensions?: { width: number; length: number };
 }
 
 const PlanOptionEditor: React.FC<PlanOptionEditorProps> = ({
@@ -44,7 +49,8 @@ const PlanOptionEditor: React.FC<PlanOptionEditorProps> = ({
   options,
   onOptionsChange,
   globalOptions,
-  type
+  type,
+  planDimensions
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -59,7 +65,9 @@ const PlanOptionEditor: React.FC<PlanOptionEditorProps> = ({
         price: globalOption.price || globalOption.totalPrice,
         classification: globalOption.classification,
         description: globalOption.description,
-        img: globalOption.img
+        img: globalOption.img,
+        width: globalOption.width,
+        length: globalOption.length
       };
     } else if (type === 'interior') {
       newOption = {
@@ -149,6 +157,37 @@ const PlanOptionEditor: React.FC<PlanOptionEditorProps> = ({
                       rows={2}
                       value={editForm.description || ''}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    />
+                  </Form.Group>
+                  {editForm.classification === 'structural' && (
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-2">
+                          <Form.Label>Width (ft)</Form.Label>
+                          <Form.Control
+                            type="number"
+                            value={editForm.width || ''}
+                            onChange={(e) => setEditForm({ ...editForm, width: parseFloat(e.target.value) })}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-2">
+                          <Form.Label>Length (ft)</Form.Label>
+                          <Form.Control
+                            type="number"
+                            value={editForm.length || ''}
+                            onChange={(e) => setEditForm({ ...editForm, length: parseFloat(e.target.value) })}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  )}
+                  <Form.Group className="mb-3">
+                    <ImageUpload
+                      currentImage={editForm.img}
+                      onImageChange={(imageData) => setEditForm({ ...editForm, img: imageData })}
+                      label="Option Image"
                     />
                   </Form.Group>
                 </>
@@ -246,10 +285,10 @@ const PlanOptionEditor: React.FC<PlanOptionEditorProps> = ({
               <div className="d-flex justify-content-between align-items-start mb-2">
                 <div>
                   <h6 className="mb-1">
-                    {option && 'name' in option ? option.name : option && 'filing' in option ? `Filing ${option.filing}, Lot ${option.lot}` : 'Unknown Option'}
+                    {option && 'name' in option && typeof option.name === 'string' ? option.name : option && 'filing' in option && typeof option.filing === 'number' ? `Filing ${option.filing}, Lot ${option.lot}` : 'Unknown Option'}
                   </h6>
                   <div className="text-success fw-semibold">
-                    ${option && 'price' in option ? (option.price || 0).toLocaleString() : option && 'totalPrice' in option ? (option.totalPrice || 0).toLocaleString() : '0'}
+                    ${option && 'price' in option && typeof option.price === 'number' ? option.price.toLocaleString() : option && 'totalPrice' in option && typeof option.totalPrice === 'number' ? option.totalPrice.toLocaleString() : '0'}
                   </div>
                 </div>
                 <div className="d-flex gap-1">
@@ -262,13 +301,36 @@ const PlanOptionEditor: React.FC<PlanOptionEditorProps> = ({
                 </div>
               </div>
               
-              {type === 'option' && 'description' in option && option.description && (
+              {type === 'option' && 'description' in option && typeof option.description === 'string' && option.description && (
                 <p className="text-muted small mb-0">{option.description}</p>
               )}
               
-              {type === 'lot' && option && 'width' in option && 'length' in option && (
-                <div className="small text-muted">
-                  {option.width} × {option.length} ft
+              {type === 'option' && 'img' in option && typeof option.img === 'string' && option.img && (
+                <div className="mt-2">
+                  <Image 
+                    src={option.img} 
+                    alt={typeof option.name === 'string' ? option.name : 'Option image'} 
+                    thumbnail 
+                    style={{ maxWidth: '150px', maxHeight: '100px' }}
+                  />
+                </div>
+              )}
+              
+              {type === 'lot' && option && 'width' in option && 'length' in option && typeof option.width === 'number' && typeof option.length === 'number' && (
+                <div className="small">
+                  <div className="text-muted">
+                    Lot Size: {option.width} × {option.length} ft
+                  </div>
+                  {planDimensions && (
+                    <div className="mt-1">
+                      <Badge 
+                        bg="success" 
+                        className="small"
+                      >
+                        {getLotCompatibilityInfo(planDimensions, option).message}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -313,12 +375,12 @@ const PlanOptionEditor: React.FC<PlanOptionEditorProps> = ({
                   <div className="d-flex justify-content-between align-items-center">
                     <div>
                       <div className="fw-semibold">
-                        {globalOption?.name || (globalOption?.filing ? `Filing ${globalOption.filing}, Lot ${globalOption.lot}` : 'Unknown Option')}
+                        {typeof globalOption?.name === 'string' ? globalOption.name : (typeof globalOption?.filing === 'number' ? `Filing ${globalOption.filing}, Lot ${globalOption.lot}` : 'Unknown Option')}
                       </div>
                       <div className="text-success">
-                        ${((globalOption?.price || globalOption?.totalPrice) || 0).toLocaleString()}
+                        ${typeof globalOption?.price === 'number' ? globalOption.price.toLocaleString() : (typeof globalOption?.totalPrice === 'number' ? globalOption.totalPrice.toLocaleString() : '0')}
                       </div>
-                      {globalOption.description && (
+                      {typeof globalOption?.description === 'string' && globalOption.description && (
                         <div className="small text-muted">{globalOption.description}</div>
                       )}
                     </div>

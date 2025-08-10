@@ -152,8 +152,9 @@ export const GET_PLANS = gql`
             garageType
             basePrice
             description
+            width
+            length
             elevations {
-                _id
                 name
                 price
                 classification
@@ -232,15 +233,15 @@ export const GET_PLANS = gql`
                 upgrade
             }
             structural {
-                _id
                 name
                 price
                 classification
                 description
                 img
+                width
+                length
             }
             additional {
-                _id
                 name
                 price
                 classification
@@ -248,7 +249,6 @@ export const GET_PLANS = gql`
                 img
             }
             kitchenAppliance {
-                _id
                 name
                 price
                 classification
@@ -256,7 +256,6 @@ export const GET_PLANS = gql`
                 img
             }
             laundryAppliance {
-                _id
                 name
                 price
                 classification
@@ -283,7 +282,6 @@ export const GET_PLAN = gql`
             name
             basePrice
             elevations {
-                _id
                 name
                 price
                 classification
@@ -362,15 +360,15 @@ export const GET_PLAN = gql`
                 upgrade
             }
             structural {
-                _id
                 name
                 price
                 classification
                 description
                 img
+                width
+                length
             }
             additional {
-                _id
                 name
                 price
                 classification
@@ -378,7 +376,6 @@ export const GET_PLAN = gql`
                 img
             }
             kitchenAppliance {
-                _id
                 name
                 price
                 classification
@@ -386,7 +383,6 @@ export const GET_PLAN = gql`
                 img
             }
             laundryAppliance {
-                _id
                 name
                 price
                 classification
@@ -425,7 +421,6 @@ export const GET_INTERIOR_PACKAGES = gql`
             name
             totalPrice
             fixtures {
-                _id
                 name
                 price
                 classification
@@ -433,7 +428,6 @@ export const GET_INTERIOR_PACKAGES = gql`
                 img
             }
             lvp {
-                _id
                 name
                 price
                 classification
@@ -441,7 +435,6 @@ export const GET_INTERIOR_PACKAGES = gql`
                 img
             }
             carpet {
-                _id
                 name
                 price
                 classification
@@ -449,7 +442,6 @@ export const GET_INTERIOR_PACKAGES = gql`
                 img
             }
             backsplash {
-                _id
                 name
                 price
                 classification
@@ -457,7 +449,6 @@ export const GET_INTERIOR_PACKAGES = gql`
                 img
             }
             masterBathTile {
-                _id
                 name
                 price
                 classification
@@ -465,7 +456,6 @@ export const GET_INTERIOR_PACKAGES = gql`
                 img
             }
             countertop {
-                _id
                 name
                 price
                 classification
@@ -473,7 +463,6 @@ export const GET_INTERIOR_PACKAGES = gql`
                 img
             }
             primaryCabinets {
-                _id
                 name
                 price
                 classification
@@ -481,7 +470,6 @@ export const GET_INTERIOR_PACKAGES = gql`
                 img
             }
             secondaryCabinets {
-                _id
                 name
                 price
                 classification

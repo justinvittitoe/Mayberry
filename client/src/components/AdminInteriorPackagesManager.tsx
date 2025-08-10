@@ -8,15 +8,18 @@ interface InteriorPackage {
   _id: string;
   name: string;
   totalPrice: number;
-  fitures: string;
-  lvp: string;
-  carpet: string;
-  kitchenBackspash: string;
-  masterBathTile: string;
-  countertop: string;
-  primaryCabinets: string;
-  secondaryCabinets: string;
-  upgrade: string;
+  fixtures?: any[] | string; // Can be array of objects or string
+  lvp?: any[] | string;
+  carpet?: any[] | string;
+  backsplash?: any[] | string;
+  masterBathTile?: any[] | string;
+  countertop?: any[] | string;
+  primaryCabinets?: any[] | string;
+  secondaryCabinets?: any[] | string;
+  upgrade?: boolean | string;
+  // Keep old property names for backward compatibility
+  fitures?: any[] | string;
+  kitchenBackspash?: any[] | string;
 }
 
 const AdminInteriorPackagesManager = () => {
@@ -45,21 +48,35 @@ const AdminInteriorPackagesManager = () => {
 
   const packages = data?.interiorPackages || [];
 
+  // Helper function to safely render array of objects or fallback
+  const renderOptionArray = (items: any[] | string): string => {
+    if (typeof items === 'string') return items;
+    if (!Array.isArray(items) || items.length === 0) return 'None';
+    return items.map(item => typeof item === 'string' ? item : item?.name || 'Unknown').join(', ');
+  };
+
+  // Helper function to clean GraphQL objects
+  const cleanGraphQLObject = (obj: any) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    const { __typename, ...cleaned } = obj;
+    return cleaned;
+  };
+
   const handleShowModal = (pkg?: InteriorPackage) => {
     if (pkg) {
       setEditingPackage(pkg);
       setFormData({
-        name: pkg.name,
-        totalPrice: pkg.totalPrice,
-        fitures: pkg.fitures,
-        lvp: pkg.lvp,
-        carpet: pkg.carpet,
-        kitchenBackspash: pkg.kitchenBackspash,
-        masterBathTile: pkg.masterBathTile,
-        countertop: pkg.countertop,
-        primaryCabinets: pkg.primaryCabinets,
-        secondaryCabinets: pkg.secondaryCabinets,
-        upgrade: pkg.upgrade
+        name: typeof pkg.name === 'string' ? pkg.name : '',
+        totalPrice: typeof pkg.totalPrice === 'number' ? pkg.totalPrice : 0,
+        fitures: renderOptionArray(pkg.fitures || pkg.fixtures || ''),
+        lvp: renderOptionArray(pkg.lvp || ''),
+        carpet: renderOptionArray(pkg.carpet || ''),
+        kitchenBackspash: renderOptionArray(pkg.kitchenBackspash || pkg.backsplash || ''),
+        masterBathTile: renderOptionArray(pkg.masterBathTile || ''),
+        countertop: renderOptionArray(pkg.countertop || ''),
+        primaryCabinets: renderOptionArray(pkg.primaryCabinets || ''),
+        secondaryCabinets: renderOptionArray(pkg.secondaryCabinets || ''),
+        upgrade: typeof pkg.upgrade === 'boolean' ? (pkg.upgrade ? 'Yes' : 'No') : (pkg.upgrade || '')
       });
     } else {
       setEditingPackage(null);
@@ -191,16 +208,16 @@ const AdminInteriorPackagesManager = () => {
               <tbody>
                 {packages.map((pkg: InteriorPackage) => (
                   <tr key={pkg._id}>
-                    <td className="fw-semibold">{pkg.name}</td>
-                    <td>${pkg.totalPrice.toLocaleString()}</td>
+                    <td className="fw-semibold">{typeof pkg.name === 'string' ? pkg.name : 'Unknown Package'}</td>
+                    <td>${typeof pkg.totalPrice === 'number' ? pkg.totalPrice.toLocaleString() : '0'}</td>
                     <td className="text-truncate" style={{ maxWidth: '150px' }}>
-                      {pkg.fitures}
+                      {renderOptionArray(pkg.fitures)}
                     </td>
                     <td className="text-truncate" style={{ maxWidth: '150px' }}>
-                      LVP: {pkg.lvp}, Carpet: {pkg.carpet}
+                      LVP: {renderOptionArray(pkg.lvp)}, Carpet: {renderOptionArray(pkg.carpet)}
                     </td>
                     <td className="text-truncate" style={{ maxWidth: '150px' }}>
-                      {pkg.primaryCabinets}
+                      {renderOptionArray(pkg.primaryCabinets)}
                     </td>
                     <td>
                       <div className="btn-group" role="group">
