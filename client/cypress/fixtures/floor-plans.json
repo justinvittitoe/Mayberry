@@ -1,0 +1,140 @@
+{
+  "planTypes": [
+    {
+      "_id": "plan1",
+      "name": "The Aspen",
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "squareFootage": 1620,
+      "garageType": "2-Car Garage",
+      "basePrice": 399000,
+      "description": "Cozy ranch-style home perfect for first-time buyers and growing families.",
+      "elevations": [
+        {
+          "_id": "elev1",
+          "name": "Farmhouse",
+          "price": 0,
+          "classification": "elevation",
+          "description": "Classic farmhouse style with front porch",
+          "img": "farmhouse.jpg"
+        },
+        {
+          "_id": "elev2", 
+          "name": "Prairie",
+          "price": 2500,
+          "classification": "elevation",
+          "description": "Prairie style with clean lines",
+          "img": "prairie.jpg"
+        }
+      ],
+      "interiors": [
+        {
+          "_id": "int1",
+          "name": "Casual",
+          "totalPrice": 15000,
+          "upgrade": false,
+          "fixtures": [{ "name": "Standard fixtures", "price": 1000 }],
+          "lvp": [{ "name": "Standard LVP flooring", "price": 2000 }],
+          "carpet": [{ "name": "Standard carpet", "price": 1500 }]
+        },
+        {
+          "_id": "int2",
+          "name": "Designer", 
+          "totalPrice": 28000,
+          "upgrade": true,
+          "fixtures": [{ "name": "Designer fixtures", "price": 2000 }],
+          "countertop": [{ "name": "Granite countertops", "price": 3500 }],
+          "primaryCabinets": [{ "name": "Custom cabinets", "price": 8000 }]
+        }
+      ],
+      "structural": [
+        {
+          "_id": "struct1",
+          "name": "Covered Patio",
+          "price": 3500,
+          "classification": "structural",
+          "description": "12x16 covered outdoor living space"
+        },
+        {
+          "_id": "struct2",
+          "name": "Fireplace",
+          "price": 4500,
+          "classification": "structural", 
+          "description": "Gas fireplace with stone surround"
+        }
+      ],
+      "additional": [
+        {
+          "_id": "add1",
+          "name": "Air Conditioning",
+          "price": 4500,
+          "classification": "additional",
+          "description": "Central air conditioning system"
+        },
+        {
+          "_id": "add2",
+          "name": "Security System",
+          "price": 1200,
+          "classification": "additional",
+          "description": "Basic security system with monitoring"
+        }
+      ],
+      "kitchenAppliance": [
+        {
+          "_id": "kitchen1",
+          "name": "Appliance Package 0",
+          "price": 0,
+          "classification": "kitchen-appliance",
+          "description": "Basic appliance package"
+        },
+        {
+          "_id": "kitchen2",
+          "name": "Premium Package",
+          "price": 3500,
+          "classification": "kitchen-appliance",
+          "description": "Stainless steel premium appliances"
+        }
+      ],
+      "laundryAppliance": [
+        {
+          "_id": "laundry1",
+          "name": "Laundry Appliance A",
+          "price": 0,
+          "classification": "laundry-appliance",
+          "description": "Basic washer/dryer connections"
+        }
+      ]
+    },
+    {
+      "_id": "plan2",
+      "name": "The Birch",
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "squareFootage": 2180,
+      "garageType": "2-Car Garage",
+      "basePrice": 459000,
+      "description": "Spacious two-story home ideal for larger families.",
+      "elevations": [
+        {
+          "_id": "elev3",
+          "name": "Traditional",
+          "price": 0,
+          "classification": "elevation",
+          "description": "Classic traditional styling"
+        }
+      ],
+      "interiors": [
+        {
+          "_id": "int3",
+          "name": "Casual",
+          "totalPrice": 18000,
+          "upgrade": false
+        }
+      ],
+      "structural": [],
+      "additional": [],
+      "kitchenAppliance": [],
+      "laundryAppliance": []
+    }
+  ]
+}

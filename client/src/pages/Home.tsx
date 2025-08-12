@@ -3,7 +3,7 @@ import { Container, Row, Col, Button } from 'react-bootstrap';
 import { useQuery } from '@apollo/client';
 import { GET_PLANS } from '../utils/queries';
 import { Link, useNavigate } from 'react-router-dom';
-import FloorPlanSelector from '../components/FloorPlanSelector';
+import EnhancedFloorPlanSelector from '../components/EnhancedFloorPlanSelector';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AuthService from '../utils/auth';
 
@@ -124,7 +124,7 @@ const Home = () => {
       )}
 
       {/* Floor Plan Selection */}
-      <FloorPlanSelector 
+      <EnhancedFloorPlanSelector 
         onPlanSelect={isAuthenticated ? handlePlanSelect : undefined}
         selectedPlanId={selectedPlan?.id}
         plans={transformedPlans}

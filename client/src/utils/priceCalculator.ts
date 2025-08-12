@@ -46,7 +46,9 @@ export const calculateOptionTotal = (
 // New function for calculating totals from actual option objects
 export const calculateDirectOptionTotal = (options: any[]): number => {
   return options.reduce((total, option) => {
-    return total + (option?.price || 0);
+    const price = option?.price;
+    const numericPrice = typeof price === 'number' ? price : 0;
+    return total + numericPrice;
   }, 0);
 };
 

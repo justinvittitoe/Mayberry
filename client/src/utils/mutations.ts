@@ -44,6 +44,20 @@ export const SAVE_USER_HOME = gql`
     }
 `;
 
+export const SAVE_USER_HOME_PROGRESS = gql`
+    mutation saveUserHomeProgress($userHome: UserHomeInput!, $isComplete: Boolean!) {
+        saveUserHomeProgress(userHome: $userHome, isComplete: $isComplete) {
+            _id
+            planTypeId
+            planTypeName
+            basePrice
+            totalPrice
+            isComplete
+            lastModified
+        }
+    }
+`;
+
 export const UPDATE_USER_HOME = gql`
     mutation updateUserHome($id: ID!, $userHome: UserHomeInput!) {
         updateUserHome(id: $id, userHome: $userHome) {

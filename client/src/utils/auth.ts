@@ -20,6 +20,15 @@ class AuthService {
     }
   }
 
+  getRole() {
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+    const decoded = jwtDecode<UserToken>(token);
+    return decoded.data.role;
+  }
+
   // check if user's logged in
   loggedIn() {
     // Checks if there is a saved token and it's still valid

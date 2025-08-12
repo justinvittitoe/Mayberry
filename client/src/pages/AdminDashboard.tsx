@@ -9,7 +9,7 @@ import { Navigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   // Check if user is admin
-  const isAdmin = AuthService.loggedIn();
+  const isAdmin = AuthService.loggedIn() && AuthService.getRole() === 'admin';
 
   if (!isAdmin) {
     return <Navigate to="/login" replace />;
