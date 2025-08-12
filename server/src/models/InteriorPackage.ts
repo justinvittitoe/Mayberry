@@ -3,29 +3,29 @@ import { Schema, model, type Document } from 'mongoose';
 export interface InteriorPackageDocument extends Document {
   name: string;
   totalPrice: number;
-  fitures: string;
-  lvp: string;
-  carpet: string;
-  kitchenBackspash: string;
-  masterBathTile: string;
-  countertop: string;
-  primaryCabinets: string;
-  secondaryCabinets: string;
-  upgrade: string;
+  fixtures: any[];
+  lvp: any[];
+  carpet: any[];
+  backsplash: any[];
+  masterBathTile: any[];
+  countertop: any[];
+  primaryCabinets: any[];
+  secondaryCabinets: any[];
+  upgrade: boolean;
 }
 
 const interiorPackageSchema = new Schema<InteriorPackageDocument>({
   name: { type: String, required: true },
   totalPrice: { type: Number, required: true },
-  fitures: String,
-  lvp: String,
-  carpet: String,
-  kitchenBackspash: String,
-  masterBathTile: String,
-  countertop: String,
-  primaryCabinets: String,
-  secondaryCabinets: String,
-  upgrade: String,
+  fixtures: [Schema.Types.Mixed],
+  lvp: [Schema.Types.Mixed],
+  carpet: [Schema.Types.Mixed],
+  backsplash: [Schema.Types.Mixed],
+  masterBathTile: [Schema.Types.Mixed],
+  countertop: [Schema.Types.Mixed],
+  primaryCabinets: [Schema.Types.Mixed],
+  secondaryCabinets: [Schema.Types.Mixed],
+  upgrade: { type: Boolean, default: false },
 });
 
 const InteriorPackage = model<InteriorPackageDocument>('InteriorPackage', interiorPackageSchema);

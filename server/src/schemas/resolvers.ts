@@ -48,6 +48,8 @@ const toUserHomeType = (homeDoc: any): UserHomeType => ({
     kitchenAppliance: homeDoc.kitchenAppliance,
     laundryAppliance: homeDoc.laundryAppliance,
     lotPremium: homeDoc.lotPremium,
+    width: homeDoc.width,
+    length: homeDoc.length,
     createdAt: homeDoc.createdAt?.toISOString?.() ?? homeDoc.createdAt,
     updatedAt: homeDoc.updatedAt?.toISOString?.() ?? homeDoc.updatedAt,
 });
@@ -95,36 +97,18 @@ const resolvers = {
         // Plan queries
         plans: async (): Promise<PlanType[]> => {
             const plans = await Plan.find({})
-                .populate('elevations')
-                .populate('interiors')
-                .populate('structural')
-                .populate('additional')
-                .populate('kitchenAppliance')
-                .populate('laundryAppliance')
                 .populate('lotPremium');
             return plans.map(toPlanType);
         },
 
         plan: async (_parent: unknown, args: { id: string }): Promise<PlanType | null> => {
             const plan = await Plan.findById(args.id)
-                .populate('elevations')
-                .populate('interiors')
-                .populate('structural')
-                .populate('additional')
-                .populate('kitchenAppliance')
-                .populate('laundryAppliance')
                 .populate('lotPremium');
             return plan ? toPlanType(plan) : null;
         },
 
         planByType: async (_parent: unknown, args: { planType: number }): Promise<PlanType | null> => {
             const plan = await Plan.findOne({ planType: args.planType })
-                .populate('elevations')
-                .populate('interiors')
-                .populate('structural')
-                .populate('additional')
-                .populate('kitchenAppliance')
-                .populate('laundryAppliance')
                 .populate('lotPremium');
             return plan ? toPlanType(plan) : null;
         },
@@ -150,7 +134,8 @@ const resolvers = {
 
         // Interior package queries
         interiorPackages: async (): Promise<InteriorPackageType[]> => {
-            return (await InteriorPackage.find({})).map(toInteriorPackageType);
+            const interior = await InteriorPackage.find({});
+            return interior.map(toInteriorPackageType);
         },
 
         // Lot premium queries
@@ -166,7 +151,7 @@ const resolvers = {
             if (!user) {
                 throw new Error('Something went wrong!');
             }
-            const token = signToken(user.username, user.email, user._id);
+            const token = signToken(user.username, user.email, user._id, 'user');
             return { token, user: toUserType(user) };
         },
 
@@ -181,7 +166,7 @@ const resolvers = {
             if (!correctPw) {
                 throw new AuthenticationError("Incorrect Password");
             }
-            const token = signToken(user.username, user.email, user._id);
+            const token = signToken(user.username, user.email, user._id, user.role);
             return { token, user: toUserType(user) };
         },
 

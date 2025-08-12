@@ -27,14 +27,24 @@ export interface InteriorPackage {
     _id?: string;
     name: string;
     totalPrice: number;
-    options?: Option[];
+    fixtures?: Option[];
+    lvp?: Option[];
+    carpet?: Option[];
+    backsplash?: Option[];
+    masterBathTile?: Option[];
+    countertop?: Option[];
+    primaryCabinets?: Option[];
+    secondaryCabinets?: Option[];
+    upgrade?: boolean;
 }
 
 export interface LotPremium {
     _id?: string;
-    name: string;
+    filing: number;
+    lot: number;
+    width: number;
+    length: number;
     price: number;
-    description?: string;
 }
 
 export interface Plan {
@@ -83,13 +93,23 @@ export interface OptionInput {
 export interface InteriorPackageInput {
     name: string;
     totalPrice: number;
-    options?: OptionInput[];
+    fixtures?: OptionInput[];
+    lvp?: OptionInput[];
+    carpet?: OptionInput[];
+    backsplash?: OptionInput[];
+    masterBathTile?: OptionInput[];
+    countertop?: OptionInput[];
+    primaryCabinets?: OptionInput[];
+    secondaryCabinets?: OptionInput[];
+    upgrade?: boolean;
 }
 
 export interface LotPremiumInput {
-    name: string;
+    filing: number;
+    lot: number;
+    width: number;
+    length: number;
     price: number;
-    description?: string;
 }
 
 export interface PlanInput {

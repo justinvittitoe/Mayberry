@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -8,7 +9,7 @@ export default defineConfig({
     outDir: 'dist'
   },
   server: {
-    port: 3000,
+    port: 4000,
     open: true,
     proxy: {
       '/api': {
@@ -17,10 +18,34 @@ export default defineConfig({
         changeOrigin: true
       },
       '/graphql': {
-        target: 'http://localhost:3001/graphql',
+        target: 'http://localhost:3001',
         secure: false,
         changeOrigin: true
       }
     }
-  }
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    globals: true,
+    css: true,
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/test/',
+        '**/*.d.ts',
+        'dist/',
+        'coverage/',
+      ],
+      thresholds: {
+        global: {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80,
+        },
+      },
+    },
+  },
 })

@@ -9,6 +9,7 @@ import {
 import { setContext } from '@apollo/client/link/context';
 
 import Navbar from './components/Navbar';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const httpLink = createHttpLink({
   uri: 'http://localhost:4000/graphql',
@@ -32,12 +33,14 @@ const client = new ApolloClient({
 function App() {
   return (
     <div className="app">
-    <ApolloProvider client={client}>
-      <Navbar />
-        <main className="main-content">
-      <Outlet />
-        </main>
-    </ApolloProvider>
+      <ApolloProvider client={client}>
+        <ErrorBoundary>
+          <Navbar />
+          <main className="main-content">
+            <Outlet />
+          </main>
+        </ErrorBoundary>
+      </ApolloProvider>
     </div>
   );
 }

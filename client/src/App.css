@@ -951,3 +951,172 @@ body {
     justify-content: center;
   }
 }
+
+/* Customization Wizard Styles */
+.customization-wizard {
+  background: var(--bg-secondary);
+  min-height: 100vh;
+}
+
+.customization-wizard .step-indicator.active .step-title {
+  color: var(--primary-color);
+}
+
+.customization-wizard .step-indicator.completed .step-title {
+  color: var(--success-color);
+}
+
+.customization-wizard .sticky-sidebar {
+  position: sticky;
+  top: 2rem;
+  z-index: 100;
+}
+
+/* Wizard Step Styles */
+.elevation-step .color-option:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.interior-step .interior-option:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.structural-step .structural-option:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.additional-step .additional-option:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.appliance-step .appliance-option:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Lot Selection Styles */
+.lot-selection-step .lot-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+}
+
+.lot-selection-step .lot-card.selected {
+  background: rgba(37, 99, 235, 0.05);
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+}
+
+/* Pricing Step Styles */
+.pricing-step .selections-grid .selection-item:hover {
+  background: var(--bg-tertiary) !important;
+}
+
+.printable-sheet {
+  font-family: Arial, sans-serif;
+  line-height: 1.4;
+  color: #333;
+}
+
+.printable-sheet h1, .printable-sheet h2, .printable-sheet h3, .printable-sheet h4, .printable-sheet h5 {
+  color: var(--primary-color);
+}
+
+/* Enhanced Floor Plan Selector */
+.enhanced-floor-plan-selector .floor-plan-card {
+  transition: all 0.3s ease;
+  border: 2px solid var(--border-color);
+}
+
+.enhanced-floor-plan-selector .floor-plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
+}
+
+.enhanced-floor-plan-selector .floor-plan-card.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.15);
+  background: linear-gradient(135deg, rgba(45, 80, 22, 0.05) 0%, rgba(45, 80, 22, 0.02) 100%);
+}
+
+.enhanced-floor-plan-selector .spec-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.enhanced-floor-plan-selector .spec-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+.enhanced-floor-plan-selector .spec-text {
+  flex: 1;
+  line-height: 1.2;
+}
+
+.enhanced-floor-plan-selector .plan-price {
+  text-align: right;
+}
+
+/* Responsive Wizard Styles */
+@media (max-width: 992px) {
+  .customization-wizard .sticky-sidebar {
+    position: static;
+    margin-top: 2rem;
+  }
+  
+  .customization-wizard .step-indicators {
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+  
+  .customization-wizard .step-indicators .step-indicator {
+    min-width: 80px;
+  }
+}
+
+@media (max-width: 768px) {
+  .enhanced-floor-plan-selector .spec-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 4px;
+  }
+  
+  .enhanced-floor-plan-selector .spec-icon {
+    font-size: 1.5rem;
+  }
+  
+  .pricing-step .selections-grid .selection-item {
+    margin-bottom: 1rem;
+  }
+  
+  .lot-selection-step .lot-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .printable-sheet {
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  .printable-sheet .btn, 
+  .printable-sheet button {
+    display: none !important;
+  }
+  
+  .printable-sheet .card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+  }
+}

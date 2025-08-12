@@ -26,14 +26,70 @@ export const GET_ME = gql`
                     _id
                     name
                     totalPrice
-                    fitures
-                    lvp
-                    carpet
-                    kitchenBackspash
-                    masterBathTile
-                    countertop
-                    primaryCabinets
-                    secondaryCabinets
+                    fixtures {
+                        _id
+                        name
+                        price
+                        classification
+                        description
+                        img
+                    }
+                    lvp {
+                        _id
+                        name
+                        price
+                        classification
+                        description
+                        img
+                    }
+                    carpet {
+                        _id
+                        name
+                        price
+                        classification
+                        description
+                        img
+                    }
+                    backsplash {
+                        _id
+                        name
+                        price
+                        classification
+                        description
+                        img
+                    }
+                    masterBathTile {
+                        _id
+                        name
+                        price
+                        classification
+                        description
+                        img
+                    }
+                    countertop {
+                        _id
+                        name
+                        price
+                        classification
+                        description
+                        img
+                    }
+                    primaryCabinets {
+                        _id
+                        name
+                        price
+                        classification
+                        description
+                        img
+                    }
+                    secondaryCabinets {
+                        _id
+                        name
+                        price
+                        classification
+                        description
+                        img
+                    }
                     upgrade
                 }
                 structural {
@@ -96,8 +152,9 @@ export const GET_PLANS = gql`
             garageType
             basePrice
             description
+            width
+            length
             elevations {
-                _id
                 name
                 price
                 classification
@@ -109,26 +166,82 @@ export const GET_PLANS = gql`
                 _id
                 name
                 totalPrice
-                fitures
-                lvp
-                carpet
-                kitchenBackspash
-                masterBathTile
-                countertop
-                primaryCabinets
-                secondaryCabinets
+                fixtures {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                lvp {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                carpet {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                backsplash {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                masterBathTile {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                countertop {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                primaryCabinets {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                secondaryCabinets {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
                 upgrade
             }
             structural {
-                _id
                 name
                 price
                 classification
                 description
                 img
+                width
+                length
             }
             additional {
-                _id
                 name
                 price
                 classification
@@ -136,7 +249,6 @@ export const GET_PLANS = gql`
                 img
             }
             kitchenAppliance {
-                _id
                 name
                 price
                 classification
@@ -144,7 +256,6 @@ export const GET_PLANS = gql`
                 img
             }
             laundryAppliance {
-                _id
                 name
                 price
                 classification
@@ -171,7 +282,6 @@ export const GET_PLAN = gql`
             name
             basePrice
             elevations {
-                _id
                 name
                 price
                 classification
@@ -183,26 +293,82 @@ export const GET_PLAN = gql`
                 _id
                 name
                 totalPrice
-                fitures
-                lvp
-                carpet
-                kitchenBackspash
-                masterBathTile
-                countertop
-                primaryCabinets
-                secondaryCabinets
+                fixtures {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                lvp {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                carpet {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                backsplash {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                masterBathTile {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                countertop {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                primaryCabinets {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
+                secondaryCabinets {
+                    _id
+                    name
+                    price
+                    classification
+                    description
+                    img
+                }
                 upgrade
             }
             structural {
-                _id
                 name
                 price
                 classification
                 description
                 img
+                width
+                length
             }
             additional {
-                _id
                 name
                 price
                 classification
@@ -210,7 +376,6 @@ export const GET_PLAN = gql`
                 img
             }
             kitchenAppliance {
-                _id
                 name
                 price
                 classification
@@ -218,7 +383,6 @@ export const GET_PLAN = gql`
                 img
             }
             laundryAppliance {
-                _id
                 name
                 price
                 classification
@@ -256,14 +420,62 @@ export const GET_INTERIOR_PACKAGES = gql`
             _id
             name
             totalPrice
-            fitures
-            lvp
-            carpet
-            kitchenBackspash
-            masterBathTile
-            countertop
-            primaryCabinets
-            secondaryCabinets
+            fixtures {
+                name
+                price
+                classification
+                description
+                img
+            }
+            lvp {
+                name
+                price
+                classification
+                description
+                img
+            }
+            carpet {
+                name
+                price
+                classification
+                description
+                img
+            }
+            backsplash {
+                name
+                price
+                classification
+                description
+                img
+            }
+            masterBathTile {
+                name
+                price
+                classification
+                description
+                img
+            }
+            countertop {
+                name
+                price
+                classification
+                description
+                img
+            }
+            primaryCabinets {
+                name
+                price
+                classification
+                description
+                img
+            }
+            secondaryCabinets {
+                name
+                price
+                classification
+                description
+                img
+            }
             upgrade
         }
     }

@@ -1,0 +1,49 @@
+{
+  "lotPremiums": [
+    {
+      "_id": "lot1",
+      "filing": 1,
+      "lot": 101,
+      "width": 60,
+      "length": 120,
+      "price": 5000,
+      "premiumType": "Corner Lot"
+    },
+    {
+      "_id": "lot2", 
+      "filing": 1,
+      "lot": 102,
+      "width": 65,
+      "length": 110, 
+      "price": 8000,
+      "premiumType": "Cul-de-sac"
+    },
+    {
+      "_id": "lot3",
+      "filing": 2,
+      "lot": 201,
+      "width": 70,
+      "length": 130,
+      "price": 15000,
+      "premiumType": "Oversized"
+    },
+    {
+      "_id": "lot4",
+      "filing": 2,
+      "lot": 202,
+      "width": 80,
+      "length": 140,
+      "price": 25000,
+      "premiumType": "Premium Location"
+    },
+    {
+      "_id": "lot5",
+      "filing": 3,
+      "lot": 301,
+      "width": 90,
+      "length": 160,
+      "price": 35000,
+      "premiumType": "Waterfront Premium"
+    }
+  ]
+}

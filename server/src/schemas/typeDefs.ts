@@ -17,20 +17,32 @@ const typeDefs = gql`
         classification: String
         description: String
         img: String
+        width: Int
+        length: Int
     }
     
     type InteriorPackage {
         _id: ID
         name: String!
         totalPrice: Float!
-        options: [Option]
+        fixtures: [Option]
+        lvp: [Option]
+        carpet: [Option]
+        backsplash: [Option]
+        masterBathTile: [Option]
+        countertop: [Option]
+        primaryCabinets: [Option]
+        secondaryCabinets: [Option]
+        upgrade: Boolean
     }
     
     type LotPremium {
         _id: ID
-        name: String!
+        filing: Int!
+        lot: Int!
+        width: Int!
+        length: Int!
         price: Float!
-        description: String
     }
     
     type Plan {
@@ -51,6 +63,8 @@ const typeDefs = gql`
         kitchenAppliance: [Option]
         laundryAppliance: [Option]
         lotPremium: [LotPremium]
+        width: Int!
+        length: Int!
     }
     
     type UserHome {
@@ -66,6 +80,8 @@ const typeDefs = gql`
         additional: [Option]
         kitchenAppliance: Option
         laundryAppliance: Option
+        width: Int!
+        length: Int!
         lotPremium: LotPremium
         totalPrice: Float
         createdAt: String
@@ -127,18 +143,30 @@ const typeDefs = gql`
         classification: String
         description: String
         img: String
+        width: Int
+        length: Int
     }
     
     input InteriorPackageInput {
         name: String!
         totalPrice: Float!
-        options: [OptionInput]
+        fixtures: [OptionInput]
+        lvp: [OptionInput]
+        carpet: [OptionInput]
+        backsplash: [OptionInput]
+        masterBathTile: [OptionInput]
+        countertop: [OptionInput]
+        primaryCabinets: [OptionInput]
+        secondaryCabinets: [OptionInput]
+        upgrade: Boolean
     }
     
     input LotPremiumInput {
-        name: String!
+        filing: Int!
+        lot: Int!
+        width: Float!
+        length: Float!
         price: Float!
-        description: String
     }
     
     input PlanInput {
@@ -158,6 +186,8 @@ const typeDefs = gql`
         kitchenAppliance: [OptionInput]
         laundryAppliance: [OptionInput]
         lotPremium: [LotPremiumInput]
+        width: Int!
+        length: Int!
     }
     
     input UserHomeInput {

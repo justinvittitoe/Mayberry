@@ -29,7 +29,5 @@ export const removeHomeId = (homeId: string) => {
   return true;
 };
 
-// Keep the old functions for backward compatibility
-export const getSavedBookIds = getSavedHomeIds;
-export const saveBookIds = saveHomeIds;
-export const removeBookId = removeHomeId;
+
+

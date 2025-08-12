@@ -20,6 +20,8 @@ export interface PlanTypeDocument extends Document {
   kitchenAppliance: OptionDocument[];
   laundryAppliance: OptionDocument[];
   lotPremium: LotPremiumDocument[];
+  width: number;
+  length: number;
 }
 
 const planTypeSchema = new Schema({
@@ -31,14 +33,16 @@ const planTypeSchema = new Schema({
   garageType: { type: String, required: true },
   basePrice: { type: Number, required: true },
   description: { type: String },
-  elevations: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
+  elevations: [Schema.Types.Mixed],
   colorScheme: [Number],
-  interiors: [{ type: Schema.Types.ObjectId, ref: 'InteriorPackage' }],
-  structural: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
-  additional: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
-  kitchenAppliance: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
-  laundryAppliance: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
+  interiors: [Schema.Types.Mixed],
+  structural: [Schema.Types.Mixed],
+  additional: [Schema.Types.Mixed],
+  kitchenAppliance: [Schema.Types.Mixed],
+  laundryAppliance: [Schema.Types.Mixed],
   lotPremium: [{ type: Schema.Types.ObjectId, ref: 'LotPremium' }],
+  width: { type: Number, required: true},
+  length: { type: Number, required: true }
 });
 
 const Plan = model<PlanTypeDocument>('Plan', planTypeSchema);

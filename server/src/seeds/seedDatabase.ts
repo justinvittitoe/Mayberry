@@ -35,39 +35,18 @@ async function seedDatabase() {
     const createdLotPremiums = await LotPremium.insertMany(floorPlanLotPremiums);
     console.log(`Created ${createdLotPremiums.length} lot premiums`);
 
-    // Organize options by classification for easier assignment
-    const optionsByClass = {
-      elevation: createdOptions.filter(opt => opt.classification === 'elevation'),
-      'kitchen-appliance': createdOptions.filter(opt => opt.classification === 'kitchen-appliance'),
-      'laundry-appliance': createdOptions.filter(opt => opt.classification === 'laundry-appliance'),
-      structural: createdOptions.filter(opt => opt.classification === 'structural'),
-      additional: createdOptions.filter(opt => opt.classification === 'additional')
-    };
+    // Options are now embedded directly in the plan data
 
-    // Seed Plans with proper references
+    // Seed Plans with embedded data
     console.log('Seeding Plans...');
     const planPromises = floorPlanSeedData.map(async (planData) => {
-      // Assign some options to each plan
-      const elevationOptions = optionsByClass.elevation.slice(0, 2); // 2 elevation options per plan
-      const kitchenOptions = optionsByClass['kitchen-appliance'].slice(0, 2); // 2 kitchen options per plan
-      const laundryOptions = optionsByClass['laundry-appliance'].slice(0, 1); // 1 laundry option per plan
-      const structuralOptions = optionsByClass.structural.slice(0, 3); // 3 structural options per plan
-      const additionalOptions = optionsByClass.additional.slice(0, 4); // 4 additional options per plan
-
-      // Assign some interior packages to each plan
-      const interiorPackages = createdInteriorPackages.slice(0, 3); // 3 interior packages per plan
-
-      // Assign some lot premiums to each plan  
+      // Assign lot premiums (still using references as specified)
       const lotPremiums = createdLotPremiums.slice(0, 3); // 3 lot premiums per plan
 
       const plan = new Plan({
         ...planData,
-        elevations: elevationOptions.map(opt => opt._id),
-        interiors: interiorPackages.map(pkg => pkg._id),  
-        structural: structuralOptions.map(opt => opt._id),
-        additional: additionalOptions.map(opt => opt._id),
-        kitchenAppliance: kitchenOptions.map(opt => opt._id),
-        laundryAppliance: laundryOptions.map(opt => opt._id),
+        // Use embedded data directly from floorPlanSeedData
+        // lotPremium still uses references
         lotPremium: lotPremiums.map(premium => premium._id)
       });
 

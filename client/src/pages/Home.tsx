@@ -3,11 +3,12 @@ import { Container, Row, Col, Button } from 'react-bootstrap';
 import { useQuery } from '@apollo/client';
 import { GET_PLANS } from '../utils/queries';
 import { Link, useNavigate } from 'react-router-dom';
-import FloorPlanSelector from '../components/FloorPlanSelector';
+import EnhancedFloorPlanSelector from '../components/EnhancedFloorPlanSelector';
+import LoadingSpinner from '../components/LoadingSpinner';
 import AuthService from '../utils/auth';
 
 const Home = () => {
-  const { loading, data } = useQuery(GET_PLANS);
+  const { loading, data, error } = useQuery(GET_PLANS);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const navigate = useNavigate();
   const isAuthenticated = AuthService.loggedIn();
@@ -25,11 +26,12 @@ const Home = () => {
     basePrice: plan.basePrice,
     description: plan.description
   }));
-
+  //Floor plan selected state management
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
   };
-
+  
+  //Customize selected floor plan
   const handleCustomizeClick = () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: { pathname: `/customize/${selectedPlan.id}` } } });
@@ -37,12 +39,26 @@ const Home = () => {
     }
     navigate(`/customize/${selectedPlan.id}`);
   };
-
+  //loading
   if (loading) {
+    return <LoadingSpinner message="Loading available plans..." fullPage />;
+  }
+  //Error loading
+  if (error) {
     return (
-      <div className="loading-spinner">
-        <div className="spinner"></div>
-        <p className="mt-3 text-muted">Loading available plans...</p>
+      <div className="error-container">
+        <Container>
+          <div className="text-center py-5">
+            <div className="alert alert-danger">
+              <h4>Unable to Load Plans</h4>
+              <p>We're having trouble loading the available floor plans. Please try refreshing the page.</p>
+              <p className="mb-0"><small>Error: {error.message}</small></p>
+            </div>
+            <Button variant="primary" onClick={() => window.location.reload()}>
+              Refresh Page
+            </Button>
+          </div>
+        </Container>
       </div>
     );
   }
@@ -82,7 +98,7 @@ const Home = () => {
       </div>
 
       {/* Admin Access Section */}
-      {isAuthenticated && AuthService.getProfile()?.role === 'admin' && (
+      {isAuthenticated && AuthService.getProfile()?.data.role === 'admin' && (
         <div className="admin-access-section">
           <Container>
             <Row className="justify-content-center">
@@ -108,7 +124,7 @@ const Home = () => {
       )}
 
       {/* Floor Plan Selection */}
-      <FloorPlanSelector 
+      <EnhancedFloorPlanSelector 
         onPlanSelect={isAuthenticated ? handlePlanSelect : undefined}
         selectedPlanId={selectedPlan?.id}
         plans={transformedPlans}
