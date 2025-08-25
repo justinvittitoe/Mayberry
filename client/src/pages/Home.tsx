@@ -66,7 +66,7 @@ const Home = () => {
   return (
     <>
       {/* Modern Hero Section */}
-      <div className="modern-hero-section">
+      <div className="modern-hero-section justify-content-center">
         <div className="hero-content">
           <Container>
             <Row className="justify-content-center text-center">

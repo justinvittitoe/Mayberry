@@ -21,7 +21,21 @@ export const GET_ME = gql`
                     description
                     img
                 }
-                colorScheme
+                colorScheme {
+                    _id
+                    name
+                    description
+                    price
+                    colorValues {
+                        primary
+                        secondary
+                        roof
+                        accent
+                        foundation
+                    }
+                    isActive
+                    sortOrder
+                }
                 interior {
                     _id
                     name
@@ -161,7 +175,21 @@ export const GET_PLANS = gql`
                 description
                 img
             }
-            colorScheme
+            colorScheme {
+                _id
+                name
+                description
+                price
+                colorValues {
+                    primary
+                    secondary
+                    roof
+                    accent
+                    foundation
+                }
+                isActive
+                sortOrder
+            }
             interiors {
                 _id
                 name
@@ -288,7 +316,21 @@ export const GET_PLAN = gql`
                 description
                 img
             }
-            colorScheme
+            colorScheme {
+                _id
+                name
+                description
+                price
+                colorValues {
+                    primary
+                    secondary
+                    roof
+                    accent
+                    foundation
+                }
+                isActive
+                sortOrder
+            }
             interiors {
                 _id
                 name
@@ -490,6 +532,28 @@ export const GET_LOT_PREMIUMS = gql`
             width
             length
             price
+        }
+    }
+`;
+
+export const GET_COLOR_SCHEMES = gql`
+    query getColorSchemes {
+        colorSchemes {
+            _id
+            name
+            description
+            price
+            colorValues {
+                primary
+                secondary
+                roof
+                accent
+                foundation
+            }
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
         }
     }
 `;

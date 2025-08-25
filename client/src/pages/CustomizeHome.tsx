@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { Container, Alert } from 'react-bootstrap';
 import CustomizationWizard from '../components/CustomizationWizard';
-import { GET_PLAN, GET_OPTIONS, GET_INTERIOR_PACKAGES, GET_LOT_PREMIUMS } from '../utils/queries';
+import { GET_PLAN, GET_OPTIONS, GET_INTERIOR_PACKAGES, GET_LOT_PREMIUMS, GET_COLOR_SCHEMES } from '../utils/queries';
 
 const CustomizeHome = () => {
     const { planId } = useParams<{ planId: string }>();
@@ -16,11 +16,13 @@ const CustomizeHome = () => {
     const { data: optionsData } = useQuery(GET_OPTIONS);
     const { data: interiorData } = useQuery(GET_INTERIOR_PACKAGES);
     const { data: lotData } = useQuery(GET_LOT_PREMIUMS);
+    const { data: colorSchemesData } = useQuery(GET_COLOR_SCHEMES);
 
     const plan = planData?.plan;
     const options = optionsData?.options || [];
     const interiorPackages = interiorData?.interiorPackages || [];
     const lotPremiums = lotData?.lotPremiums || [];
+    const colorSchemes = colorSchemesData?.colorSchemes || [];
 
     if (planLoading) {
         return (
@@ -48,6 +50,7 @@ const CustomizeHome = () => {
             options={options}
             interiorPackages={interiorPackages}
             lotPremiums={lotPremiums}
+            colorSchemes={colorSchemes}
         />
     );
 };

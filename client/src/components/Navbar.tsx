@@ -8,7 +8,7 @@ const AppNavbar = () => {
       <Navbar bg='light' variant='light' expand='lg'>
         <Container fluid>
           <Navbar.Brand as={Link} to='/'>
-          🏠 Mayberry Home Builder
+          Mayberry Home Builder
           </Navbar.Brand>
           <Navbar.Toggle aria-controls='navbar' />
           <Navbar.Collapse id='navbar' className='d-flex flex-row-reverse'>

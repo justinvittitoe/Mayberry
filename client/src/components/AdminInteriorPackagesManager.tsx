@@ -3,6 +3,7 @@ import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col } from 'reac
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_INTERIOR_PACKAGES } from '../utils/queries';
 import { CREATE_INTERIOR_PACKAGE, UPDATE_INTERIOR_PACKAGE, DELETE_INTERIOR_PACKAGE } from '../utils/mutations';
+import { cleanInteriorPackageForMutation } from '../utils/cleanGraphQLObject';
 
 interface InteriorPackage {
   _id: string;
@@ -124,17 +125,19 @@ const AdminInteriorPackagesManager = () => {
     }
 
     try {
+      const cleanedPackage = cleanInteriorPackageForMutation(formData);
+      
       if (editingPackage) {
         await updateInteriorPackage({
           variables: {
             id: editingPackage._id,
-            interiorPackage: formData
+            interiorPackage: cleanedPackage
           }
         });
       } else {
         await createInteriorPackage({
           variables: {
-            interiorPackage: formData
+            interiorPackage: cleanedPackage
           }
         });
       }

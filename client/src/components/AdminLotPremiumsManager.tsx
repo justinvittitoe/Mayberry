@@ -3,6 +3,7 @@ import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col } from 'reac
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_LOT_PREMIUMS } from '../utils/queries';
 import { CREATE_LOT_PREMIUM, UPDATE_LOT_PREMIUM, DELETE_LOT_PREMIUM } from '../utils/mutations';
+import { cleanLotPremiumForMutation } from '../utils/cleanGraphQLObject';
 
 interface LotPremium {
   _id: string;
@@ -83,17 +84,19 @@ const AdminLotPremiumsManager = () => {
     }
 
     try {
+      const cleanedLotPremium = cleanLotPremiumForMutation(formData);
+      
       if (editingLotPremium) {
         await updateLotPremium({
           variables: {
             id: editingLotPremium._id,
-            lotPremium: formData
+            lotPremium: cleanedLotPremium
           }
         });
       } else {
         await createLotPremium({
           variables: {
-            lotPremium: formData
+            lotPremium: cleanedLotPremium
           }
         });
       }

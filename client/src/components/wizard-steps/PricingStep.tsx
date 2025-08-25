@@ -62,6 +62,15 @@ const PricingStep: React.FC<PricingStepProps> = ({
             });
         }
 
+        if (customization.colorScheme && customization.colorScheme.price > 0) {
+            breakdown.push({
+                category: 'Color Scheme',
+                item: customization.colorScheme.name,
+                amount: customization.colorScheme.price,
+                required: false
+            });
+        }
+
         if (customization.interior) {
             breakdown.push({
                 category: 'Interior Package',
@@ -265,11 +274,24 @@ const PricingStep: React.FC<PricingStepProps> = ({
                                         <div className="d-flex justify-content-between">
                                             <div>
                                                 <strong>🏠 Elevation:</strong> {customization.elevation.name}
-                                                <div className="small text-muted">Color Scheme: Option {customization.colorScheme}</div>
+                                                {customization.colorScheme && (
+                                                    <div className="small text-muted">Color Scheme: {customization.colorScheme.name}</div>
+                                                )}
                                             </div>
                                             <Badge bg="primary">
                                                 {customization.elevation.price > 0 ? `+$${customization.elevation.price.toLocaleString()}` : 'Included'}
                                             </Badge>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {customization.colorScheme && customization.colorScheme.price > 0 && (
+                                    <div className="selection-item mb-3 p-2 bg-light rounded">
+                                        <div className="d-flex justify-content-between">
+                                            <div>
+                                                <strong>🎨 Color Scheme:</strong> {customization.colorScheme.name}
+                                            </div>
+                                            <Badge bg="primary">+${customization.colorScheme.price.toLocaleString()}</Badge>
                                         </div>
                                     </div>
                                 )}
