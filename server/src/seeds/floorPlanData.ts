@@ -1,6 +1,7 @@
 // Comprehensive seed data for 8 Mayberry floor plans
 // This data includes all required fields matching the updated Plan schema
 
+
 export const floorPlanSeedData = [
   {
     planType: 0,
@@ -13,9 +14,10 @@ export const floorPlanSeedData = [
     description: "Cozy two story home perfect for first-time buyers. Features an open-concept living area, spacious master suite, and efficient use of space throughout.",
     elevations: [
       { name: "Farmhouse", price: 0, classification: "elevation", description: "Classic brick and siding exterior with traditional styling", img: "standard-elevation-a.jpg" },
-      { name: "Prairie", price: 0, classification: "elevation", description: "Stone and siding exterior with craftsman details", img: "standard-elevation-b.jpg" }
+      { name: "Prairie", price: 0, classification: "elevation", description: "Stone and siding exterior with craftsman details", img: "standard-elevation-b.jpg" },
+      { name: "Modern", price: 2000, classification: "elevation", description: "Contemporary design with clean lines and dynamic color options", img: "Plan 0 - Modern.svg", svgPath: "/Plan 0 - Modern.svg", supportsColorSchemes: true }
     ],
-    colorScheme: [5, 7, 8, 14, 16],
+    colorScheme: '689d058bf92e1024cbaf069c',
     interiors: [
       {
         _id: "60f7b3b3b3b3b3b3b3b3b3b1",
@@ -60,7 +62,7 @@ export const floorPlanSeedData = [
       { name: "Modern", price: 0, classification: "elevation", description: "Full stone exterior with premium architectural details", img: "premium-stone-elevation.jpg" },
       { name: "Ranch", price: 0, classification: "elevation", description: "Premium materials with custom architectural features", img: "luxury-elevation.jpg" }
     ],
-    colorScheme: [2, 8, 9, 13, 16],
+    colorScheme: '689d058bf92e1024cbaf069d',
     interiors: [
       {
         _id: "60f7b3b3b3b3b3b3b3b3b3b2",
@@ -105,7 +107,7 @@ export const floorPlanSeedData = [
       { name: "Farmhouse", price: 0, classification: "elevation", description: "Classic brick and siding exterior with traditional styling", img: "standard-elevation-a.jpg" },
       { name: "Modern", price: 0, classification: "elevation", description: "Full stone exterior with premium architectural details", img: "premium-stone-elevation.jpg" }
     ],
-    colorScheme: [1, 2, 5, 10, 16],
+    colorScheme: '689d058bf92e1024cbaf069e',
     interiors: [
       {
         _id: "60f7b3b3b3b3b3b3b3b3b3b3",
@@ -150,7 +152,7 @@ export const floorPlanSeedData = [
       { name: "Prairie", price: 0, classification: "elevation", description: "Stone and siding exterior with craftsman details", img: "standard-elevation-b.jpg" },
       { name: "Ranch", price: 0, classification: "elevation", description: "Premium materials with custom architectural features", img: "luxury-elevation.jpg" }
     ],
-    colorScheme: [5, 7, 11, 14, 19],
+    colorScheme: '689d058bf92e1024cbaf069f',
     interiors: [
       {
         _id: "60f7b3b3b3b3b3b3b3b3b3b4",
@@ -195,7 +197,7 @@ export const floorPlanSeedData = [
       { name: "Farmhouse", price: 0, classification: "elevation", description: "Classic brick and siding exterior with traditional styling", img: "standard-elevation-a.jpg" },
       { name: "Prairie", price: 0, classification: "elevation", description: "Stone and siding exterior with craftsman details", img: "standard-elevation-b.jpg" }
     ],
-    colorScheme: [6, 7, 13, 17, 20],
+    colorScheme: '689d058bf92e1024cbaf06a0',
     interiors: [
       {
         _id: "60f7b3b3b3b3b3b3b3b3b3b5",
@@ -240,7 +242,7 @@ export const floorPlanSeedData = [
       { name: "Modern", price: 0, classification: "elevation", description: "Full stone exterior with premium architectural details", img: "premium-stone-elevation.jpg" },
       { name: "Ranch", price: 0, classification: "elevation", description: "Premium materials with custom architectural features", img: "luxury-elevation.jpg" }
     ],
-    colorScheme: [9, 11, 12, 16, 18],
+    colorScheme: '689d058bf92e1024cbaf06a1',
     interiors: [
       {
         _id: "60f7b3b3b3b3b3b3b3b3b3b6",
@@ -285,7 +287,7 @@ export const floorPlanSeedData = [
       { name: "Prairie", price: 0, classification: "elevation", description: "Stone and siding exterior with craftsman details", img: "standard-elevation-b.jpg" },
       { name: "Modern", price: 0, classification: "elevation", description: "Full stone exterior with premium architectural details", img: "premium-stone-elevation.jpg" }
     ],
-    colorScheme: [10, 14, 16, 17, 19],
+    colorScheme: '689d058bf92e1024cbaf06a2',
     interiors: [
       {
         _id: "60f7b3b3b3b3b3b3b3b3b3b7",
@@ -330,7 +332,7 @@ export const floorPlanSeedData = [
       { name: "Ranch", price: 0, classification: "elevation", description: "Premium materials with custom architectural features", img: "luxury-elevation.jpg" },
       { name: "Farmhouse", price: 0, classification: "elevation", description: "Classic brick and siding exterior with traditional styling", img: "standard-elevation-a.jpg" }
     ],
-    colorScheme: [1, 6, 12, 14, 16],
+    colorScheme: '689d058bf92e1024cbaf06a3',
     interiors: [
       {
         _id: "60f7b3b3b3b3b3b3b3b3b3b8",

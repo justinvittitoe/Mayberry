@@ -19,6 +19,28 @@ const typeDefs = gql`
         img: String
         width: Int
         length: Int
+        svgPath: String
+        supportsColorSchemes: Boolean
+    }
+    
+    type ColorValues {
+        primary: String!
+        secondary: String!
+        roof: String!
+        accent: String!
+        foundation: String
+    }
+    
+    type ColorScheme {
+        _id: ID!
+        name: String!
+        description: String
+        price: Float!
+        colorValues: ColorValues!
+        isActive: Boolean!
+        sortOrder: Int
+        createdAt: String
+        updatedAt: String
     }
     
     type InteriorPackage {
@@ -56,7 +78,7 @@ const typeDefs = gql`
         basePrice: Float!
         description: String
         elevations: [Option]
-        colorScheme: [Int]
+        colorScheme: [ColorScheme]
         interiors: [InteriorPackage]
         structural: [Option]
         additional: [Option]
@@ -74,7 +96,7 @@ const typeDefs = gql`
         planTypeName: String!
         basePrice: Float!
         elevation: Option
-        colorScheme: Int!
+        colorScheme: ColorScheme
         interior: InteriorPackage
         structural: [Option]
         additional: [Option]
@@ -102,6 +124,7 @@ const typeDefs = gql`
         userHomes: [UserHome]
         userHome(id: ID!): UserHome
         options: [Option]
+        colorSchemes: [ColorScheme]
         interiorPackages: [InteriorPackage]
         lotPremiums: [LotPremium]
     }
@@ -120,6 +143,11 @@ const typeDefs = gql`
         createOption(option: OptionInput!): Option
         updateOption(id: ID!, option: OptionInput!): Option
         deleteOption(id: ID!): Option
+        
+        # Color Scheme mutations (admin only)
+        createColorScheme(colorScheme: ColorSchemeInput!): ColorScheme
+        updateColorScheme(id: ID!, colorScheme: ColorSchemeInput!): ColorScheme
+        deleteColorScheme(id: ID!): ColorScheme
         
         # Interior Package mutations (admin only)
         createInteriorPackage(interiorPackage: InteriorPackageInput!): InteriorPackage
@@ -145,6 +173,25 @@ const typeDefs = gql`
         img: String
         width: Int
         length: Int
+        svgPath: String
+        supportsColorSchemes: Boolean
+    }
+    
+    input ColorValuesInput {
+        primary: String!
+        secondary: String!
+        roof: String!
+        accent: String!
+        foundation: String
+    }
+    
+    input ColorSchemeInput {
+        name: String!
+        description: String
+        price: Float!
+        colorValues: ColorValuesInput!
+        isActive: Boolean
+        sortOrder: Int
     }
     
     input InteriorPackageInput {
@@ -179,7 +226,7 @@ const typeDefs = gql`
         basePrice: Float!
         description: String
         elevations: [OptionInput]
-        colorScheme: [Int]
+        colorScheme: [ColorSchemeInput]
         interiors: [InteriorPackageInput]
         structural: [OptionInput]
         additional: [OptionInput]
@@ -195,7 +242,7 @@ const typeDefs = gql`
         planTypeName: String!
         basePrice: Float!
         elevation: OptionInput
-        colorScheme: Int!
+        colorScheme: ColorSchemeInput
         interior: InteriorPackageInput
         structural: [OptionInput]
         additional: [OptionInput]

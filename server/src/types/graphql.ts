@@ -21,6 +21,34 @@ export interface Option {
     classification?: string;
     description?: string;
     img?: string;
+    width?: number;
+    length?: number;
+    svgPath?: string;
+    supportsColorSchemes?: boolean;
+}
+
+export interface Classification {
+    value: 'elevation' | 'colorScheme' | 'interior' | 'structural' | 'additional' | 'appliance' | 'lot' 
+}
+
+export interface ColorValues {
+    primary: string;
+    secondary: string;
+    roof: string;
+    accent: string;
+    foundation?: string;
+}
+
+export interface ColorScheme {
+    _id?: string;
+    name: string;
+    description?: string;
+    price: number;
+    colorValues: ColorValues;
+    isActive: boolean;
+    sortOrder?: number;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface InteriorPackage {
@@ -53,7 +81,7 @@ export interface Plan {
     name: string;
     basePrice: number;
     elevations?: Option[];
-    colorScheme?: number[];
+    colorScheme?: ColorScheme[];
     interiors?: InteriorPackage[];
     structural?: Option[];
     additional?: Option[];
@@ -69,7 +97,7 @@ export interface UserHome {
     planTypeName: string;
     basePrice: number;
     elevation?: Option;
-    colorScheme: number;
+    colorScheme?: ColorScheme;
     interior?: InteriorPackage;
     structural?: Option[];
     additional?: Option[];
@@ -88,6 +116,27 @@ export interface OptionInput {
     classification?: string;
     description?: string;
     img?: string;
+    width?: number;
+    length?: number;
+    svgPath?: string;
+    supportsColorSchemes?: boolean;
+}
+
+export interface ColorValuesInput {
+    primary: string;
+    secondary: string;
+    roof: string;
+    accent: string;
+    foundation?: string;
+}
+
+export interface ColorSchemeInput {
+    name: string;
+    description?: string;
+    price: number;
+    colorValues: ColorValuesInput;
+    isActive?: boolean;
+    sortOrder?: number;
 }
 
 export interface InteriorPackageInput {
@@ -117,7 +166,7 @@ export interface PlanInput {
     name: string;
     basePrice: number;
     elevations?: OptionInput[];
-    colorScheme?: number[];
+    colorScheme?: ColorSchemeInput[];
     interiors?: InteriorPackageInput[];
     structural?: OptionInput[];
     additional?: OptionInput[];
@@ -131,7 +180,7 @@ export interface UserHomeInput {
     planTypeName: string;
     basePrice: number;
     elevation?: OptionInput;
-    colorScheme: number;
+    colorScheme?: ColorSchemeInput;
     interior?: InteriorPackageInput;
     structural?: OptionInput[];
     additional?: OptionInput[];

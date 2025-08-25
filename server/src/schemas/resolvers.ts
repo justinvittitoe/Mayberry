@@ -1,15 +1,17 @@
-import { User, Plan, Option, InteriorPackage, LotPremium } from '../models/index.js';
+import { User, Plan, Option, InteriorPackage, LotPremium, ColorScheme } from '../models/index.js';
 import { signToken, AuthenticationError } from '../services/auth.js';
 import type {
     Auth,
     User as UserType,
     Plan as PlanType,
     Option as OptionType,
+    ColorScheme as ColorSchemeType,
     InteriorPackage as InteriorPackageType,
     LotPremium as LotPremiumType,
     UserHome as UserHomeType,
     PlanInput,
     OptionInput,
+    ColorSchemeInput,
     InteriorPackageInput,
     LotPremiumInput,
     UserHomeInput
@@ -64,6 +66,13 @@ const toOptionType = (optionDoc: any): OptionType => ({
     _id: optionDoc._id.toString(),
 });
 
+const toColorSchemeType = (colorSchemeDoc: any): ColorSchemeType => ({
+    ...colorSchemeDoc.toObject(),
+    _id: colorSchemeDoc._id.toString(),
+    createdAt: colorSchemeDoc.createdAt?.toISOString?.() ?? colorSchemeDoc.createdAt,
+    updatedAt: colorSchemeDoc.updatedAt?.toISOString?.() ?? colorSchemeDoc.updatedAt,
+});
+
 const toInteriorPackageType = (pkgDoc: any): InteriorPackageType => ({
     ...pkgDoc.toObject(),
     _id: pkgDoc._id.toString(),
@@ -97,19 +106,22 @@ const resolvers = {
         // Plan queries
         plans: async (): Promise<PlanType[]> => {
             const plans = await Plan.find({})
-                .populate('lotPremium');
+                .populate('lotPremium')
+                .populate('colorScheme');
             return plans.map(toPlanType);
         },
 
         plan: async (_parent: unknown, args: { id: string }): Promise<PlanType | null> => {
             const plan = await Plan.findById(args.id)
-                .populate('lotPremium');
+                .populate('lotPremium')
+                .populate('colorScheme');
             return plan ? toPlanType(plan) : null;
         },
 
         planByType: async (_parent: unknown, args: { planType: number }): Promise<PlanType | null> => {
             const plan = await Plan.findOne({ planType: args.planType })
-                .populate('lotPremium');
+                .populate('lotPremium')
+                .populate('colorScheme');
             return plan ? toPlanType(plan) : null;
         },
 
@@ -129,18 +141,23 @@ const resolvers = {
 
         // Option queries
         options: async (): Promise<OptionType[]> => {
-            return (await Option.find({})).map(toOptionType);
+            return (await Option.find({}).sort({ classification: 1, name: 1 })).map(toOptionType);
+        },
+
+        // Color Scheme queries
+        colorSchemes: async (): Promise<ColorSchemeType[]> => {
+            return (await ColorScheme.find({ isActive: true }).sort({ sortOrder: 1, name: 1 })).map(toColorSchemeType);
         },
 
         // Interior package queries
         interiorPackages: async (): Promise<InteriorPackageType[]> => {
-            const interior = await InteriorPackage.find({});
+            const interior = await InteriorPackage.find({}).sort({ totalPrice: 1, name: 1 });
             return interior.map(toInteriorPackageType);
         },
 
         // Lot premium queries
         lotPremiums: async (): Promise<LotPremiumType[]> => {
-            return (await LotPremium.find({})).map(toLotPremiumType);
+            return (await LotPremium.find({}).sort({ filing: 1, lot: 1 })).map(toLotPremiumType);
         },
     },
 
@@ -206,6 +223,25 @@ const resolvers = {
             requireAdmin(context);
             const option = await Option.findByIdAndDelete(args.id);
             return option ? toOptionType(option) : null;
+        },
+
+        // Color Scheme mutations (admin only)
+        createColorScheme: async (_parent: unknown, args: { colorScheme: ColorSchemeInput }, context: any): Promise<ColorSchemeType> => {
+            requireAdmin(context);
+            const colorScheme = await ColorScheme.create(args.colorScheme);
+            return toColorSchemeType(colorScheme);
+        },
+
+        updateColorScheme: async (_parent: unknown, args: { id: string; colorScheme: ColorSchemeInput }, context: any): Promise<ColorSchemeType | null> => {
+            requireAdmin(context);
+            const colorScheme = await ColorScheme.findByIdAndUpdate(args.id, args.colorScheme, { new: true });
+            return colorScheme ? toColorSchemeType(colorScheme) : null;
+        },
+
+        deleteColorScheme: async (_parent: unknown, args: { id: string }, context: any): Promise<ColorSchemeType | null> => {
+            requireAdmin(context);
+            const colorScheme = await ColorScheme.findByIdAndDelete(args.id);
+            return colorScheme ? toColorSchemeType(colorScheme) : null;
         },
 
         // Interior Package mutations (admin only)

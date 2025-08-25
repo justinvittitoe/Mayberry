@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import db from '../config/connection.js';
 import Plan from '../models/Plan.js';
-import Option from '../models/Option.js';
-import InteriorPackage from '../models/InteriorPackage.js';
-import LotPremium from '../models/LotPremium.js';
+import Option from '../models/OptionSchemas/Option.js';
+import InteriorPackage from '../models/OptionSchemas/InteriorPackage.js';
+import LotPremium from '../models/OptionSchemas/LotPremium.js';
 import { floorPlanSeedData, floorPlanOptions, floorPlanInteriorPackages, floorPlanLotPremiums } from './floorPlanData.js';
 
 async function seedDatabase() {
@@ -68,7 +68,7 @@ async function seedDatabase() {
     });
 
     console.log('\nDatabase seeding completed successfully! 🎉');
-    
+
   } catch (error) {
     console.error('Error seeding database:', error);
     throw error;

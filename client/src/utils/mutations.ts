@@ -451,3 +451,56 @@ export const DELETE_LOT_PREMIUM = gql`
         }
     }
 `;
+
+export const CREATE_COLOR_SCHEME = gql`
+    mutation createColorScheme($colorScheme: ColorSchemeInput!) {
+        createColorScheme(colorScheme: $colorScheme) {
+            _id
+            name
+            description
+            price
+            colorValues {
+                primary
+                secondary
+                roof
+                accent
+                foundation
+            }
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const UPDATE_COLOR_SCHEME = gql`
+    mutation updateColorScheme($id: ID!, $colorScheme: ColorSchemeInput!) {
+        updateColorScheme(id: $id, colorScheme: $colorScheme) {
+            _id
+            name
+            description
+            price
+            colorValues {
+                primary
+                secondary
+                roof
+                accent
+                foundation
+            }
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const DELETE_COLOR_SCHEME = gql`
+    mutation deleteColorScheme($id: ID!) {
+        deleteColorScheme(id: $id) {
+            _id
+            name
+        }
+    }
+`;

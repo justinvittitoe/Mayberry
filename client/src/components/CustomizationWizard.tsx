@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { SAVE_USER_HOME, SAVE_USER_HOME_PROGRESS } from '../utils/mutations';
 import AuthService from '../utils/auth';
+import { cleanUserHomeForMutation, validateUserHomeForSave } from '../utils/cleanGraphQLObject';
+import type { CustomizationState } from '../types/models';
 
 // Step Components
 import ElevationStep from './wizard-steps/ElevationStep';
@@ -14,29 +16,22 @@ import ApplianceStep from './wizard-steps/ApplianceStep';
 import LotSelectionStep from './wizard-steps/LotSelectionStep';
 import PricingStep from './wizard-steps/PricingStep';
 
-export interface CustomizationState {
-    elevation: any;
-    colorScheme: number;
-    interior: any;
-    structural: any[];
-    additional: any[];
-    kitchenAppliance: any;
-    laundryAppliance: any;
-    lotPremium: any;
-}
+// CustomizationState is now imported from types/models
 
 interface CustomizationWizardProps {
     plan: any;
     options: any[];
     interiorPackages: any[];
     lotPremiums: any[];
+    colorSchemes: any[];
 }
 
 const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
     plan,
     options,
     interiorPackages,
-    lotPremiums
+    lotPremiums,
+    colorSchemes
 }) => {
     const navigate = useNavigate();
     const isAuthenticated = AuthService.loggedIn();
@@ -46,7 +41,7 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
     const [currentStep, setCurrentStep] = useState(0);
     const [customization, setCustomization] = useState<CustomizationState>({
         elevation: null,
-        colorScheme: 1,
+        colorScheme: null,
         interior: null,
         structural: [],
         additional: [],
@@ -70,18 +65,19 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
         { id: 'pricing', title: 'Review & Save', description: 'Final pricing', icon: '💰' }
     ];
 
-    // Set default selections when plan loads
+    // Initialize empty selections when plan loads (removed auto-selection)
     useEffect(() => {
-        if (plan) {
+        if (plan && colorSchemes.length > 0) {
             setCustomization(prev => ({
                 ...prev,
-                elevation: plan.elevations?.[0] || null,
-                interior: plan.interiors?.[0] || null,
-                kitchenAppliance: plan.kitchenAppliance?.[0] || null,
-                laundryAppliance: plan.laundryAppliance?.[0] || null,
+                elevation: null,
+                colorScheme: null,
+                interior: null,
+                kitchenAppliance: null,
+                laundryAppliance: null,
             }));
         }
-    }, [plan]);
+    }, [plan, colorSchemes]);
 
     // Calculate total price whenever customization changes
     useEffect(() => {
@@ -90,6 +86,10 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
 
             if (customization.elevation) {
                 total += customization.elevation.price || 0;
+            }
+
+            if (customization.colorScheme) {
+                total += customization.colorScheme.price || 0;
             }
 
             if (customization.interior) {
@@ -124,8 +124,8 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
     useEffect(() => {
         const checkStepComplete = () => {
             switch (currentStep) {
-                case 0: // Elevation
-                    return !!customization.elevation;
+                case 0: // Elevation & Color Scheme
+                    return !!customization.elevation && !!customization.colorScheme;
                 case 1: // Interior
                     return !!customization.interior;
                 case 2: // Structural
@@ -137,7 +137,9 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
                 case 5: // Lot
                     return !!customization.lotPremium;
                 case 6: // Pricing/Review
-                    return true;
+                    return !!customization.elevation && !!customization.colorScheme && 
+                           !!customization.interior && !!customization.kitchenAppliance && 
+                           !!customization.laundryAppliance && !!customization.lotPremium;
                 default:
                     return false;
             }
@@ -222,31 +224,51 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
         }
 
         try {
+            // Create user home object for validation and cleaning
+            const userHomeData = {
+                planTypeId: plan._id,
+                planTypeName: plan.name,
+                basePrice: plan.basePrice,
+                elevation: customization.elevation,
+                colorScheme: customization.colorScheme,
+                interior: customization.interior,
+                structural: customization.structural,
+                additional: customization.additional,
+                kitchenAppliance: customization.kitchenAppliance,
+                laundryAppliance: customization.laundryAppliance,
+                lotPremium: customization.lotPremium,
+                totalPrice: totalPrice,
+                isComplete: true
+            };
+
+            // Validate required fields
+            const validationErrors = validateUserHomeForSave(userHomeData);
+            if (validationErrors.length > 0) {
+                alert(`Please complete the following before saving:\n${validationErrors.join('\n')}`);
+                return;
+            }
+
+            // Clean the data for mutation
+            const cleanedUserHome = cleanUserHomeForMutation(userHomeData);
+            
+            if (!cleanedUserHome) {
+                throw new Error('Failed to prepare user home data for saving');
+            }
+
             // Save as complete customization first
             await handleSaveProgress(true);
             
             // Then save to the main saved homes
             await saveHome({
                 variables: {
-                    userHome: {
-                        planTypeId: plan._id,
-                        planTypeName: plan.name,
-                        basePrice: plan.basePrice,
-                        elevation: customization.elevation,
-                        colorScheme: customization.colorScheme,
-                        interior: customization.interior,
-                        structural: customization.structural,
-                        additional: customization.additional,
-                        kitchenAppliance: customization.kitchenAppliance,
-                        laundryAppliance: customization.laundryAppliance,
-                        lotPremium: customization.lotPremium
-                    }
+                    userHome: cleanedUserHome
                 }
             });
 
             navigate('/saved-homes');
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error saving home:', err);
+            alert(`Error saving home: ${err.message || 'Unknown error occurred'}`);
         }
     };
 
@@ -260,7 +282,8 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
                         onSelect={(elevation) => handleOptionChange('elevation', elevation)}
                         colorScheme={customization.colorScheme}
                         onColorSchemeChange={(scheme) => handleOptionChange('colorScheme', scheme)}
-                        availableColorSchemes={plan?.colorScheme || []}
+                        availableColorSchemes={colorSchemes}
+                        planType={plan?.planType}
                     />
                 );
             case 1:

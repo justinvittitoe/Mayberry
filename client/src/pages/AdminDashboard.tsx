@@ -4,6 +4,8 @@ import AdminPlanManager from '../components/AdminPlanManager';
 import AdminOptionsManager from '../components/AdminOptionsManager';
 import AdminInteriorPackagesManager from '../components/AdminInteriorPackagesManager';
 import AdminLotPremiumsManager from '../components/AdminLotPremiumsManager';
+import AdminColorSchemeManager from '../components/AdminColorSchemeManager';
+import AdminInteriorOptionsManager from '../components/AdminInteriorOptionsManager';
 import AuthService from '../utils/auth';
 import { Navigate } from 'react-router-dom';
 
@@ -58,6 +60,22 @@ const AdminDashboard = () => {
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
+                  <Nav.Link eventKey="interior-options">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="me-2">
+                      <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+                    </svg>
+                    Interior Options
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="me-2">
+                      <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                    </svg>
+                    Color Schemes
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
                   <Nav.Link eventKey="lots">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="me-2">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -80,6 +98,14 @@ const AdminDashboard = () => {
                 
                 <Tab.Pane eventKey="interiors">
                   <AdminInteriorPackagesManager />
+                </Tab.Pane>
+                
+                <Tab.Pane eventKey="interior-options">
+                  <AdminInteriorOptionsManager />
+                </Tab.Pane>
+                
+                <Tab.Pane eventKey="colors">
+                  <AdminColorSchemeManager />
                 </Tab.Pane>
                 
                 <Tab.Pane eventKey="lots">
