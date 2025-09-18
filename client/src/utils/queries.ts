@@ -162,8 +162,9 @@ export const GET_PLANS = gql`
             name
             bedrooms
             bathrooms
-            squareFootage
-            garageType
+            totalSqft
+            resSqft
+            garage
             basePrice
             description
             width

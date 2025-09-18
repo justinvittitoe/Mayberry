@@ -1,10 +1,11 @@
 import { Schema, model, type Document } from 'mongoose';
 
 export interface ColorValues {
-  primary: string;    // Main siding/exterior color
-  secondary: string;  // Trim and accent color
+  primary: string;    // Main siding
+  secondary: string;  // Secondary Siding
   roof: string;       // Roof color
-  accent: string;     // Door, shutters, special features
+  accent: string;     // Trim color
+  stone?: string;      // Stone color
   foundation?: string; // Foundation color (optional)
 }
 
@@ -24,6 +25,7 @@ const colorValuesSchema = new Schema<ColorValues>({
   secondary: { type: String, required: true },
   roof: { type: String, required: true },
   accent: { type: String, required: true },
+  stone: { type: String, required: false },
   foundation: { type: String }
 }, { _id: false });
 

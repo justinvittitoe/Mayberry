@@ -1,10 +1,20 @@
 import { Schema, model, type Document } from 'mongoose';
-import type { OptionDocument } from './OptionSchemas/Option.js';
-import type { InteriorPackageDocument } from './OptionSchemas/InteriorPackage.js';
-import type { LotPremiumDocument } from './OptionSchemas/LotPremium.js';
 import type { ColorSchemeDocument } from './OptionSchemas/ColorScheme.js';
-import type { ApplianceDocument } from './OptionSchemas/Appliance.js';
-import { kMaxLength } from 'buffer';
+import {
+  PlanElevationOption,
+  PlanStructuralOption,
+  PlanInteriorOption,
+  PlanApplianceOption,
+  PlanAdditionalOption,
+  PlanLotPremium,
+  planElevationOptionSchema,
+  planStructuralOptionSchema,
+  planInteriorOptionSchema,
+  planApplianceOptionSchema,
+  planAdditionalOptionSchema,
+  planLotPremiumSchema
+} from './PlanOptions/index.js';
+
 
 export interface PlanTypeDocument extends Document {
   planType: number; //Unique plan identifier
@@ -16,17 +26,17 @@ export interface PlanTypeDocument extends Document {
   garage: number; //The number of car garage the floor plan fits
   basePrice: number; //starting price for this floorplan
   description?: string; //Plan description
-  //Available options for this plan type (catalogs of choices)
-  elevations: OptionDocument[]; //Avalable exterior elevations
-  colorScheme: ColorSchemeDocument[]; //Available color schemes
-  interiors: InteriorPackageDocument[]; //Avaailable interior packages
-  structural: OptionDocument[]; //Available structual modifications
-  additional: OptionDocument[]; //Available additional upgrades (e.g. Air Conditioning)
-  kitchenAppliance: ApplianceDocument[]; //Available kitchen appliance package
-  laundryAppliance: ApplianceDocument[]; //Available laundry appliance package
-  lotPremium: LotPremiumDocument[]; //Available lot premium option
   width: number; //Plan width in feet
   length: number; //Plan depth/length in feet
+  //Plan-specific options (embedded documents)
+  elevations: PlanElevationOption[]; //Plan-specific exterior elevations
+  colorScheme: ColorSchemeDocument[]; //Available color schemes (keeping global for now)
+  interiors: PlanInteriorOption[]; //Plan-specific interior packages
+  structural: PlanStructuralOption[]; //Plan-specific structural modifications
+  additional: PlanAdditionalOption[]; //Plan-specific additional upgrades
+  kitchenAppliance: PlanApplianceOption[]; //Plan-specific kitchen appliance packages
+  laundryAppliance: PlanApplianceOption[]; //Plan-specific laundry appliance packages
+  lotPremium: PlanLotPremium[]; //Plan-specific lot premium options
 }
 
 const planTypeSchema = new Schema({
@@ -42,14 +52,14 @@ const planTypeSchema = new Schema({
   garage: { type: Number, required: true, enum: [2,3,4,5,6], default: 2 },
   basePrice: { type: Number, required: true, min: 0 },
   description: { type: String, maxLength: 500 },
-  elevations: [{ type: Schema.Types.ObjectId, ref: 'Option'}],
-  colorScheme: [{ type: Schema.Types.ObjectId, ref: 'ColorScheme' }],
-  interiors: [{ type: Schema.Types.ObjectId, ref: 'InteriorPackage'}],
-  structural: [{ type: Schema.Types.ObjectId, ref: 'Structural'}],
-  additional: [{ type: Schema.Types.ObjectId, ref: 'Option'}],
-  kitchenAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance'}],
-  laundryAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance'}],
-  lotPremium: [{ type: Schema.Types.ObjectId, ref: 'LotPremium' }],
+  elevations: [planElevationOptionSchema],
+  colorScheme: [{ type: Schema.Types.ObjectId, ref: 'ColorScheme' }], // Keeping global for now
+  interiors: [planInteriorOptionSchema],
+  structural: [planStructuralOptionSchema],
+  additional: [planAdditionalOptionSchema],
+  kitchenAppliance: [planApplianceOptionSchema],
+  laundryAppliance: [planApplianceOptionSchema],
+  lotPremium: [planLotPremiumSchema],
   width: { type: Number, required: true, min: 10, max: 120 },
   length: { type: Number, required: true, min: 10, max: 120 }
 }, {timestamps: true});
@@ -72,10 +82,10 @@ planTypeSchema.virtual('pricePerSqft').get(function() {
 })
 
 // Add indexes for better query performance
-planTypeSchema.index({ planType: 1 });
+// Note: planType already has unique index from schema definition
 planTypeSchema.index({ basePrice: 1 });
 planTypeSchema.index({ bedrooms: 1, bathrooms: 1 });
-planTypeSchema.index({ squareFootage: 1 });
+planTypeSchema.index({ totalSqft: 1 }); // Fixed field name
 planTypeSchema.index({ width: 1, length: 1 });
 planTypeSchema.index({ name: 1 })
 planTypeSchema.index({ garage: 1 })

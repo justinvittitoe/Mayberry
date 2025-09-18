@@ -64,7 +64,7 @@ async function seedDatabase() {
     console.log(`✅ Plans: ${createdPlans.length}`);
     console.log('\nFloor Plans Created:');
     createdPlans.forEach((plan, index) => {
-      console.log(`${index + 1}. ${plan.name} - ${plan.bedrooms}BR/${plan.bathrooms}BA - ${plan.squareFootage} sq ft - $${plan.basePrice.toLocaleString()}`);
+      console.log(`${index + 1}. ${plan.name} - ${plan.bedrooms}BR/${plan.bathrooms}BA - ${plan.totalSqft} sq ft - $${plan.basePrice.toLocaleString()}`);
     });
 
     console.log('\nDatabase seeding completed successfully! 🎉');

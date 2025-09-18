@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { useQuery } from '@apollo/client';
-import { GET_PLANS } from '../utils/queries';
+import { GET_PLANS } from '../utils/planOptionQueries';
 import { Link, useNavigate } from 'react-router-dom';
 import EnhancedFloorPlanSelector from '../components/EnhancedFloorPlanSelector';
 import LoadingSpinner from '../components/LoadingSpinner';

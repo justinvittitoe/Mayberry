@@ -1,6 +1,6 @@
 import { Schema} from 'mongoose';
 import { OptionDocument } from './Option';
-import Option from './Option';
+import Option from './Option.js';
 
 export interface InteriorOptionDocument extends OptionDocument {
     classification: 'interior'; //enforce interior classification

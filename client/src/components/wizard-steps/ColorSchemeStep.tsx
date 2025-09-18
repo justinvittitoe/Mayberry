@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col, Card } from 'react-bootstrap';
-import { ColorScheme } from '../../types/graphql';
+import { ColorScheme } from '../../models/graphql';
 import { getColorPalette, createGradientFromPalette } from '../../utils/colorService';
 
 interface ColorSchemeStepProps {
@@ -20,7 +20,7 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
     subtitle = "Select the perfect color palette for your home's exterior",
     allowDeselect = false
 }) => {
-    
+
     const handleColorSchemeClick = (colorScheme: ColorScheme) => {
         if (allowDeselect && selected?._id === colorScheme._id) {
             onSelect(null as any);
@@ -38,8 +38,8 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
             <Col key={colorScheme._id} sm={6} md={4} lg={3} className="mb-4">
                 <Card
                     className={`h-100 color-scheme-option ${isSelected ? 'border-primary selected' : 'border-light'}`}
-                    style={{ 
-                        cursor: 'pointer', 
+                    style={{
+                        cursor: 'pointer',
                         transition: 'all 0.3s ease',
                         boxShadow: isSelected ? '0 4px 12px rgba(13, 110, 253, 0.25)' : '0 2px 4px rgba(0,0,0,0.1)'
                     }}
@@ -47,16 +47,16 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
                 >
                     <Card.Body className="text-center p-3">
                         {/* Main color palette preview */}
-                        <div 
+                        <div
                             className="color-palette mx-auto mb-3 border shadow-sm"
-                            style={{ 
-                                width: '80px', 
-                                height: '50px', 
+                            style={{
+                                width: '80px',
+                                height: '50px',
                                 background: gradientBackground,
                                 borderRadius: '12px'
                             }}
                         />
-                        
+
                         {/* Individual color swatches with labels */}
                         <div className="mb-3">
                             <div className="d-flex justify-content-center mb-2" style={{ gap: '4px' }}>
@@ -74,7 +74,7 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
                                     />
                                 ))}
                             </div>
-                            
+
                             {/* Color names for reference */}
                             <div className="small text-muted" style={{ fontSize: '0.7rem' }}>
                                 <div className="d-flex justify-content-between">
@@ -85,7 +85,7 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Color scheme name and description */}
                         <div className="mb-2">
                             <Card.Title className="h6 mb-1">{colorScheme.name}</Card.Title>
@@ -95,12 +95,12 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
                                 </Card.Text>
                             )}
                         </div>
-                        
+
                         {/* Pricing */}
                         <div className="fw-bold text-primary mb-2">
                             {colorScheme.price > 0 ? `+$${colorScheme.price.toLocaleString()}` : 'Included'}
                         </div>
-                        
+
                         {/* Selection indicator */}
                         {isSelected && (
                             <div className="position-absolute top-0 end-0 p-2">
@@ -142,11 +142,11 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
                 <div className="selected-summary mt-4 p-3 bg-light rounded">
                     <h6 className="mb-2">Selected Color Scheme</h6>
                     <div className="d-flex align-items-center">
-                        <div 
+                        <div
                             className="me-3 border rounded"
-                            style={{ 
-                                width: '40px', 
-                                height: '30px', 
+                            style={{
+                                width: '40px',
+                                height: '30px',
                                 background: createGradientFromPalette(getColorPalette(selected))
                             }}
                         />

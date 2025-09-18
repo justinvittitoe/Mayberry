@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Modal, Form, Alert, Table, Badge, Tabs, Tab } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, Form, Alert, Table, Badge } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_PLANS, GET_OPTIONS, GET_INTERIOR_PACKAGES, GET_LOT_PREMIUMS } from '../utils/queries';
+import { GET_PLANS_WITH_OPTIONS } from '../utils/planOptionQueries';
 import { CREATE_PLAN, UPDATE_PLAN, DELETE_PLAN } from '../utils/mutations';
-import PlanOptionEditor from './PlanOptionEditor';
-import { calculatePlanDirectPricing, formatPrice, getPriceBreakdown, getDirectOptionsCount } from '../utils/priceCalculator';
-import { getCompatibleLots, getLotCompatibilityInfo } from '../utils/lotCompatibility';
+import PlanOptionManager from './admin/PlanOptionManager';
 import './AdminPlanManager.css';
 
 interface Plan {
@@ -14,18 +12,19 @@ interface Plan {
   name: string;
   bedrooms: number;
   bathrooms: number;
-  squareFootage: number;
-  garageType: string;
+  totalSqft: number;
+  resSqft: number;
+  garage: number;
   basePrice: number;
   description?: string;
-  elevations?: any[];
-  interiors?: any[];
-  structural?: any[];
-  additional?: any[];
-  kitchenAppliance?: any[];
-  laundryAppliance?: any[];
-  lotPremium?: any[];
-  colorScheme?: number[];
+  elevations: any[];
+  interiors: any[];
+  structural: any[];
+  additional: any[];
+  kitchenAppliance: any[];
+  laundryAppliance: any[];
+  lotPremium: any[];
+  colorScheme?: any[];
   width: number;
   length: number;
 }
@@ -40,8 +39,9 @@ const AdminPlanManager = () => {
     name: '',
     bedrooms: 3,
     bathrooms: 2,
-    squareFootage: 1500,
-    garageType: '2-Car Garage',
+    totalSqft: 1500, // Fixed: was squareFootage
+    resSqft: 1200, // Added: required field (80% of total typically)
+    garage: 2, // Fixed: was garageType string, now number
     basePrice: 300000,
     description: '',
     colorScheme: [1, 2, 3],
@@ -49,43 +49,45 @@ const AdminPlanManager = () => {
     length: 41,
   });
 
-  const [selectedOptions, setSelectedOptions] = useState({
-    elevations: [] as any[],
-    interiors: [] as any[],
-    structural: [] as any[],
-    additional: [] as any[],
-    kitchenAppliance: [] as any[],
-    laundryAppliance: [] as any[],
-    lotPremiums: [] as any[]
-  });
-
+  const [showPlanOptions, setShowPlanOptions] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
 
   // Queries
-  const { data: plansData, loading: plansLoading, refetch: refetchPlans } = useQuery(GET_PLANS);
-  const { data: optionsData } = useQuery(GET_OPTIONS);
-  const { data: interiorsData } = useQuery(GET_INTERIOR_PACKAGES);
-  const { data: lotPremiumsData } = useQuery(GET_LOT_PREMIUMS);
+  const { data: plansData, loading: plansLoading, refetch: refetchPlans } = useQuery(GET_PLANS_WITH_OPTIONS);
 
   // Mutations
   const [createPlan] = useMutation(CREATE_PLAN, {
-    onCompleted: () => {
+    onCompleted: (data) => {
+      console.log('✅ CREATE_PLAN Success:', data);
       showAlert('success', 'Plan created successfully!');
       handleCloseModal();
       refetchPlans();
     },
     onError: (error) => {
+      console.error('❌ CREATE_PLAN Error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        graphQLErrors: error.graphQLErrors,
+        networkError: error.networkError
+      });
       showAlert('danger', `Error creating plan: ${error.message}`);
     }
   });
 
   const [updatePlan] = useMutation(UPDATE_PLAN, {
-    onCompleted: () => {
+    onCompleted: (data) => {
+      console.log('✅ UPDATE_PLAN Success:', data);
       showAlert('success', 'Plan updated successfully!');
       handleCloseModal();
       refetchPlans();
     },
     onError: (error) => {
+      console.error('❌ UPDATE_PLAN Error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        graphQLErrors: error.graphQLErrors,
+        networkError: error.networkError
+      });
       showAlert('danger', `Error updating plan: ${error.message}`);
     }
   });
@@ -101,12 +103,9 @@ const AdminPlanManager = () => {
   });
 
   const plans = plansData?.plans || [];
-  const options = optionsData?.options || [];
-  const interiors = interiorsData?.interiorPackages || [];
-  const lotPremiums = lotPremiumsData?.lotPremiums || [];
 
-  // Ensure all data is available before allowing interactions
-  const isDataReady = !plansLoading && options && interiors && lotPremiums;
+  // Data is ready when plans are loaded
+  const isDataReady = !plansLoading;
 
   const showAlert = (type: string, message: string) => {
     setAlert({ type, message });
@@ -127,15 +126,6 @@ const AdminPlanManager = () => {
     if (plan) {
       setSelectedPlan(plan);
       setFormData(plan);
-      setSelectedOptions({
-        elevations: Array.isArray(plan.elevations) ? plan.elevations.map(opt => cleanGraphQLObject(opt)) : [],
-        interiors: Array.isArray(plan.interiors) ? plan.interiors.map(opt => cleanGraphQLObject(opt)) : [],
-        structural: Array.isArray(plan.structural) ? plan.structural.map(opt => cleanGraphQLObject(opt)) : [],
-        additional: Array.isArray(plan.additional) ? plan.additional.map(opt => cleanGraphQLObject(opt)) : [],
-        kitchenAppliance: Array.isArray(plan.kitchenAppliance) ? plan.kitchenAppliance.map(opt => cleanGraphQLObject(opt)) : [],
-        laundryAppliance: Array.isArray(plan.laundryAppliance) ? plan.laundryAppliance.map(opt => cleanGraphQLObject(opt)) : [],
-        lotPremiums: Array.isArray(plan.lotPremium) ? plan.lotPremium.map(opt => cleanGraphQLObject(opt)) : []
-      });
       setIsEditing(true);
     } else {
       setSelectedPlan(null);
@@ -144,20 +134,14 @@ const AdminPlanManager = () => {
         name: '',
         bedrooms: 3,
         bathrooms: 2,
-        squareFootage: 1500,
-        garageType: '2-Car Garage',
+        totalSqft: 1500,
+        resSqft: 1200,
+        garage: 2,
         basePrice: 300000,
         description: '',
-        colorScheme: [1, 2, 3]
-      });
-      setSelectedOptions({
-        elevations: [],
-        interiors: [],
-        structural: [],
-        additional: [],
-        kitchenAppliance: [],
-        laundryAppliance: [],
-        lotPremiums: []
+        colorScheme: [],
+        width: 35,
+        length: 41,
       });
       setIsEditing(false);
     }
@@ -165,20 +149,21 @@ const AdminPlanManager = () => {
     setShowModal(true);
   };
 
+  const handleManageOptions = (plan: Plan) => {
+    setSelectedPlan(plan);
+    setShowPlanOptions(true);
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedPlan(null);
     setFormData({});
-    setSelectedOptions({
-      elevations: [],
-      interiors: [],
-      structural: [],
-      additional: [],
-      kitchenAppliance: [],
-      laundryAppliance: [],
-      lotPremiums: []
-    });
     setActiveTab('basic');
+  };
+
+  const handleClosePlanOptions = () => {
+    setShowPlanOptions(false);
+    setSelectedPlan(null);
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -188,73 +173,50 @@ const AdminPlanManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Use plan-specific option data directly
-    const getCleanedOptions = (options: any[]) => {
-      return options.map(option => {
-        // Remove any _id fields to ensure these are treated as new data
-        const { _id, ...cleanOption } = option;
-        return cleanOption;
-      });
-    };
-
-    const getCleanedInteriors = (interiors: any[]) => {
-      return interiors.map(interior => {
-        const { _id, ...cleanInterior } = interior;
-        return {
-          ...cleanInterior,
-          fixtures: cleanInterior.fixtures?.map(({ _id, ...f }: any) => f) || [],
-          lvp: cleanInterior.lvp?.map(({ _id, ...l }: any) => l) || [],
-          carpet: cleanInterior.carpet?.map(({ _id, ...c }: any) => c) || [],
-          backsplash: cleanInterior.backsplash?.map(({ _id, ...b }: any) => b) || [],
-          masterBathTile: cleanInterior.masterBathTile?.map(({ _id, ...m }: any) => m) || [],
-          countertop: cleanInterior.countertop?.map(({ _id, ...ct }: any) => ct) || [],
-          primaryCabinets: cleanInterior.primaryCabinets?.map(({ _id, ...pc }: any) => pc) || [],
-          secondaryCabinets: cleanInterior.secondaryCabinets?.map(({ _id, ...sc }: any) => sc) || []
-        };
-      });
-    };
-
-    const getCleanedLotPremiums = (lots: any[]) => {
-      return lots.map(lot => {
-        const { _id, ...cleanLot } = lot;
-        return cleanLot;
-      });
-    };
-
     const planInput = {
       planType: formData.planType!,
       name: formData.name!,
       bedrooms: formData.bedrooms!,
       bathrooms: formData.bathrooms!,
-      squareFootage: formData.squareFootage!,
-      garageType: formData.garageType!,
+      totalSqft: formData.totalSqft!,
+      resSqft: formData.resSqft!,
+      garage: formData.garage!,
       basePrice: formData.basePrice!,
       description: formData.description || '',
-      colorScheme: formData.colorScheme || [1, 2, 3],
+      colorScheme: formData.colorScheme || [],
       width: formData.width!,
       length: formData.length!,
-      elevations: getCleanedOptions(selectedOptions.elevations),
-      interiors: getCleanedInteriors(selectedOptions.interiors),
-      structural: getCleanedOptions(selectedOptions.structural),
-      additional: getCleanedOptions(selectedOptions.additional),
-      kitchenAppliance: getCleanedOptions(selectedOptions.kitchenAppliance),
-      laundryAppliance: getCleanedOptions(selectedOptions.laundryAppliance),
-      lotPremium: getCleanedLotPremiums(selectedOptions.lotPremiums)
+      elevations: [],
+      interiors: [],
+      structural: [],
+      additional: [],
+      kitchenAppliance: [],
+      laundryAppliance: [],
+      lotPremium: []
     };
 
-    if (isEditing && selectedPlan) {
-      await updatePlan({
-        variables: {
-          id: selectedPlan._id,
-          plan: planInput
-        }
-      });
-    } else {
-      await createPlan({
-        variables: {
-          plan: planInput
-        }
-      });
+    console.log('📤 Sending Plan Data:', planInput);
+    console.log('🔍 Form Data State:', formData);
+
+    try {
+      if (isEditing && selectedPlan) {
+        console.log('🔄 Updating Plan ID:', selectedPlan._id);
+        await updatePlan({
+          variables: {
+            id: selectedPlan._id,
+            plan: planInput
+          }
+        });
+      } else {
+        console.log('✨ Creating New Plan');
+        await createPlan({
+          variables: {
+            plan: planInput
+          }
+        });
+      }
+    } catch (error) {
+      console.error('💥 Plan Submit Error:', error);
     }
   };
 
@@ -266,27 +228,9 @@ const AdminPlanManager = () => {
     }
   };
 
-  const handleOptionSelectionChange = (category: keyof typeof selectedOptions, newOptions: any[]) => {
-    setSelectedOptions(prev => ({
-      ...prev,
-      [category]: newOptions
-    }));
+  const handlePlanUpdate = () => {
+    refetchPlans();
   };
-
-  // Calculate current plan pricing
-  const currentPricing = calculatePlanDirectPricing(
-    formData.basePrice || 0,
-    selectedOptions
-  );
-
-  const priceBreakdown = getPriceBreakdown(currentPricing);
-  const totalSelectedOptions = getDirectOptionsCount(selectedOptions);
-
-  // Filter lots based on floor plan dimensions
-  const compatibleLots = getCompatibleLots(
-    { width: formData.width || 35, length: formData.length || 41 },
-    lotPremiums
-  );
 
   const formatPriceDisplay = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -349,6 +293,7 @@ const AdminPlanManager = () => {
                     <th>Specs</th>
                     <th>Square Footage</th>
                     <th>Garage</th>
+                    <th>Options</th>
                     <th>Base Price</th>
                     <th>Actions</th>
                   </tr>
@@ -372,11 +317,24 @@ const AdminPlanManager = () => {
                       </td>
                       <td>
                         <div className="fw-semibold">
-                          {typeof plan.squareFootage === 'number' ? plan.squareFootage.toLocaleString() : '0'} sq ft
+                          {typeof plan.totalSqft === 'number' ? plan.totalSqft.toLocaleString() : '0'} sq ft
+                        </div>
+                        <div className="small text-muted">
+                          Res: {typeof plan.resSqft === 'number' ? plan.resSqft.toLocaleString() : '0'} sq ft
                         </div>
                       </td>
                       <td>
-                        <div className="small">{typeof plan.garageType === 'string' ? plan.garageType : 'Unknown'}</div>
+                        <div className="small">{typeof plan.garage === 'number' ? `${plan.garage}-Car` : 'Unknown'}</div>
+                      </td>
+                      <td>
+                        <div className="small">
+                          <div>Elevations: {plan.elevations?.length || 0}</div>
+                          <div>Interiors: {plan.interiors?.length || 0}</div>
+                          <div>Structural: {plan.structural?.length || 0}</div>
+                          <div>Additional: {plan.additional?.length || 0}</div>
+                          <div>Appliances: {(plan.kitchenAppliance?.length || 0) + (plan.laundryAppliance?.length || 0)}</div>
+                          <div>Lots: {plan.lotPremium?.length || 0}</div>
+                        </div>
                       </td>
                       <td>
                         <div className="fw-semibold text-success">
@@ -384,7 +342,7 @@ const AdminPlanManager = () => {
                         </div>
                       </td>
                       <td>
-                        <div className="d-flex gap-2">
+                        <div className="d-flex gap-1 flex-wrap">
                           <Button
                             variant="outline-primary"
                             size="sm"
@@ -392,6 +350,14 @@ const AdminPlanManager = () => {
                             disabled={!isDataReady}
                           >
                             Edit
+                          </Button>
+                          <Button
+                            variant="outline-info"
+                            size="sm"
+                            onClick={() => handleManageOptions(plan)}
+                            disabled={!isDataReady}
+                          >
+                            Options
                           </Button>
                           <Button
                             variant="outline-danger"
@@ -420,33 +386,13 @@ const AdminPlanManager = () => {
       {/* Create/Edit Plan Modal */}
       <Modal show={showModal} onHide={handleCloseModal} size="xl" scrollable>
         <Modal.Header closeButton>
-          <Modal.Title className="d-flex justify-content-between align-items-center w-100">
-            <span>{isEditing ? 'Edit Floor Plan' : 'Create New Floor Plan'}</span>
-            <div className="d-flex align-items-center gap-3">
-              {totalSelectedOptions > 0 && (
-                <Badge bg="info">
-                  {totalSelectedOptions} options selected
-                </Badge>
-              )}
-              <div className="text-end">
-                <div className="small text-muted">Estimated Total</div>
-                <div className="fw-bold text-primary h5 mb-0">
-                  {formatPrice(currentPricing.grandTotal)}
-                </div>
-              </div>
-            </div>
+          <Modal.Title>
+            {isEditing ? 'Edit Floor Plan' : 'Create New Floor Plan'}
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-            <div className="tabs-container">
-              <Tabs
-                activeKey={activeTab}
-                onSelect={(k) => setActiveTab(k || 'basic')}
-                className="mb-4"
-              >
-                <Tab eventKey="basic" title="Basic Info">
-                  <div className="basic-info-tab">
+            <div className="basic-info-form">
                     <Row>
                       <Col md={6}>
                         <Form.Group className="mb-3">
@@ -503,12 +449,12 @@ const AdminPlanManager = () => {
                       </Col>
                       <Col md={4}>
                         <Form.Group className="mb-3">
-                          <Form.Label>Square Footage</Form.Label>
+                          <Form.Label>Total Square Footage</Form.Label>
                           <Form.Control
                             type="number"
                             min="500"
-                            value={formData.squareFootage || ''}
-                            onChange={(e) => handleInputChange('squareFootage', parseInt(e.target.value))}
+                            value={formData.totalSqft || ''}
+                            onChange={(e) => handleInputChange('totalSqft', parseInt(e.target.value))}
                             required
                           />
                         </Form.Group>
@@ -518,21 +464,39 @@ const AdminPlanManager = () => {
                     <Row>
                       <Col md={6}>
                         <Form.Group className="mb-3">
-                          <Form.Label>Garage Type</Form.Label>
+                          <Form.Label>Residential Square Footage</Form.Label>
+                          <Form.Control
+                            type="number"
+                            min="400"
+                            value={formData.resSqft || ''}
+                            onChange={(e) => handleInputChange('resSqft', parseInt(e.target.value))}
+                            required
+                          />
+                          <Form.Text className="text-muted">
+                            Typically 80% of total square footage
+                          </Form.Text>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Garage Size</Form.Label>
                           <Form.Select
-                            value={formData.garageType || ''}
-                            onChange={(e) => handleInputChange('garageType', e.target.value)}
+                            value={formData.garage || ''}
+                            onChange={(e) => handleInputChange('garage', parseInt(e.target.value))}
                             required
                           >
-                            <option value="">Select garage type</option>
-                            <option value="2-Car Garage">2-Car Garage</option>
-                            <option value="3-Car Garage">3-Car Garage</option>
-                            <option value="4-Car Garage">4-Car Garage</option>
-                            <option value="5-Car Garage">5-Car Garage</option>
-                            <option value="RV Garage">RV Garage</option>
+                            <option value="">Select garage size</option>
+                            <option value={2}>2-Car Garage</option>
+                            <option value={3}>3-Car Garage</option>
+                            <option value={4}>4-Car Garage</option>
+                            <option value={5}>5-Car Garage</option>
+                            <option value={6}>6-Car Garage</option>
                           </Form.Select>
                         </Form.Group>
                       </Col>
+                    </Row>
+
+                    <Row>
                       <Col md={6}>
                         <Form.Group className="mb-3">
                           <Form.Label>Base Price</Form.Label>
@@ -585,164 +549,10 @@ const AdminPlanManager = () => {
                         onChange={(e) => handleInputChange('description', e.target.value)}
                       />
                     </Form.Group>
-                  </div>
-                </Tab>
-
-                <Tab eventKey="elevations" title="Elevations">
-                  <PlanOptionEditor
-                    title="Elevation Options"
-                    options={selectedOptions.elevations}
-                    onOptionsChange={(opts) => handleOptionSelectionChange('elevations', opts)}
-                    globalOptions={options.filter(opt => opt.classification === 'elevation')}
-                    type="option"
-                  />
-                </Tab>
-
-                <Tab eventKey="interiors" title="Interior Packages">
-                  <PlanOptionEditor
-                    title="Interior Package Options"
-                    options={selectedOptions.interiors}
-                    onOptionsChange={(opts) => handleOptionSelectionChange('interiors', opts)}
-                    globalOptions={interiors}
-                    type="interior"
-                  />
-                </Tab>
-
-                <Tab eventKey="structural" title="Structural">
-                  <PlanOptionEditor
-                    title="Structural Options"
-                    options={selectedOptions.structural}
-                    onOptionsChange={(opts) => handleOptionSelectionChange('structural', opts)}
-                    globalOptions={options.filter(opt => opt.classification === 'structural')}
-                    type="option"
-                  />
-                </Tab>
-
-                <Tab eventKey="additional" title="Additional">
-                  <PlanOptionEditor
-                    title="Additional Options"
-                    options={selectedOptions.additional}
-                    onOptionsChange={(opts) => handleOptionSelectionChange('additional', opts)}
-                    globalOptions={options.filter(opt => opt.classification === 'additional')}
-                    type="option"
-                  />
-                </Tab>
-
-                <Tab eventKey="appliances" title="Appliances">
-                  <Row>
-                    <Col md={6}>
-                      <PlanOptionEditor
-                        title="Kitchen Appliances"
-                        options={selectedOptions.kitchenAppliance}
-                        onOptionsChange={(opts) => handleOptionSelectionChange('kitchenAppliance', opts)}
-                        globalOptions={options.filter(opt => opt.classification === 'kitchen-appliance')}
-                        type="option"
-                      />
-                    </Col>
-                    <Col md={6}>
-                      <PlanOptionEditor
-                        title="Laundry Appliances"
-                        options={selectedOptions.laundryAppliance}
-                        onOptionsChange={(opts) => handleOptionSelectionChange('laundryAppliance', opts)}
-                        globalOptions={options.filter(opt => opt.classification === 'laundry-appliance')}
-                        type="option"
-                      />
-                    </Col>
-                  </Row>
-                </Tab>
-
-                <Tab eventKey="lots" title="Lot Premiums">
-                  <div className="mb-3">
+                    
                     <Alert variant="info">
-                      <strong>Floor Plan Dimensions:</strong> {formData.width || 35}ft × {formData.length || 41}ft
-                      <br />
-                      <small>Only lots that can accommodate this floor plan are shown below.</small>
+                      <strong>Note:</strong> After creating this plan, use the "Options" button to add elevations, interiors, appliances, and other plan-specific options.
                     </Alert>
-                  </div>
-                  <PlanOptionEditor
-                    title={`Compatible Lot Premiums (${compatibleLots.length} of ${lotPremiums.length})`}
-                    options={selectedOptions.lotPremiums}
-                    onOptionsChange={(opts) => handleOptionSelectionChange('lotPremiums', opts)}
-                    globalOptions={compatibleLots}
-                    type="lot"
-                    planDimensions={{ width: formData.width || 35, length: formData.length || 41 }}
-                  />
-                </Tab>
-
-                <Tab eventKey="pricing" title="Pricing Summary">
-                  <div className="pricing-summary">
-                    <Row>
-                      <Col md={8}>
-                        <h5 className="mb-3">Price Breakdown</h5>
-                        <Table striped>
-                          <tbody>
-                            {priceBreakdown.map((item, index) => (
-                              <tr key={index} className={item.isBase ? 'table-primary' : ''}>
-                                <td className={item.isBase ? 'fw-bold' : ''}>{item.label}</td>
-                                <td className="text-end">
-                                  <span className={item.isBase ? 'fw-bold' : ''}>
-                                    {formatPrice(item.amount)}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                          <tfoot>
-                            <tr className="table-success">
-                              <td className="fw-bold">Grand Total</td>
-                              <td className="text-end fw-bold h5">
-                                {formatPrice(currentPricing.grandTotal)}
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </Table>
-                      </Col>
-                      <Col md={4}>
-                        <div className="summary-card">
-                          <Card className="bg-light">
-                            <Card.Body>
-                              <h6 className="mb-3">Selection Summary</h6>
-                              <div className="d-flex justify-content-between mb-2">
-                                <span>Elevations:</span>
-                                <Badge bg="secondary">{selectedOptions.elevations.length}</Badge>
-                              </div>
-                              <div className="d-flex justify-content-between mb-2">
-                                <span>Interior Packages:</span>
-                                <Badge bg="secondary">{selectedOptions.interiors.length}</Badge>
-                              </div>
-                              <div className="d-flex justify-content-between mb-2">
-                                <span>Structural:</span>
-                                <Badge bg="secondary">{selectedOptions.structural.length}</Badge>
-                              </div>
-                              <div className="d-flex justify-content-between mb-2">
-                                <span>Additional:</span>
-                                <Badge bg="secondary">{selectedOptions.additional.length}</Badge>
-                              </div>
-                              <div className="d-flex justify-content-between mb-2">
-                                <span>Kitchen Appliances:</span>
-                                <Badge bg="secondary">{selectedOptions.kitchenAppliance.length}</Badge>
-                              </div>
-                              <div className="d-flex justify-content-between mb-2">
-                                <span>Laundry Appliances:</span>
-                                <Badge bg="secondary">{selectedOptions.laundryAppliance.length}</Badge>
-                              </div>
-                              <div className="d-flex justify-content-between mb-3">
-                                <span>Lot Premiums:</span>
-                                <Badge bg="secondary">{selectedOptions.lotPremiums.length}</Badge>
-                              </div>
-                              <hr />
-                              <div className="d-flex justify-content-between">
-                                <strong>Total Options:</strong>
-                                <Badge bg="primary">{totalSelectedOptions}</Badge>
-                              </div>
-                            </Card.Body>
-                          </Card>
-                        </div>
-                      </Col>
-                    </Row>
-                  </div>
-                </Tab>
-              </Tabs>
             </div>
           </Modal.Body>
           <Modal.Footer>
@@ -755,6 +565,26 @@ const AdminPlanManager = () => {
           </Modal.Footer>
         </Form>
       </Modal>
+
+      {/* Plan Options Manager Modal */}
+      {showPlanOptions && selectedPlan && (
+        <Modal show={showPlanOptions} onHide={handleClosePlanOptions} size="xl" scrollable>
+          <Modal.Header closeButton>
+            <Modal.Title>Manage Options - {selectedPlan.name}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+            <PlanOptionManager 
+              plan={selectedPlan} 
+              onPlanUpdate={handlePlanUpdate}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClosePlanOptions}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
     </Container>
   );
 };

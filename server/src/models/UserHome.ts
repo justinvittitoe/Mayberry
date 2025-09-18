@@ -237,4 +237,5 @@ userPlanSchema.statics.findActiveByUser = function (userId: Types.ObjectId) {
 
 const UserPlan = model<UserHomeSelection>('UserPlan', userPlanSchema);
 
+export const userHomeSelectionSchema = userPlanSchema;
 export default UserPlan;

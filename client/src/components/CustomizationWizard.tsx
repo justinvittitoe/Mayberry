@@ -5,7 +5,7 @@ import { useMutation } from '@apollo/client';
 import { SAVE_USER_HOME, SAVE_USER_HOME_PROGRESS } from '../utils/mutations';
 import AuthService from '../utils/auth';
 import { cleanUserHomeForMutation, validateUserHomeForSave } from '../utils/cleanGraphQLObject';
-import type { CustomizationState } from '../types/models';
+import type { CustomizationState } from '../models/models';
 
 // Step Components
 import ElevationStep from './wizard-steps/ElevationStep';
@@ -137,9 +137,9 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
                 case 5: // Lot
                     return !!customization.lotPremium;
                 case 6: // Pricing/Review
-                    return !!customization.elevation && !!customization.colorScheme && 
-                           !!customization.interior && !!customization.kitchenAppliance && 
-                           !!customization.laundryAppliance && !!customization.lotPremium;
+                    return !!customization.elevation && !!customization.colorScheme &&
+                        !!customization.interior && !!customization.kitchenAppliance &&
+                        !!customization.laundryAppliance && !!customization.lotPremium;
                 default:
                     return false;
             }
@@ -150,11 +150,11 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
     // Auto-save progress when customization changes (debounced)
     useEffect(() => {
         if (!isAuthenticated || !plan) return;
-        
+
         const timer = setTimeout(() => {
             handleSaveProgress(false);
         }, 2000); // Save after 2 seconds of inactivity
-        
+
         return () => clearTimeout(timer);
     }, [customization, isAuthenticated, plan]);
 
@@ -250,14 +250,14 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
 
             // Clean the data for mutation
             const cleanedUserHome = cleanUserHomeForMutation(userHomeData);
-            
+
             if (!cleanedUserHome) {
                 throw new Error('Failed to prepare user home data for saving');
             }
 
             // Save as complete customization first
             await handleSaveProgress(true);
-            
+
             // Then save to the main saved homes
             await saveHome({
                 variables: {
@@ -364,7 +364,7 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
                                 <div className="mt-1">
                                     {isSaving ? (
                                         <small className="text-warning">
-                                            <div className="spinner-border spinner-border-sm me-1" style={{width: '12px', height: '12px'}} />
+                                            <div className="spinner-border spinner-border-sm me-1" style={{ width: '12px', height: '12px' }} />
                                             Saving...
                                         </small>
                                     ) : lastSaved ? (
@@ -376,25 +376,24 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
                             )}
                         </div>
                     </div>
-                    
-                    <ProgressBar 
-                        now={progressPercentage} 
-                        className="mb-3" 
+
+                    <ProgressBar
+                        now={progressPercentage}
+                        className="mb-3"
                         style={{ height: '8px' }}
                     />
-                    
+
                     <div className="step-indicators d-flex justify-content-between">
                         {steps.map((step, index) => (
-                            <div 
+                            <div
                                 key={step.id}
                                 className={`step-indicator text-center ${index === currentStep ? 'active' : ''} ${index < currentStep ? 'completed' : ''}`}
                                 style={{ flex: 1 }}
                             >
-                                <div 
-                                    className={`step-circle mx-auto mb-1 d-flex align-items-center justify-content-center ${
-                                        index === currentStep ? 'bg-primary text-white' : 
-                                        index < currentStep ? 'bg-success text-white' : 'bg-light text-muted'
-                                    }`}
+                                <div
+                                    className={`step-circle mx-auto mb-1 d-flex align-items-center justify-content-center ${index === currentStep ? 'bg-primary text-white' :
+                                            index < currentStep ? 'bg-success text-white' : 'bg-light text-muted'
+                                        }`}
                                     style={{ width: '40px', height: '40px', borderRadius: '50%' }}
                                 >
                                     {index < currentStep ? '✓' : step.icon}
@@ -445,9 +444,8 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
                                         <button
                                             key={step.id}
                                             type="button"
-                                            className={`list-group-item list-group-item-action d-flex align-items-center ${
-                                                index === currentStep ? 'active' : ''
-                                            }`}
+                                            className={`list-group-item list-group-item-action d-flex align-items-center ${index === currentStep ? 'active' : ''
+                                                }`}
                                             onClick={() => setCurrentStep(index)}
                                             disabled={index > currentStep}
                                         >
@@ -476,7 +474,7 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
                                     >
                                         ← Previous
                                     </Button>
-                                    
+
                                     {currentStep < steps.length - 1 ? (
                                         <Button
                                             variant="primary"
@@ -496,7 +494,7 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
                                         </Button>
                                     )}
                                 </div>
-                                
+
                                 {!isAuthenticated && currentStep === steps.length - 1 && (
                                     <p className="text-center text-muted small mt-2">
                                         You must be logged in to save your home design

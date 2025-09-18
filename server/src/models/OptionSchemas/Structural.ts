@@ -1,6 +1,6 @@
 import {Schema} from 'mongoose';
-import { OptionDocument } from './Option';
-import Option from './Option';
+import { OptionDocument } from './Option.js';
+import Option from './Option.js';
 
 export interface StructuralDocument extends OptionDocument {
     classification: 'structural';
