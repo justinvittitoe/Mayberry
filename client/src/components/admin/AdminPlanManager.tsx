@@ -1,33 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Container, Row, Col, Card, Button, Modal, Form, Alert, Table, Badge } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_PLANS_WITH_OPTIONS } from '../utils/planOptionQueries';
-import { CREATE_PLAN, UPDATE_PLAN, DELETE_PLAN } from '../utils/mutations';
-import PlanOptionManager from './admin/PlanOptionManager';
+import { GET_PLANS_WITH_OPTIONS } from '../../utils/planOptionQueries';
+import { CREATE_PLAN, UPDATE_PLAN, DELETE_PLAN } from '../../utils/mutations';
+import PlanOptionManager from './PlanOptionManager';
 import './AdminPlanManager.css';
+import { Plan } from '../../models/graphql';
 
-interface Plan {
-  _id: string;
-  planType: number;
-  name: string;
-  bedrooms: number;
-  bathrooms: number;
-  totalSqft: number;
-  resSqft: number;
-  garage: number;
-  basePrice: number;
-  description?: string;
-  elevations: any[];
-  interiors: any[];
-  structural: any[];
-  additional: any[];
-  kitchenAppliance: any[];
-  laundryAppliance: any[];
-  lotPremium: any[];
-  colorScheme?: any[];
-  width: number;
-  length: number;
-}
 
 const AdminPlanManager = () => {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
@@ -39,12 +18,12 @@ const AdminPlanManager = () => {
     name: '',
     bedrooms: 3,
     bathrooms: 2,
-    totalSqft: 1500, // Fixed: was squareFootage
-    resSqft: 1200, // Added: required field (80% of total typically)
-    garage: 2, // Fixed: was garageType string, now number
+    totalSqft: 1500, 
+    resSqft: 1200, 
+    garage: 2, 
     basePrice: 300000,
     description: '',
-    colorScheme: [1, 2, 3],
+    colorScheme: [],
     width: 35,
     length: 41,
   });

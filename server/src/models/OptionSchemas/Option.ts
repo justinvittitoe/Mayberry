@@ -7,6 +7,7 @@ export interface OptionDocument extends Document {
   planType: number;
   description?: string;
   img?: string;
+  isActive: boolean;
 }
 
 const optionSchema = new Schema<OptionDocument>({
@@ -16,6 +17,7 @@ const optionSchema = new Schema<OptionDocument>({
   planType: {type: Number, required: true},
   description: String,
   img: {type: String},
+  isActive: {type: Boolean, default: true}
 });
 
 // Add indexes for better query performance

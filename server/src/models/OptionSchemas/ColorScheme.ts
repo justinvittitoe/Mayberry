@@ -1,4 +1,4 @@
-import { Schema, model, type Document } from 'mongoose';
+import { Schema, Types, model, type Document } from 'mongoose';
 
 export interface ColorValues {
   primary: string;    // Main siding
@@ -11,6 +11,8 @@ export interface ColorValues {
 
 export interface ColorSchemeDocument extends Document {
   name: string;
+  classification: string;
+  planType?: Types.ObjectId;
   description?: string;
   price: number;
   colorValues: ColorValues;
@@ -31,6 +33,8 @@ const colorValuesSchema = new Schema<ColorValues>({
 
 const colorSchemeSchema = new Schema<ColorSchemeDocument>({
   name: { type: String, required: true },
+  classification: { type: String, required: true, enum: ['colorScheme']},
+  planType: { type: Types.ObjectId, ref: 'Plan'},
   description: { type: String },
   price: { type: Number, required: true, default: 0 },
   colorValues: { type: colorValuesSchema, required: true },

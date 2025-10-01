@@ -1,6 +1,7 @@
-import { Schema, model, type Document } from 'mongoose';
+import { Schema, Types, model, type Document } from 'mongoose';
 
 export interface LotPremiumDocument extends Document {
+  _id: Types.ObjectId;
   filing: number;
   lot: number;
   width: number;
@@ -9,6 +10,9 @@ export interface LotPremiumDocument extends Document {
   premium: number;
   address: string;
   parcelNumber: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const lotPremiumSchema = new Schema<LotPremiumDocument>({
@@ -20,7 +24,8 @@ const lotPremiumSchema = new Schema<LotPremiumDocument>({
   premium: { type: Number, required: true },
   address: {type: String, required: true},
   parcelNumber: {type: String, required: true},
-});
+  isActive: {type: Boolean, default: true}
+}, {timestamps: true, _id: true});
 
 //calaculate the total lot sqft footage prior to save
 lotPremiumSchema.pre('save', function() {

@@ -26,6 +26,8 @@ const typeDefs = gql`
         _id: ID!
         name: String!
         price: Float!
+        classification: String!
+        planType: Int!
         description: String
         img: String
         isActive: Boolean!
@@ -38,6 +40,8 @@ const typeDefs = gql`
         _id: ID!
         name: String!
         price: Float!
+        classification: String!
+        planType: Int!
         description: String
         img: String
         garage: Int
@@ -53,21 +57,33 @@ const typeDefs = gql`
         updatedAt: String
     }
 
+    type InteriorOption {
+        _id: ID
+        name: String!
+        price: Float!
+        classification: String!
+        planType: Int!
+        description: String
+        img: String
+        material: String!
+    }
+
     type PlanInteriorOption {
         _id: ID!
         name: String!
-        totalPrice: Float!
+        planType: Int
+        totalPrice: Float
         clientPrice: Float
         description: String
         img: String
-        fixtures: [String!]!
-        lvp: [String!]!
-        carpet: [String!]!
-        backsplash: [String!]!
-        masterBathTile: [String!]!
-        countertop: [String!]!
-        primaryCabinets: [String!]!
-        secondaryCabinets: [String!]!
+        fixtures: [InteriorOption]
+        lvp: [InteriorOption]
+        carpet: [InteriorOption]
+        backsplash: [InteriorOption]
+        masterBathTile: [InteriorOption]
+        countertop: [InteriorOption!]
+        primaryCabinets: [InteriorOption]
+        secondaryCabinets: [InteriorOption]
         upgrade: Boolean!
         basePackage: Boolean!
         isActive: Boolean!
@@ -80,12 +96,10 @@ const typeDefs = gql`
         _id: ID!
         name: String!
         price: Float!
+        classification: String!
         type: String!
         description: String
         img: String
-        brand: String
-        model: String
-        appliances: [String!]!
         isActive: Boolean!
         sortOrder: Int!
         createdAt: String
@@ -123,16 +137,6 @@ const typeDefs = gql`
         updatedAt: String
     }
 
-    type InteriorOption {
-        _id: ID
-        name: String!
-        price: Float!
-        classification: String!
-        planType: Int!
-        description: String
-        img: String
-        material: String!
-    }
 
     type Appliance {
         _id: ID
@@ -159,6 +163,7 @@ const typeDefs = gql`
         length: Int!
         totalSqft: Int
         resSqft: Int
+        isActive: Boolean!
     }
     
     type ColorValues {
@@ -197,7 +202,7 @@ const typeDefs = gql`
         secondaryCabinets: [InteriorOption]
         upgrade: Boolean!
         basePackage: Boolean!
-        isActive: Boolean
+        isActive: Boolean!
         createdAt: String
         updatedAt: String
     }
@@ -212,6 +217,7 @@ const typeDefs = gql`
         premium: Float!
         address: String!
         parcelNumber: String!
+        isActive: Boolean!
     }
     
     type Plan {
@@ -225,18 +231,19 @@ const typeDefs = gql`
         garage: Int!
         basePrice: Float!
         description: String
-        elevations: [PlanElevationOption!]!
+        elevations: [PlanElevationOption]
         colorScheme: [ColorScheme]
-        interiors: [PlanInteriorOption!]!
-        structural: [PlanStructuralOption!]!
-        additional: [PlanAdditionalOption!]!
-        kitchenAppliance: [PlanApplianceOption!]!
-        laundryAppliance: [PlanApplianceOption!]!
-        lotPremium: [PlanLotPremium!]!
+        interiors: [PlanInteriorOption]
+        structural: [PlanStructuralOption]
+        additional: [PlanAdditionalOption]
+        kitchenAppliance: [PlanApplianceOption]
+        laundryAppliance: [PlanApplianceOption]
+        lotPremium: [PlanLotPremium]
         width: Int!
         length: Int!
         garageSqft: Int
         pricePerSqft: Float
+        isActive: Boolean!
         createdAt: String
         updatedAt: String
     }
@@ -284,6 +291,7 @@ const typeDefs = gql`
         userHomes: [UserHome]
         userHome(id: ID!): UserHome
         options: [Option]
+        elevationOptions: [Option]
         interiorOptions: [InteriorOption]
         appliances: [Appliance]
         structuralOptions: [Structural]

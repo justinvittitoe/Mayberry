@@ -2,41 +2,62 @@
 
 //Verified with GraphQL schema
 export interface Option {
-  _id?: string;
+  _id: string;
   name: string;
   price: number;
-  classification: string;
+  classification: Classification;
   planType: number;
   description?: string;
   img?: string;
+  isActive: boolean;
 }
+
+export type Classification =
+  | 'elevation'
+  | 'colorScheme'
+  | 'interior'
+  | 'structural'
+  | 'additional'
+  | 'lot';
+
+export type Material = 
+  | 'fixture' 
+  | 'lvp' 
+  | 'carpet' 
+  | 'backsplash' 
+  | 'masterBathTile' 
+  | 'countertop' 
+  | 'cabinet';
+
 
 //Verified with GraphQL schema
 export interface InteriorOption {
-  _id?: string;
+  _id: string;
   name: string;
   price: number;
-  classification: string;
+  classification: Classification;
   planType: number;
   description?: string;
   img?: string;
-  material: string;
+  material: Material;
+  isActive: boolean;
 }
 
 //Verified with GraphQL schema
 export interface Appliance {
-  _id?: string;
+  _id: string;
   name: string;
   price: number;
   classification: string;
   type: string;
   description?: string;
   img?: string;
+  isActive: boolean;
 }
 
 //Verified with GraphQL schema
 export interface Structural {
-  _id?: string;
+  _id: string;
   name: string;
   price: number;
   classification: string;
@@ -50,6 +71,7 @@ export interface Structural {
   length: number;
   totalSqft?: number;
   resSqft?: number;
+  isActive: boolean;
 }
 
 //Verified with GraphQL schema
@@ -64,8 +86,10 @@ export interface ColorValues {
 
 //Verified with GraphQL schema
 export interface ColorScheme {
-  _id?: string;
+  _id: string;
   name: string;
+  classification: Classification;
+  planType?: number;
   description?: string;
   price: number;
   colorValues: ColorValues;
@@ -77,7 +101,7 @@ export interface ColorScheme {
 
 //Verified with GraphQL schema
 export interface InteriorPackage {
-  _id?: string;
+  _id: string;
   name: string;
   planType?: number;
   totalPrice?: number;
@@ -99,7 +123,7 @@ export interface InteriorPackage {
 
 //Verified with GraphQL schema
 export interface LotPremium {
-  _id?: string;
+  _id: string;
   filing: number;
   lot: number;
   width: number;
@@ -108,6 +132,7 @@ export interface LotPremium {
   premium: number;
   address: string;
   parcelNumber: string;
+  isActive: boolean;
 }
 
 //Verified with GraphQL schema
@@ -132,6 +157,7 @@ export interface Plan {
   kitchenAppliance?: Appliance[];
   laundryAppliance?: Appliance[];
   lotPremium?: LotPremium[];
+  isActive: boolean;
   garageSqft?: number;
   pricePerSqft?: number;
   createdAt?: string;
@@ -163,6 +189,18 @@ export interface UserHome {
   customerNotes?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+//Customization Selections Schema
+export interface CustomizationSelections {
+  elevation: string;
+  colorScheme: string;
+  interior: string;
+  structural: string[];
+  additional: string[];
+  kitchenAppliance: string;
+  laundryAppliance: string;
+  lotPremium: string;
 }
 
 //Verified with GraphQL schema

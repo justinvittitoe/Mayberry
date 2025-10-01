@@ -14,40 +14,14 @@ export interface PlanAdditionalOption {
 }
 
 export const planAdditionalOptionSchema = new Schema<PlanAdditionalOption>({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-    maxLength: 100
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  description: {
-    type: String,
-    maxLength: 500,
-    trim: true
-  },
-  img: {
-    type: String,
-    trim: true
-  },
-  category: {
-    type: String,
-    trim: true,
-    maxLength: 50,
-    enum: ['HVAC', 'Electrical', 'Plumbing', 'Flooring', 'Smart Home', 'Security', 'Outdoor', 'Other']
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  sortOrder: {
-    type: Number,
-    default: 0
-  }
+  name: {type: String, required: true, trim: true, maxLength: 100},
+  price: {type: Number, required: true, min: 0},
+  description: {type: String, maxLength: 500, trim: true},
+  img: {type: String, trim: true},
+  category: {type: String, trim: true, maxLength: 50, 
+    enum: ['HVAC', 'Electrical', 'Plumbing', 'Flooring', 'Smart Home', 'Security', 'Outdoor', 'Other']},
+  isActive: {type: Boolean, default: true},
+  sortOrder: {type: Number, default: 0}
 }, {
   timestamps: true,
   _id: true

@@ -22,7 +22,7 @@ import {
   REORDER_PLAN_OPTIONS
 } from '../../utils/planOptionMutations';
 import { GET_PLAN_WITH_OPTIONS } from '../../utils/planOptionQueries';
-import { Appliance, InteriorPackage, LotPremium, Structural } from '../../models/graphql';
+import { Appliance, InteriorPackage, LotPremium, Structural, Plan } from '../../models/graphql';
 
 interface PlanOption {
   _id: string;
@@ -35,25 +35,10 @@ interface PlanOption {
   [key: string]: any;
 }
 
-interface PlanOptionManagerProps {
-  plan: {
-    _id: string;
-    name: string;
-    planType: number;
-    elevations: PlanOption[];
-    structural: PlanOption[];
-    interiors: PlanOption[];
-    kitchenAppliance: PlanOption[];
-    laundryAppliance: PlanOption[];
-    additional: PlanOption[];
-    lotPremium: PlanOption[];
-  };
-  onPlanUpdate: () => void;
-}
-
 type OptionType = 'elevations' | 'structural' | 'interiors' | 'kitchenAppliance' | 'laundryAppliance' | 'additional' | 'lotPremium';
 
-const PlanOptionManager: React.FC<PlanOptionManagerProps> = ({ plan, onPlanUpdate }) => {
+
+const PlanOptionManager: React.FC<{ plan: Plan; onPlanUpdate: () => void}> = ({ plan, onPlanUpdate }) => {
   const [activeTab, setActiveTab] = useState<OptionType>('elevations');
   const [editingOption, setEditingOption] = useState<PlanOption | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -191,7 +176,7 @@ const PlanOptionManager: React.FC<PlanOptionManagerProps> = ({ plan, onPlanUpdat
   };
 
   const renderOptionsList = () => {
-    const options = plan[activeTab] || [];
+    const options = (plan[activeTab] as PlanOption[] | undefined) ?? [];
     const sortedOptions = [...options].sort((a, b) => a.sortOrder - b.sortOrder);
 
     return (

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Container, Row, Col, Nav, Tab } from 'react-bootstrap';
-import AdminPlanManager from '../components/AdminPlanManager';
-import AdminOptionsManager from '../components/AdminOptionsManager';
-import AdminInteriorPackagesManager from '../components/AdminInteriorPackagesManager';
-import AdminLotPremiumsManager from '../components/AdminLotPremiumsManager';
-import AdminColorSchemeManager from '../components/AdminColorSchemeManager';
-import AdminInteriorOptionsManager from '../components/AdminInteriorOptionsManager';
+import AdminPlanManager from '../components/admin/AdminPlanManager';
+import AdminOptionsManager from '../components/admin/AdminOptionsManager';
+import AdminInteriorPackagesManager from '../components/admin/AdminInteriorPackagesManager';
+import AdminLotPremiumsManager from '../components/admin/AdminLotPremiumsManager';
+import AdminColorSchemeManager from '../components/admin/AdminColorSchemeManager';
+import AdminInteriorOptionsManager from '../components/admin/AdminInteriorOptionsManager';
 import AuthService from '../utils/auth';
 import { Navigate } from 'react-router-dom';
 

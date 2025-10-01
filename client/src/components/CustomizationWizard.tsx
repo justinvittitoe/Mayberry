@@ -5,7 +5,7 @@ import { useMutation } from '@apollo/client';
 import { SAVE_USER_HOME, SAVE_USER_HOME_PROGRESS } from '../utils/mutations';
 import AuthService from '../utils/auth';
 import { cleanUserHomeForMutation, validateUserHomeForSave } from '../utils/cleanGraphQLObject';
-import type { CustomizationState } from '../models/models';
+
 
 // Step Components
 import ElevationStep from './wizard-steps/ElevationStep';
@@ -15,15 +15,15 @@ import AdditionalStep from './wizard-steps/AdditionalStep';
 import ApplianceStep from './wizard-steps/ApplianceStep';
 import LotSelectionStep from './wizard-steps/LotSelectionStep';
 import PricingStep from './wizard-steps/PricingStep';
-
+import { CustomizationSelections } from '../models/graphql';
 // CustomizationState is now imported from types/models
 
 interface CustomizationWizardProps {
-    plan: any;
-    options: any[];
-    interiorPackages: any[];
-    lotPremiums: any[];
-    colorSchemes: any[];
+    name: string;
+    options: string[];
+    interiorPackages: string[];
+    lotPremiums: string[];
+    colorSchemes: string[];
 }
 
 const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
@@ -39,15 +39,15 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
     const [saveProgress] = useMutation(SAVE_USER_HOME_PROGRESS);
 
     const [currentStep, setCurrentStep] = useState(0);
-    const [customization, setCustomization] = useState<CustomizationState>({
-        elevation: null,
-        colorScheme: null,
-        interior: null,
+    const [customization, setCustomization] = useState<CustomizationSelections>({
+        elevation: '',
+        colorScheme: '',
+        interior: '',
         structural: [],
         additional: [],
-        kitchenAppliance: null,
-        laundryAppliance: null,
-        lotPremium: null
+        kitchenAppliance: '',
+        laundryAppliance: '',
+        lotPremium: ''
     });
 
     const [totalPrice, setTotalPrice] = useState(0);

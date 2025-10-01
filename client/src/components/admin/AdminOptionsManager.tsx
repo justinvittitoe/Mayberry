@@ -1,21 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col, Badge, ButtonGroup } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_OPTIONS } from '../utils/queries';
-import { CREATE_OPTION, UPDATE_OPTION, DELETE_OPTION } from '../utils/mutations';
-import { cleanOptionForMutation } from '../utils/cleanGraphQLObject';
+import { GET_OPTIONS } from '../../utils/queries';
+import { CREATE_OPTION, UPDATE_OPTION, DELETE_OPTION } from '../../utils/mutations';
+import { cleanOptionForMutation } from '../../utils/cleanGraphQLObject';
+import { InteriorOption, Option, Structural } from '../../models/graphql';
 
-interface Option {
-  _id: string;
-  name: string;
-  price: number;
-  classification: string;
-  description: string;
-  img: string;
-}
 
 const AdminOptionsManager = () => {
-  const { loading, error, data, refetch } = useQuery(GET_OPTIONS);
+  const { loading, error, data, refetch } = useQuery<Option | null>(GET_OPTIONS);
   const [createOption] = useMutation(CREATE_OPTION);
   const [updateOption] = useMutation(UPDATE_OPTION);
   const [deleteOption] = useMutation(DELETE_OPTION);
@@ -40,7 +33,7 @@ const AdminOptionsManager = () => {
   const [selectedClassification, setSelectedClassification] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const options = data?.options || [];
+  const options = data || [];
 
   // Get unique classifications for filtering
   const classifications = useMemo(() => {
@@ -53,8 +46,8 @@ const AdminOptionsManager = () => {
     return options.filter((option: Option) => {
       const matchesClassification = selectedClassification === 'all' || option.classification === selectedClassification;
       const matchesSearch = searchTerm === '' || 
-        option.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        option.description.toLowerCase().includes(searchTerm.toLowerCase());
+        option.name.toLowerCase().includes(searchTerm.toLowerCase());
+        
       
       return matchesClassification && matchesSearch;
     });

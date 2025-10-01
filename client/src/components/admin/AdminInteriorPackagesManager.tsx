@@ -1,27 +1,11 @@
 import React, { useState } from 'react';
 import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_INTERIOR_PACKAGES } from '../utils/queries';
-import { CREATE_INTERIOR_PACKAGE, UPDATE_INTERIOR_PACKAGE, DELETE_INTERIOR_PACKAGE } from '../utils/mutations';
-import { cleanInteriorPackageForMutation } from '../utils/cleanGraphQLObject';
+import { GET_INTERIOR_PACKAGES } from '../../utils/queries';
+import { CREATE_INTERIOR_PACKAGE, UPDATE_INTERIOR_PACKAGE, DELETE_INTERIOR_PACKAGE } from '../../utils/mutations';
+import { cleanInteriorPackageForMutation } from '../../utils/cleanGraphQLObject';
+import { InteriorPackage } from '../../models/graphql';
 
-interface InteriorPackage {
-  _id: string;
-  name: string;
-  totalPrice: number;
-  fixtures?: any[] | string; // Can be array of objects or string
-  lvp?: any[] | string;
-  carpet?: any[] | string;
-  backsplash?: any[] | string;
-  masterBathTile?: any[] | string;
-  countertop?: any[] | string;
-  primaryCabinets?: any[] | string;
-  secondaryCabinets?: any[] | string;
-  upgrade?: boolean | string;
-  // Keep old property names for backward compatibility
-  fitures?: any[] | string;
-  kitchenBackspash?: any[] | string;
-}
 
 const AdminInteriorPackagesManager = () => {
   const { loading, error, data, refetch } = useQuery(GET_INTERIOR_PACKAGES);
@@ -69,10 +53,10 @@ const AdminInteriorPackagesManager = () => {
       setFormData({
         name: typeof pkg.name === 'string' ? pkg.name : '',
         totalPrice: typeof pkg.totalPrice === 'number' ? pkg.totalPrice : 0,
-        fitures: renderOptionArray(pkg.fitures || pkg.fixtures || ''),
+        fitures: renderOptionArray(pkg.fixtures || ''),
         lvp: renderOptionArray(pkg.lvp || ''),
         carpet: renderOptionArray(pkg.carpet || ''),
-        kitchenBackspash: renderOptionArray(pkg.kitchenBackspash || pkg.backsplash || ''),
+        kitchenBackspash: renderOptionArray(pkg.backsplash || ''),
         masterBathTile: renderOptionArray(pkg.masterBathTile || ''),
         countertop: renderOptionArray(pkg.countertop || ''),
         primaryCabinets: renderOptionArray(pkg.primaryCabinets || ''),
@@ -214,13 +198,16 @@ const AdminInteriorPackagesManager = () => {
                     <td className="fw-semibold">{typeof pkg.name === 'string' ? pkg.name : 'Unknown Package'}</td>
                     <td>${typeof pkg.totalPrice === 'number' ? pkg.totalPrice.toLocaleString() : '0'}</td>
                     <td className="text-truncate" style={{ maxWidth: '150px' }}>
-                      {renderOptionArray(pkg.fitures)}
+                      {renderOptionArray(pkg.fixtures || '')}
                     </td>
                     <td className="text-truncate" style={{ maxWidth: '150px' }}>
-                      LVP: {renderOptionArray(pkg.lvp)}, Carpet: {renderOptionArray(pkg.carpet)}
+                      LVP: {renderOptionArray(pkg.lvp || 'NO LVP')}, Carpet: {renderOptionArray(pkg.carpet || 'NO CARPET')}
                     </td>
                     <td className="text-truncate" style={{ maxWidth: '150px' }}>
-                      {renderOptionArray(pkg.primaryCabinets)}
+                      {renderOptionArray(pkg.primaryCabinets || 'NO PRIMARY CABINETS')}
+                    </td>
+                    <td className="text-truncate" style={{ maxWidth: '150px' }}>
+                      {renderOptionArray(pkg.secondaryCabinets || 'NO SECONDARY CABINETS')}
                     </td>
                     <td>
                       <div className="btn-group" role="group">

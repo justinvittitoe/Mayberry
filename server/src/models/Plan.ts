@@ -37,6 +37,7 @@ export interface PlanTypeDocument extends Document {
   kitchenAppliance: PlanApplianceOption[]; //Plan-specific kitchen appliance packages
   laundryAppliance: PlanApplianceOption[]; //Plan-specific laundry appliance packages
   lotPremium: PlanLotPremium[]; //Plan-specific lot premium options
+  isActive: boolean;
 }
 
 const planTypeSchema = new Schema({
@@ -61,7 +62,8 @@ const planTypeSchema = new Schema({
   laundryAppliance: [planApplianceOptionSchema],
   lotPremium: [planLotPremiumSchema],
   width: { type: Number, required: true, min: 10, max: 120 },
-  length: { type: Number, required: true, min: 10, max: 120 }
+  length: { type: Number, required: true, min: 10, max: 120 },
+  isActive: { type: Boolean, default: true}
 }, {timestamps: true});
 
 //Validation: Residential Sqft should be less than or equal to total sqft

@@ -25,86 +25,23 @@ export interface PlanInteriorOption {
 }
 
 export const planInteriorOptionSchema = new Schema<PlanInteriorOption>({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-    maxLength: 100
-  },
-  totalPrice: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  clientPrice: {
-    type: Number,
-    min: 0
-  },
-  description: {
-    type: String,
-    maxLength: 500,
-    trim: true
-  },
-  img: {
-    type: String,
-    trim: true
-  },
-  fixtures: [{
-    type: String,
-    trim: true,
-    maxLength: 200
-  }],
-  lvp: [{
-    type: String,
-    trim: true,
-    maxLength: 200
-  }],
-  carpet: [{
-    type: String,
-    trim: true,
-    maxLength: 200
-  }],
-  backsplash: [{
-    type: String,
-    trim: true,
-    maxLength: 200
-  }],
-  masterBathTile: [{
-    type: String,
-    trim: true,
-    maxLength: 200
-  }],
-  countertop: [{
-    type: String,
-    trim: true,
-    maxLength: 200
-  }],
-  primaryCabinets: [{
-    type: String,
-    trim: true,
-    maxLength: 200
-  }],
-  secondaryCabinets: [{
-    type: String,
-    trim: true,
-    maxLength: 200
-  }],
-  upgrade: {
-    type: Boolean,
-    default: false
-  },
-  basePackage: {
-    type: Boolean,
-    default: false
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  sortOrder: {
-    type: Number,
-    default: 0
-  }
+  name: {type: String, required: true, trim: true, maxLength: 100},
+  totalPrice: {type: Number, required: true, min: 0},
+  clientPrice: {type: Number, min: 0},
+  description: {type: String,maxLength: 500,trim: true},
+  img: {type: String, trim: true},
+  fixtures: [{type: String, trim: true, maxLength: 200}],
+  lvp: [{type: String, trim: true, maxLength: 200}],
+  carpet: [{type: String, trim: true, maxLength: 200}],
+  backsplash: [{type: String, trim: true, maxLength: 200}],
+  masterBathTile: [{type: String, trim: true, maxLength: 200}],
+  countertop: [{type: String, trim: true, maxLength: 200}],
+  primaryCabinets: [{type: String, trim: true, maxLength: 200}],
+  secondaryCabinets: [{type: String, trim: true, maxLength: 200}],
+  upgrade: {type: Boolean, default: false},
+  basePackage: {type: Boolean, default: false},
+  isActive: {type: Boolean, default: true},
+  sortOrder: {type: Number, default: 0}
 }, {
   timestamps: true,
   _id: true
