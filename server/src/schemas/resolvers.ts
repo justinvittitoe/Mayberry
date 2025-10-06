@@ -1,7 +1,7 @@
 import { User, Plan, Option, InteriorPackage, LotPremium, ColorScheme } from '../models/index.js';
 import InteriorOption from '../models/OptionSchemas/InteriorOption.js';
 import Appliance from '../models/OptionSchemas/Appliance.js';
-import Structural from '../models/OptionSchemas/Structural.js';
+import Structural from '../models/OptionSchemas/StructuralOption.js';
 import UserPlan from '../models/UserHome.js';
 import { signToken, AuthenticationError } from '../services/auth.js';
 import type {
@@ -352,8 +352,8 @@ const resolvers = {
                     lot: plan.lotPremium
                 };
 
-                const optionsToSearch = args.type === 'all' ? 
-                    Object.values(optionArrays).flat() : 
+                const optionsToSearch = args.type === 'all' ?
+                    Object.values(optionArrays).flat() :
                     optionArrays[args.type as keyof typeof optionArrays] || [];
 
                 optionsToSearch.forEach((option: any) => {
@@ -424,7 +424,7 @@ const resolvers = {
             requireAdmin(context);
             console.log('📥 CREATE_PLAN Request from user:', context.user?.username || 'Unknown');
             console.log('📋 Plan data received:', JSON.stringify(args.plan, null, 2));
-            
+
             try {
                 const plan = await Plan.create(args.plan);
                 console.log('✅ Plan created successfully:', {
@@ -444,7 +444,7 @@ const resolvers = {
             console.log('📥 UPDATE_PLAN Request from user:', context.user?.username || 'Unknown');
             console.log('📋 Plan ID:', args.id);
             console.log('📋 Plan data received:', JSON.stringify(args.plan, null, 2));
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(args.id, args.plan, { new: true });
                 if (plan) {
@@ -563,7 +563,7 @@ const resolvers = {
             requireAuth(context);
             const updatedUserPlan = await UserPlan.findOneAndUpdate(
                 { _id: args.id, userId: context.user._id },
-                { 
+                {
                     ...args.userHome,
                     structuralOptions: args.userHome.structuralOptions || [],
                     additionalOptions: args.userHome.additionalOptions || []
@@ -652,7 +652,7 @@ const resolvers = {
             console.log('📥 ADD_ELEVATION_TO_PLAN Request from user:', context.user?.username || 'Unknown');
             console.log('📋 Plan ID:', args.planId);
             console.log('📋 Elevation data:', JSON.stringify(args.elevation, null, 2));
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
@@ -675,7 +675,7 @@ const resolvers = {
         updatePlanElevation: async (_parent: unknown, args: { planId: string; elevationId: string; elevation: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
             console.log('📥 UPDATE_PLAN_ELEVATION Request from user:', context.user?.username || 'Unknown');
-            
+
             try {
                 const plan = await Plan.findOneAndUpdate(
                     { _id: args.planId, 'elevations._id': args.elevationId },
@@ -698,7 +698,7 @@ const resolvers = {
         removePlanElevation: async (_parent: unknown, args: { planId: string; elevationId: string }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
             console.log('📥 REMOVE_PLAN_ELEVATION Request from user:', context.user?.username || 'Unknown');
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
@@ -721,7 +721,7 @@ const resolvers = {
         addStructuralToPlan: async (_parent: unknown, args: { planId: string; structural: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
             console.log('📥 ADD_STRUCTURAL_TO_PLAN Request from user:', context.user?.username || 'Unknown');
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
@@ -743,7 +743,7 @@ const resolvers = {
 
         updatePlanStructural: async (_parent: unknown, args: { planId: string; structuralId: string; structural: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findOneAndUpdate(
                     { _id: args.planId, 'structural._id': args.structuralId },
@@ -759,7 +759,7 @@ const resolvers = {
 
         removePlanStructural: async (_parent: unknown, args: { planId: string; structuralId: string }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
@@ -776,7 +776,7 @@ const resolvers = {
         addInteriorToPlan: async (_parent: unknown, args: { planId: string; interior: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
             console.log('📥 ADD_INTERIOR_TO_PLAN Request from user:', context.user?.username || 'Unknown');
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
@@ -792,7 +792,7 @@ const resolvers = {
 
         updatePlanInterior: async (_parent: unknown, args: { planId: string; interiorId: string; interior: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findOneAndUpdate(
                     { _id: args.planId, 'interiors._id': args.interiorId },
@@ -808,7 +808,7 @@ const resolvers = {
 
         removePlanInterior: async (_parent: unknown, args: { planId: string; interiorId: string }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
@@ -825,7 +825,7 @@ const resolvers = {
         addApplianceToPlan: async (_parent: unknown, args: { planId: string; appliance: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
             console.log('📥 ADD_APPLIANCE_TO_PLAN Request from user:', context.user?.username || 'Unknown');
-            
+
             try {
                 // Determine which appliance array to update based on appliance type
                 const updateField = args.appliance.type === 'kitchen' ? 'kitchenAppliance' : 'laundryAppliance';
@@ -843,7 +843,7 @@ const resolvers = {
 
         updatePlanAppliance: async (_parent: unknown, args: { planId: string; applianceId: string; appliance: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 // Update either kitchen or laundry appliance based on type
                 const updateField = args.appliance.type === 'kitchen' ? 'kitchenAppliance' : 'laundryAppliance';
@@ -861,16 +861,16 @@ const resolvers = {
 
         removePlanAppliance: async (_parent: unknown, args: { planId: string; applianceId: string }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 // Try to remove from both kitchen and laundry arrays
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
-                    { 
-                        $pull: { 
+                    {
+                        $pull: {
                             kitchenAppliance: { _id: args.applianceId },
                             laundryAppliance: { _id: args.applianceId }
-                        } 
+                        }
                     },
                     { new: true }
                 );
@@ -883,7 +883,7 @@ const resolvers = {
 
         addAdditionalToPlan: async (_parent: unknown, args: { planId: string; additional: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
@@ -899,7 +899,7 @@ const resolvers = {
 
         updatePlanAdditional: async (_parent: unknown, args: { planId: string; additionalId: string; additional: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findOneAndUpdate(
                     { _id: args.planId, 'additional._id': args.additionalId },
@@ -915,7 +915,7 @@ const resolvers = {
 
         removePlanAdditional: async (_parent: unknown, args: { planId: string; additionalId: string }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
@@ -931,7 +931,7 @@ const resolvers = {
 
         addLotToPlan: async (_parent: unknown, args: { planId: string; lot: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,
@@ -947,7 +947,7 @@ const resolvers = {
 
         updatePlanLot: async (_parent: unknown, args: { planId: string; lotId: string; lot: any }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findOneAndUpdate(
                     { _id: args.planId, 'lotPremium._id': args.lotId },
@@ -963,7 +963,7 @@ const resolvers = {
 
         removePlanLot: async (_parent: unknown, args: { planId: string; lotId: string }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            
+
             try {
                 const plan = await Plan.findByIdAndUpdate(
                     args.planId,

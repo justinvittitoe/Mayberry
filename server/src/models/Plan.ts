@@ -1,22 +1,15 @@
 import { Schema, model, type Document } from 'mongoose';
-import type { ColorSchemeDocument } from './OptionSchemas/ColorScheme.js';
-import {
-  PlanElevationOption,
-  PlanStructuralOption,
-  PlanInteriorOption,
-  PlanApplianceOption,
-  PlanAdditionalOption,
-  PlanLotPremium,
-  planElevationOptionSchema,
-  planStructuralOptionSchema,
-  planInteriorOptionSchema,
-  planApplianceOptionSchema,
-  planAdditionalOptionSchema,
-  planLotPremiumSchema
-} from './PlanOptions/index.js';
+import { ColorSchemeDocument } from './OptionSchemas/ColorScheme.js';
+import { ElevationOptionDocument } from './OptionSchemas/ElevationOption.js';
+import { InteriorPackageDocument } from './OptionSchemas/InteriorPackageOption.js';
+import { StructuralDocument } from './OptionSchemas/StructuralOption.js';
+import { AdditionalOptionDocument } from './OptionSchemas/AdditionalOption.js';
+import { ApplianceDocument } from './OptionSchemas/Appliance.js';
+import { LotPremiumDocument } from './OptionSchemas/LotPremium.js';
 
 
 export interface PlanTypeDocument extends Document {
+  _id: Schema.Types.ObjectId;
   planType: number; //Unique plan identifier
   name: string; //Plan name (e.g. Beacon)
   bedrooms: number; //Number of bedrooms
@@ -29,15 +22,18 @@ export interface PlanTypeDocument extends Document {
   width: number; //Plan width in feet
   length: number; //Plan depth/length in feet
   //Plan-specific options (embedded documents)
-  elevations: PlanElevationOption[]; //Plan-specific exterior elevations
-  colorScheme: ColorSchemeDocument[]; //Available color schemes (keeping global for now)
-  interiors: PlanInteriorOption[]; //Plan-specific interior packages
-  structural: PlanStructuralOption[]; //Plan-specific structural modifications
-  additional: PlanAdditionalOption[]; //Plan-specific additional upgrades
-  kitchenAppliance: PlanApplianceOption[]; //Plan-specific kitchen appliance packages
-  laundryAppliance: PlanApplianceOption[]; //Plan-specific laundry appliance packages
-  lotPremium: PlanLotPremium[]; //Plan-specific lot premium options
+  elevations: Schema.Types.ObjectId[]; //Plan-specific exterior elevations
+  colorScheme: Schema.Types.ObjectId[]; //Available color schemes (keeping global for now)
+  interiors: Schema.Types.ObjectId[]; //Plan-specific interior packages
+  structural: Schema.Types.ObjectId[]; //Plan-specific structural modifications
+  additional: Schema.Types.ObjectId[]; //Plan-specific additional upgrades
+  kitchenAppliance: Schema.Types.ObjectId[]; //Plan-specific kitchen appliance packages
+  laundryAppliance: Schema.Types.ObjectId[]; //Plan-specific laundry appliance packages
+  lotPremium: Schema.Types.ObjectId[]; //Plan-specific lot premium options
   isActive: boolean;
+  sortOrder: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const planTypeSchema = new Schema({
@@ -50,21 +46,22 @@ const planTypeSchema = new Schema({
   bathrooms: { type: Number, required: true, min: 2, step: 0.5 }, //Allow half baths
   totalSqft: { type: Number, required: true, min: 500 },
   resSqft: { type: Number, required: true, min: 400 },
-  garage: { type: Number, required: true, enum: [2,3,4,5,6], default: 2 },
+  garage: { type: Number, required: true, enum: [2,3], default: 3 },
   basePrice: { type: Number, required: true, min: 0 },
   description: { type: String, maxLength: 500 },
-  elevations: [planElevationOptionSchema],
+  elevations: [{ type: Schema.Types.ObjectId, ref: 'Elevation'}],
   colorScheme: [{ type: Schema.Types.ObjectId, ref: 'ColorScheme' }], // Keeping global for now
-  interiors: [planInteriorOptionSchema],
-  structural: [planStructuralOptionSchema],
-  additional: [planAdditionalOptionSchema],
-  kitchenAppliance: [planApplianceOptionSchema],
-  laundryAppliance: [planApplianceOptionSchema],
-  lotPremium: [planLotPremiumSchema],
+  interiors: [{ type: Schema.Types.ObjectId, ref: 'InteriorPackage'}],
+  structural: [{ type: Schema.Types.ObjectId, ref: 'Structural'}],
+  additional: [{ type: Schema.Types.ObjectId, ref: 'Additional'}],
+  kitchenAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance'}],
+  laundryAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance' }],
+  lotPremium: [{ type: Schema.Types.ObjectId, ref: 'LotPremium'}],
   width: { type: Number, required: true, min: 10, max: 120 },
   length: { type: Number, required: true, min: 10, max: 120 },
-  isActive: { type: Boolean, default: true}
-}, {timestamps: true});
+  isActive: { type: Boolean, default: true},
+  sortOrder: {type: Number, default: 0}
+}, {timestamps: true, _id: true});
 
 //Validation: Residential Sqft should be less than or equal to total sqft
 planTypeSchema.pre('save', function() {

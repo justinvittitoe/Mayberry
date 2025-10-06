@@ -23,7 +23,7 @@ const applianceSchema = new Schema<ApplianceDocument>({
     packageCost: {type: Number, required: true},
     markup: {type: Number, required: true, default: 0.35},
     classification: {type: String, required: true, default: 'appliance'},
-    type: {type: String, required: true, default: 'kitchen'},
+    type: {type: String, required: true, enum: ['kitchen', 'laundry']},
     img: {type: String},
     planType: {type: Types.ObjectId, ref: 'Plan'},
     isActive: {type: Boolean, default: true},

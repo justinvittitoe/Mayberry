@@ -1,9 +1,9 @@
-import {Schema, Types} from 'mongoose';
+import {Schema, Types, type Document} from 'mongoose';
 import Option from './Option.js';
 
 //Remove the Option Document extension and create a unique model document
-export interface StructuralDocument {
-    _id?: Types.ObjectId;
+export interface StructuralDocument extends Document{
+    _id: Types.ObjectId;
     name: string;
     price: number;
     description?: string
@@ -27,7 +27,7 @@ const structuralSchema = new Schema<StructuralDocument>({
     price: { type: Number, required: true, min: 0 },
     description: { type: String, maxLength: 500, trim: true },
     img: { type: String, trim: true },
-    garage: { type: Number, min: 0, max: 6, validate: {
+    garage: { type: Number, min: 2, max: 7, validate: {
         validator: Number.isInteger,
         message: 'Garage count must be an integer'
     } },
@@ -56,10 +56,11 @@ structuralSchema.pre('save', function() {
     }
 })
 
+
 structuralSchema.index({bedroom: 1, bathroom: 1});
 structuralSchema.index({ totalSqft: 1 });
 
-const Structural = Option.discriminator<StructuralDocument>('Structural', structuralSchema);
+const StructuralOption = Option.discriminator<StructuralDocument>('Structural', structuralSchema);
 
-export default Structural
+export default StructuralOption
 

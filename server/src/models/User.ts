@@ -61,10 +61,6 @@ userSchema.methods.isCorrectPassword = async function (password: string) {
   return await bcrypt.compare(password, this.password);
 };
 
-// when we query a user, we'll also get another field called `bookCount` with the number of saved books we have
-userSchema.virtual('homeCount').get(function () {
-  return this.savedHomes.length;
-});
 
 const User = model<UserDocument>('User', userSchema);
 
