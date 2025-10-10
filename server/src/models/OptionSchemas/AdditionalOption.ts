@@ -5,10 +5,12 @@ export interface AdditionalOptionDocument extends Document {
   name: string;
   totalCost: number;
   clientPrice: number;
-  markup: number
+  markup: number;
+  minMarkup: number;
   description?: string;
   img?: string;
-  classifiction: 'additional';
+  classification: 'additional';
+  planId: Types.ObjectId;
   isActive: boolean;
   sortOrder: number;
   createdAt?: Date;
@@ -18,10 +20,13 @@ export interface AdditionalOptionDocument extends Document {
 const additionalOptionSchema = new Schema<AdditionalOptionDocument>({
   name: {type: String, required: true, trim: true, maxLength: 100},
   totalCost: {type: Number, required: true, min: 0},
-  markup: {type: Number, required: true, min:0, max: 1},
+  clientPrice: {type: Number, required: true, min: 0, default: 0},
+  markup: {type: Number, required: true, min:0, max: 1, default: 0.35},
+  minMarkup: {type: Number, required: true, min: 0, default: 200},
   description: {type: String, maxLength: 500, trim: true},
   img: {type: String, trim: true},
-  classifiction: {type: String, enum: ['additional']},
+  classification: {type: String, enum: ['additional']},
+  planId: {type: Schema.Types.ObjectId, required: true, ref: 'Plan'},
   isActive: {type: Boolean, default: true},
   sortOrder: {type: Number, default: 0}
 }, {

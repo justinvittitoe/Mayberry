@@ -19,12 +19,12 @@ export interface ElevationOptionDocument extends Document {
 const ElevationOptionSchema = new Schema<ElevationOptionDocument>({
   name: {type: String, required: true, trim: true, maxLength: 100},
   totalCost: {type: Number, required: true, min: 0},
-  clientPrice: {type: Number, required: true, min: 0},
-  markup: {type: Number, required: true, min:0},
-  minMarkup: {type: Number, required: true, min:0},
+  clientPrice: {type: Number, required: true, min: 0, default: 0},
+  markup: {type: Number, required: true, min:0, default: 0.35},
+  minMarkup: {type: Number, required: true, min:0, default: 200},
   description: {type: String, maxLength: 500, trim: true},
   img: {type: String, trim: true},
-  planId: [{type: Types.ObjectId, ref: 'Plan'}],
+  planId: {type: Schema.Types.ObjectId, ref: 'Plan', required: true},
   isActive: {type: Boolean, default: true},
   sortOrder: {type: Number, default: 0}
 }, {

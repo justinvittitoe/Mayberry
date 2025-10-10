@@ -3,7 +3,7 @@ import db from '../config/connection.js';
 import Plan from '../models/Plan.js';
 import Option from '../models/OptionSchemas/Option.js';
 import InteriorPackage from '../models/OptionSchemas/InteriorPackage.js';
-import LotPremium from '../models/OptionSchemas/LotPremium.js';
+import LotPremium from '../models/OptionSchemas/Lot.js';
 import { floorPlanSeedData, floorPlanOptions, floorPlanInteriorPackages, floorPlanLotPremiums } from './floorPlanData.js';
 
 async function seedDatabase() {

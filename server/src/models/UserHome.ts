@@ -4,7 +4,7 @@ import { Schema, type Document, Types, model } from 'mongoose';
 // Main user home selection schema
 export interface UserHomeSelection extends Document {
     userId: Types.ObjectId;
-    plan: Types.ObjectId;
+    planId: Types.ObjectId;
     configurationName: string; //User can make their own name
     //Required single selections
     elevation: Types.ObjectId;
@@ -14,7 +14,7 @@ export interface UserHomeSelection extends Document {
 
     // Optional single selections
     laundryAppliance?: Types.ObjectId;
-    lotPremium?: Types.ObjectId;
+    lot: Types.ObjectId;
 
     //Multiple selections allowed
     structuralOptions: Types.ObjectId[];
@@ -37,18 +37,18 @@ export interface UserHomeSelection extends Document {
 
 const userPlanSchema = new Schema<UserHomeSelection>({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    plan: {type: Schema.Types.ObjectId, ref: 'Plan', required: true},
+    planId: {type: Schema.Types.ObjectId, ref: 'Plan', required: true},
     configurationName: { type: String, trim: true, maxLength: 100, default: function() {
         return `My Semi-Custom Home ${new Date().toLocaleDateString()}`
     }},
-    elevation: { type: Schema.Types.ObjectId, ref: 'Option', required: true},
+    elevation: { type: Schema.Types.ObjectId, ref: 'Elevation', required: true},
     colorScheme: { type: Schema.Types.ObjectId, ref: 'ColorScheme', required: true},
     interiorPackage: { type: Schema.Types.ObjectId, ref: 'InteriorPackage', required: true},
     kitchenAppliance: { type: Schema.Types.ObjectId, ref: 'Appliance', required: true},
     laundryAppliance: { type: Schema.Types.ObjectId, ref: 'Appliance'},
-    lotPremium: { type: Schema.Types.ObjectId, ref: 'LotPremium'},
+    lot: { type: Schema.Types.ObjectId, ref: 'LotPricing'},
     structuralOptions: [{ type: Schema.Types.ObjectId, ref: 'Structural'}],
-    additionalOptions: [{ type: Schema.Types.ObjectId, ref: 'Option'}],
+    additionalOptions: [{ type: Schema.Types.ObjectId, ref: 'Additional'}],
     basePlanPrice: { type: Number, min: 0},
     optionsTotalPrice: { type: Number, min: 0, default: 0},
     totalPrice: { type: Number, min: 0},
@@ -64,7 +64,7 @@ const userPlanSchema = new Schema<UserHomeSelection>({
 userPlanSchema.pre('save', async function() {
     if (this.isNew || this.isModified('plan') || this.isModified('elevation') || this.isModified('colorScheme') || this.isModified('interiorPackage') || this.isModified('kitchenAppliance') || this.isModified('laundryAppliance') || this.isModified('structuralOptions') || this.isModified('additionalOptions')) {
         const Plan = this.db.model('Plan');
-        const basePlan = await Plan.findById(this.plan)
+        const basePlan = await Plan.findById(this.planId)
 
         if (!basePlan) {
             throw new Error('Invlaid plan type selected');
@@ -110,52 +110,6 @@ userPlanSchema.pre('save', async function() {
 
         // Cache base plan price
         this.basePlanPrice = basePlan.basePrice;
-    }
-});
-
-//Calculate total dimensions
-userPlanSchema.pre('save', async function () {
-    if (this.lotPremium && (this.isNew || this.isModified('lotPremium') || this.isModified('plan') || this.isModified('structuralOptions'))) {
-        const Plan = this.db.model('Plan');
-        const LotPremium = this.db.model('LotPremium');
-        const Structural = this.db.model('Structural');
-
-        const [basePlan, selectedLot, structuralOptions] = await Promise.all([
-            Plan.findById(this.plan),
-            LotPremium.findById(this.lotPremium),
-            this.structuralOptions.length > 0 ?
-                Structural.find({ _id: { $in: this.structuralOptions } }) :
-                Promise.resolve([])
-        ]);
-
-        if (!basePlan || !selectedLot) {
-            throw new Error('Invalid plan or lot premium selected');
-        }
-
-        // Calculate total dimensions including structural upgrades
-        let totalWidth = basePlan.width;
-        let totalLength = basePlan.length;
-
-        // Add structural upgrade dimensions
-        structuralOptions.forEach(structural => {
-            totalWidth += structural.width || 0;
-            totalLength += structural.length || 0;
-        });
-
-        // Validate dimensions fit on lot
-        if (totalWidth > selectedLot.width) {
-            throw new Error(
-                `Total home width (${totalWidth}') exceeds lot width (${selectedLot.width}'). ` +
-                `Plan: ${basePlan.width}', Structural additions: ${totalWidth - basePlan.width}'`
-            );
-        }
-
-        if (totalLength > selectedLot.length) {
-            throw new Error(
-                `Total home length (${totalLength}') exceeds lot length (${selectedLot.length}'). ` +
-                `Plan: ${basePlan.length}', Structural additions: ${totalLength - basePlan.length}'`
-            );
-        }
     }
 });
 

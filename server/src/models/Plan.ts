@@ -1,11 +1,5 @@
 import { Schema, model, type Document } from 'mongoose';
-import { ColorSchemeDocument } from './OptionSchemas/ColorScheme.js';
-import { ElevationOptionDocument } from './OptionSchemas/ElevationOption.js';
-import { InteriorPackageDocument } from './OptionSchemas/InteriorPackageOption.js';
-import { StructuralDocument } from './OptionSchemas/StructuralOption.js';
-import { AdditionalOptionDocument } from './OptionSchemas/AdditionalOption.js';
-import { ApplianceDocument } from './OptionSchemas/Appliance.js';
-import { LotPremiumDocument } from './OptionSchemas/LotPremium.js';
+
 
 
 export interface PlanTypeDocument extends Document {
@@ -56,7 +50,7 @@ const planTypeSchema = new Schema({
   additional: [{ type: Schema.Types.ObjectId, ref: 'Additional'}],
   kitchenAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance'}],
   laundryAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance' }],
-  lotPremium: [{ type: Schema.Types.ObjectId, ref: 'LotPremium'}],
+  lotPremium: [{ type: Schema.Types.ObjectId, ref: 'LotPricing'}],
   width: { type: Number, required: true, min: 10, max: 120 },
   length: { type: Number, required: true, min: 10, max: 120 },
   isActive: { type: Boolean, default: true},

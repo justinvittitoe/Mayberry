@@ -6,7 +6,7 @@ import InteriorOption from './OptionSchemas/InteriorOption';
 import InteriorPackage from './OptionSchemas/InteriorPackageOption.js';
 import StructuralOption from './OptionSchemas/StructuralOption.js';
 import AdditionalOption from './OptionSchemas/AdditionalOption.js';
-import LotPremium from './OptionSchemas/LotPremium.js';
+import LotPremium from './OptionSchemas/Lot.js';
 import UserHome from './UserHome.js';
 import Appliance from './OptionSchemas/Appliance.js';
 

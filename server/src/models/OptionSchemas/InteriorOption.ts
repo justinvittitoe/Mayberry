@@ -5,14 +5,16 @@ export interface InteriorOptionDocument extends Document {
     _id: Types.ObjectId;
     name: string;
     brand: string;
-    basePrice: number;
+    baseCost: number;
     totalCost: number;
     markup: number;
+    minMarkup: number;
+    clientPrice: number;
     classification: 'interior'; //enforce interior classification
     material: 'fixture' | 'lvp' | 'carpet' | 'backsplash' | 'masterBathTile' | 'countertop' | 'cabinet' | 'cabinetHardware';
     tier?: 'base' | 'tier-1' | 'tier-2' | 'tier-3';
     cabinetOverlay?: 'standard' | 'full';
-    planId?: Types.ObjectId
+    planId: Types.ObjectId
     img?: string;
     isActive: boolean
     sortOrder?: number
@@ -23,14 +25,16 @@ export interface InteriorOptionDocument extends Document {
 const interiorOptionSchema = new Schema<InteriorOptionDocument>({
     name: { type: String, required: true},
     brand: {type: String, required: true},
-    basePrice: {type: Number, required: true, min: 0},
+    baseCost: {type: Number, required: true, min: 0},
     totalCost: {type: Number, required: true, min:0, step: 0.1},
-    markup: {type: Number, required: true, min: 0, max: 1.0},
+    markup: {type: Number, required: true, min: 0, max: 1.0, default: 0.35},
+    minMarkup: { type: Number, required: true, min: 0, default: 200 },
+    clientPrice: {type: Number, required: true, min:0, default: 0},
     classification: {type: String, required: true, enum: ['interior']},
     material: { type: String, required: true, enum: ['fixture', 'lvp', 'carpet', 'backsplash', 'masterBathTile', 'countertop', 'cabinet', 'cabinetHardware'] },
     tier: { type: String, enum: ['base', 'tier-1', 'tier-2', 'tier-3']},
     cabinetOverlay: {type: String, enum: ['standard', 'full']},
-    planId: {type: Types.ObjectId, required: true, ref: 'Plan'},
+    planId: {type: Schema.Types.ObjectId, required: true, ref: 'Plan'},
     img: {type: String, trim: true},
     isActive: {type: Boolean, required: true, default: true},
     sortOrder: {type: Number, default: 1},
@@ -42,10 +46,10 @@ interiorOptionSchema.pre('save', function () {
     }
 });
 
-//if a cabinet option is saved, but the overlay was not input - auto save as STD overlay
+//if a cabinet option is saved, but the overlay was not input error handling
 interiorOptionSchema.pre('save', function() {
     if(this.material === 'cabinet' && !this.cabinetOverlay) {
-        return this.cabinetOverlay = 'standard'
+        throw new Error('Cabinet option must include cabinetOverlay"')
     }
     return
 })
@@ -71,10 +75,6 @@ interiorOptionSchema.pre('save', function () {
     return
 })
 
-interiorOptionSchema.virtual('clientPrice').get(function() {
-    const clientPrice = (this.totalCost * this.markup) - this.basePrice
-    return clientPrice
-})
 
 interiorOptionSchema.index({ material: 1 });
 interiorOptionSchema.index({ material: 1, price: 1 });
