@@ -25,7 +25,7 @@ const additionalOptionSchema = new Schema<AdditionalOptionDocument>({
   minMarkup: {type: Number, required: true, min: 0, default: 200},
   description: {type: String, maxLength: 500, trim: true},
   img: {type: String, trim: true},
-  classification: {type: String, enum: ['additional']},
+  classification: {type: String, default: 'additional', enum: ['additional']},
   planId: {type: Schema.Types.ObjectId, required: true, ref: 'Plan'},
   isActive: {type: Boolean, default: true},
   sortOrder: {type: Number, default: 0}

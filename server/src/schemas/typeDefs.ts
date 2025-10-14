@@ -56,6 +56,7 @@ const typeDefs = gql`
         _id: ID
         name: String!
         brand: String!
+        color: String!
         baseCost: Float!
         totalCost: Float!
         markup: Float!
@@ -164,14 +165,7 @@ const typeDefs = gql`
         createdAt: String
         updatedAt: String
     }
-    
-    type ColorValues {
-        primary: String!
-        secondary: String!
-        roof: String!
-        accent: String!
-        foundation: String
-    }
+   
     
     type ColorScheme {
         _id: ID!
@@ -257,38 +251,46 @@ const typeDefs = gql`
     }
 
     # Union type for plan option search results
-    union PlanOption = PlanElevationOption | PlanStructuralOption | PlanInteriorOption | PlanApplianceOption | PlanAdditionalOption | PlanLotPremium
+    union SearchResult = Elevation | Structural | InteriorOption | InteriorPackage | Appliance | Additional | ColorScheme | Lot | LotPricing
 
     type Query {
+        #User queries
         me: User
         user(id: ID, username: String): User
+
+        #Plan queries
         plans: [Plan]
         plan(id: ID!): Plan
         planByType(planType: Int!): Plan
-        userHomes: [UserHome]
+
+        #User home queries
+        userHomes(userId: ID): [UserHome]
         userHome(id: ID!): UserHome
-        options: [Option]
-        elevationOptions: [Option]
-        interiorOptions: [InteriorOption]
-        appliances: [Appliance]
-        structuralOptions: [Structural]
-        colorSchemes: [ColorScheme]
+
+        #Option queries (all options across all plans)
+        elevationOptions: [Elevation]
         interiorPackages: [InteriorPackage]
-        lotPremiums: [LotPremium]
+        interiorOptions: [InteriorOption]
+        structuralOptions: [Structural]
+        additional: [Additional]
+        appliances: [Appliance]
+        colorSchemes: [ColorScheme]
+        lots: [Lot]
+        lotPricing: [LotPricing]
         
         # Plan-specific option queries (for browsing across all plans)
-        allPlanElevations: [PlanElevationOption!]!
-        allPlanStructural: [PlanStructuralOption!]!
-        allPlanInteriors: [PlanInteriorOption!]!
-        allPlanAppliances: [PlanApplianceOption!]!
-        allPlanAdditional: [PlanAdditionalOption!]!
-        allPlanLots: [PlanLotPremium!]!
+        planElevations(planId: ID!): [Elevation]
+        planStructural(planId: ID!): [Structural]
+        planInteriorOptions(planId: ID!): [InteriorOption]
+        planInteriorPackages(planId: ID!): [InteriorPackage]
+        planAppliances(planId: ID!): [Appliance]
+        planAdditional(planId: ID!): [Additional]
+        planColorSchemes(planId: ID!): [ColorScheme]
+        planLotPricing(planId: ID!): [LotPricing]
         
         # Search plan options across all plans
-        searchPlanOptions(query: String!, type: String!): [PlanOption!]!
+        searchOptions(query: String!, type: String!): [SearchResult]
         
-        # Get options for a specific plan
-        planOptions(planId: ID!, optionType: String!): [PlanOption!]!
     }
 
     type Mutation {
@@ -302,145 +304,123 @@ const typeDefs = gql`
         deletePlan(id: ID!): Plan
         
         # Option mutations (admin only)
-        createOption(option: OptionInput!): Option
-        updateOption(id: ID!, option: OptionInput!): Option
-        deleteOption(id: ID!): Option
+        # Elevation Options
+        createElevation(elevation: ElevationInput!): Elevation
+        updateElevation(id: ID!, elevation: ElevationInput!): Elevation
+        deleteElevation(id: ID!): Elevation
+
+        # Structural Options
+        createStructural(structural: StructuralInput!): Structural
+        updateStructural(id: ID!, structural: StructuralInput!): Structural
+        deleteStructural(id: ID!): Structural
+
+        # Interior Options
+        createInteriorOption(interiorOption: InteriorOptionInput!): InteriorOption
+        updateInteriorOption(id: ID!, interiorOption: InteriorOptionInput!): InteriorOption
+        deleteInteriorOption(id: ID!): InteriorOption
+
+        # Interior Package Options
+        createInteriorPackage(interiorPackage: InteriorPackageInput!): InteriorPackage
+        updateInteriorPackage(id: ID!, interiorPackage: InteriorPackageInput!): InteriorPackage
+        deleteInteriorPackage(id: ID!): InteriorPackage
+
+        # Appliance Options
+        createAppliance(appliance: ApplianceInput!): Appliance
+        updateAppliance(id: ID!, appliance: ApplianceInput!): Appliance
+        deleteAppliance(id: ID!): Appliance
+
+        # Additional Options
+        createAdditional(additional: AdditionalInput!): Additional
+        updateAdditional(id: ID!, additional: AdditionalInput!): Additional
+        deleteAdditional(id: ID!): Additional
         
-        # Color Scheme mutations (admin only)
+        # ColorScheme
         createColorScheme(colorScheme: ColorSchemeInput!): ColorScheme
         updateColorScheme(id: ID!, colorScheme: ColorSchemeInput!): ColorScheme
         deleteColorScheme(id: ID!): ColorScheme
         
-        # Interior Package mutations (admin only)
-        createInteriorPackage(interiorPackage: InteriorPackageInput!): InteriorPackage
-        updateInteriorPackage(id: ID!, interiorPackage: InteriorPackageInput!): InteriorPackage
-        deleteInteriorPackage(id: ID!): InteriorPackage
-        
-        # Lot Premium mutations (admin only)
-        createLotPremium(lotPremium: LotPremiumInput!): LotPremium
-        updateLotPremium(id: ID!, lotPremium: LotPremiumInput!): LotPremium
-        deleteLotPremium(id: ID!): LotPremium
+        # Lot Options
+        createLot(lot: LotInput!): Lot
+        updateLot(id: ID!, lot: LotInput!): Lot
+        deleteLot(id: ID!): Lot
+
+        # Lot Pricing Mutations
+        createLotPricing(lotPricing: LotPricingInput!): LotPricing
+        updateLotPricing(id: ID!, lotPricing: LotPricingInput!): LotPricing
+        deleteLotPricing(id: ID!): LotPricing
         
         # User Home mutations
-        saveUserHome(userHome: UserHomeInput!): User
+        createUserHome(userHome: UserHomeInput!): UserHome
         updateUserHome(id: ID!, userHome: UserHomeInput!): UserHome
-        deleteUserHome(id: ID!): User
+        deleteUserHome(id: ID!): UserHome
         
-        # Plan-specific option management mutations
-        addElevationToPlan(planId: ID!, elevation: PlanElevationOptionInput!): Plan
-        updatePlanElevation(planId: ID!, elevationId: ID!, elevation: PlanElevationOptionInput!): Plan
-        removePlanElevation(planId: ID!, elevationId: ID!): Plan
-        
-        addStructuralToPlan(planId: ID!, structural: PlanStructuralOptionInput!): Plan
-        updatePlanStructural(planId: ID!, structuralId: ID!, structural: PlanStructuralOptionInput!): Plan
-        removePlanStructural(planId: ID!, structuralId: ID!): Plan
-        
-        addInteriorToPlan(planId: ID!, interior: PlanInteriorOptionInput!): Plan
-        updatePlanInterior(planId: ID!, interiorId: ID!, interior: PlanInteriorOptionInput!): Plan
-        removePlanInterior(planId: ID!, interiorId: ID!): Plan
-        
-        addApplianceToPlan(planId: ID!, appliance: PlanApplianceOptionInput!): Plan
-        updatePlanAppliance(planId: ID!, applianceId: ID!, appliance: PlanApplianceOptionInput!): Plan
-        removePlanAppliance(planId: ID!, applianceId: ID!): Plan
-        
-        addAdditionalToPlan(planId: ID!, additional: PlanAdditionalOptionInput!): Plan
-        updatePlanAdditional(planId: ID!, additionalId: ID!, additional: PlanAdditionalOptionInput!): Plan
-        removePlanAdditional(planId: ID!, additionalId: ID!): Plan
-        
-        addLotToPlan(planId: ID!, lot: PlanLotPremiumInput!): Plan
-        updatePlanLot(planId: ID!, lotId: ID!, lot: PlanLotPremiumInput!): Plan
-        removePlanLot(planId: ID!, lotId: ID!): Plan
-        
-        # Bulk operations
-        reorderPlanOptions(planId: ID!, optionType: String!, optionIds: [ID!]!): Plan
-        copyOptionsFromPlan(sourcePlanId: ID!, targetPlanId: ID!, optionTypes: [String!]!): Plan
-        
-        # Appliance mutations (admin only)
-        createAppliance(appliance: ApplianceInput!): Appliance
-        updateAppliance(id: ID!, appliance: ApplianceInput!): Appliance
-        deleteAppliance(id: ID!): Appliance
-        
-        # Structural mutations (admin only)
-        createStructural(structural: StructuralInput!): Structural
-        updateStructural(id: ID!, structural: StructuralInput!): Structural
-        deleteStructural(id: ID!): Structural
-        
-        # InteriorOption mutations (admin only)
-        createInteriorOption(interiorOption: InteriorOptionInput!): InteriorOption
-        updateInteriorOption(id: ID!, interiorOption: InteriorOptionInput!): InteriorOption
-        deleteInteriorOption(id: ID!): InteriorOption
+        # Plan-option relationship mutations
+        addElevationToPlan(planId: ID!, elevationId: ID!): Plan
+        removeElevationFromPlan(planId: ID!, elevationId: ID!): Plan
+    
+        addStructuralToPlan(planId: ID!, structuralId: ID!): Plan
+        removeStructuralFromPlan(planId: ID!, structuralId: ID!): Plan
+    
+        addInteriorOptionToPlan(planId: ID!, interiorOptionId: ID!): Plan
+        removeInteriorOptionFromPlan(planId: ID!, interiorOptionId: ID!): Plan
+    
+        addInteriorPackageToPlan(planId: ID!, interiorPackageId: ID!): Plan
+        removeInteriorPackageFromPlan(planId: ID!, interiorPackageId: ID!): Plan
+    
+        addApplianceToPlan(planId: ID!, applianceId: ID!): Plan
+        removeApplianceFromPlan(planId: ID!, applianceId: ID!): Plan
+    
+        addAdditionalToPlan(planId: ID!, additionalId: ID!): Plan
+        removeAdditionalFromPlan(planId: ID!, additionalId: ID!): Plan
+    
+        addColorSchemeToPlan(planId: ID!, colorSchemeId: ID!): Plan
+        removeColorSchemeFromPlan(planId: ID!, colorSchemeId: ID!): Plan
+    
+        addLotPricingToPlan(planId: ID!, lotPricingId: ID!): Plan
+        removeLotPricingFromPlan(planId: ID!, lotPricingId: ID!): Plan
     }
 
-    input OptionInput {
+    input ElevationInput {
         name: String!
-        price: Float!
-        classification: String
-        planType: Int!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
         description: String
         img: String
+        planId: ID!
+        isActive: Boolean
+        sortOrder: Int
     }
-    
-    input ColorValuesInput {
-        primary: String!
-        secondary: String!
-        roof: String!
-        accent: String!
-        foundation: String
-    }
-    
+
     input ColorSchemeInput {
         name: String!
         description: String
         price: Float!
-        colorValues: ColorValuesInput!
+        primaryName: String!
+        primaryCode: String!
+        secondaryName: String
+        secondaryCode: String
+        trimName: String!
+        trimCode: String!
+        shingleBrand: String!
+        shingleColor: String!
+        stone: Boolean
+        stoneColor: String
+        colorSchemeImg: String
         isActive: Boolean
         sortOrder: Int
     }
     
-    input InteriorPackageInput {
+    input StructuralInput {
         name: String!
-        planType: Int
-        totalPrice: Float
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
         clientPrice: Float
-        fixtures: [ID]
-        lvp: [ID]
-        carpet: [ID]
-        backsplash: [ID]
-        masterBathTile: [ID]
-        countertop: [ID]
-        primaryCabinets: [ID]
-        secondaryCabinets: [ID]
-        upgrade: Boolean!
-        basePackage: Boolean!
-        isActive: Boolean
-    }
-    
-    input LotPremiumInput {
-        filing: Int!
-        lot: Int!
-        width: Int!
-        length: Int!
-        lotSqft: Int
-        premium: Float!
-        address: String!
-        parcelNumber: String!
-    }
-    
-    # Input types for plan-specific options
-    input PlanElevationOptionInput {
-        name: String!
-        price: Float!
         description: String
         img: String
-        isActive: Boolean
-        sortOrder: Int
-    }
-
-    input PlanStructuralOptionInput {
-        name: String!
-        price: Float!
-        description: String
-        img: String
+        planId: ID!
         garage: Int
         bedrooms: Int
         bathrooms: Float
@@ -452,62 +432,243 @@ const typeDefs = gql`
         sortOrder: Int
     }
 
-    input PlanInteriorOptionInput {
+    input AdditionalInput {
         name: String!
-        totalPrice: Float!
+        totalCost: Float!
+        clientPrice: Float
+        markup: Float!
+        minMarkup: Float!
+        description: String
+        img: String
+        planId: ID!
+        isActive: Boolean
+        sortOrder: Int
+    }
+
+    input InteriorOptionInput {
+        name: String!
+        brand: String!
+        color: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
+        material: String!
+        tier: String
+        cabinetOverlay: String
+        planId: ID!
+        img: String
+        isActive: Boolean
+        sortOrder: Int
+    }
+
+    input CabinetOptionInput {
+        name: String!
+        brand: String!
+        color: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
+        material: String!
+        cabinetOverlay: String
+        planId: ID!
+        img: String
+        isActive: Boolean
+        sortOrder: Int
+    }
+
+    input CabinetHardwareOptionInput {
+        name: String!
+        brand: String!
+        color: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
+        material: String!
+        planId: ID!
+        img: String
+        isActive: Boolean
+        sortOrder: Int
+    }
+
+    input FixtureOptionInput {
+        name: String!
+        brand: String!
+        color: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
+        material: String!
+        planId: ID!
+        img: String
+        isActive: Boolean
+        sortOrder: Int
+    }
+
+    input LvpOptionInput {
+        name: String!
+        brand: String!
+        color: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
+        material: String!
+        tier: String
+        planId: ID!
+        img: String
+        isActive: Boolean
+        sortOrder: Int
+    }
+
+    input CarpetOptionInput {
+        name: String!
+        brand: String!
+        color: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
+        material: String!
+        tier: String
+        planId: ID!
+        img: String
+        isActive: Boolean
+        sortOrder: Int
+    }
+
+    input MasterBathOptionInput {
+        name: String!
+        brand: String!
+        color: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
+        material: String!
+        tier: String
+        planId: ID!
+        img: String
+        isActive: Boolean
+        sortOrder: Int
+    }
+
+    input BacksplashOptionInput {
+        name: String!
+        brand: String!
+        color: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
+        material: String!
+        planId: ID!
+        img: String
+        isActive: Boolean
+        sortOrder: Int
+    }
+
+    input CountertopOptionInput {
+        name: String!
+        brand: String!
+        color: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
+        material: String!
+        planId: ID!
+        img: String
+        isActive: Boolean
+        sortOrder: Int
+    }
+    
+    input InteriorPackageInput {
+        name: String!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
         clientPrice: Float
         description: String
         img: String
-        fixtures: [String!]
-        lvp: [String!]
-        carpet: [String!]
-        backsplash: [String!]
-        masterBathTile: [String!]
-        countertop: [String!]
-        primaryCabinets: [String!]
-        secondaryCabinets: [String!]
-        upgrade: Boolean
-        basePackage: Boolean
+        fixtures: [ID]
+        lvp: ID
+        carpet: ID
+        backsplash: ID
+        masterBathTile: ID
+        countertop: ID
+        primaryCabinets: ID
+        secondaryCabinets: ID
+        cabinetHardware: ID
+        softclose: Boolean!
+        basePackage: Boolean!
         isActive: Boolean
         sortOrder: Int
     }
 
-    input PlanApplianceOptionInput {
+    input ApplianceInput {
         name: String!
-        price: Float!
+        baseCost: Float!
+        totalCost: Float!
+        markup: Float!
+        minMarkup: Float!
+        clientPrice: Float
         type: String!
-        description: String
-        img: String
         brand: String
-        model: String
-        appliances: [String!]!
-        isActive: Boolean
-        sortOrder: Int
-    }
-
-    input PlanAdditionalOptionInput {
-        name: String!
-        price: Float!
-        description: String
         img: String
-        category: String
+        planId: ID!
         isActive: Boolean
         sortOrder: Int
     }
-
-    input PlanLotPremiumInput {
+    
+   input LotInput {
         filing: Int!
         lot: Int!
         width: Int!
         length: Int!
-        lotSqft: Int!
-        premium: Float!
-        address: String!
+        lotSqft: Float!
+        streetNumber: String!
+        streetName: String!
+        garageDir: String!
         parcelNumber: String!
-        description: String
-        features: [String!]
+        notes: String
         isActive: Boolean
-        sortOrder: Int
+    }
+
+    input LotPricingInput {
+        lot: ID!
+        plan: ID!
+        lotPremium: Float!
+        isActive: Boolean
+    }
+    
+    # Plan Specific Input
+
+    input BasePlanInput {
+        planType: Int!
+        name: String!
+        bedrooms: Int!
+        bathrooms: Float!
+        totalSqft: Int!
+        resSqft: Int!
+        garage: Int!
+        basePrice: Float!
+        description: String
+        width: Int!
+        length: Int!
     }
 
     input PlanInput {
@@ -520,16 +681,18 @@ const typeDefs = gql`
         garage: Int!
         basePrice: Float!
         description: String
-        elevations: [PlanElevationOptionInput!]
-        colorScheme: [ID]
-        interiors: [PlanInteriorOptionInput!]
-        structural: [PlanStructuralOptionInput!]
-        additional: [PlanAdditionalOptionInput!]
-        kitchenAppliance: [PlanApplianceOptionInput!]
-        laundryAppliance: [PlanApplianceOptionInput!]
-        lotPremium: [PlanLotPremiumInput!]
         width: Int!
         length: Int!
+        elevations: [ID!]
+        colorScheme: [ID!]
+        interiors: [ID!!]
+        structural: [ID!]
+        additional: [ID!]
+        kitchenAppliance: [ID!]
+        laundryAppliance: [ID!]
+        lotPremium: [ID!]
+        isActive: Boolean
+        sortOrder: Int
     }
     
     input UserHomeInput {
@@ -549,40 +712,6 @@ const typeDefs = gql`
         customerNotes: String
     }
 
-    input InteriorOptionInput {
-        name: String!
-        price: Float!
-        classification: String!
-        planType: Int!
-        description: String
-        img: String
-        material: String!
-    }
-
-    input ApplianceInput {
-        name: String!
-        price: Float!
-        classification: String!
-        type: String!
-        description: String
-        img: String
-    }
-
-    input StructuralInput {
-        name: String!
-        price: Float!
-        classification: String!
-        planType: Int!
-        description: String
-        img: String
-        garage: Int
-        bedrooms: Int
-        bathrooms: Float
-        width: Int!
-        length: Int!
-        totalSqft: Int
-        resSqft: Int
-    }
 `
 
 export default typeDefs;
