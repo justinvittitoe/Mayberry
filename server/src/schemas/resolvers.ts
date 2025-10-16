@@ -1,8 +1,6 @@
-import { User, Plan, Option, InteriorPackage, LotPremium, ColorScheme } from '../models/index.js';
-import InteriorOption from '../models/OptionSchemas/InteriorOption.js';
-import Appliance from '../models/OptionSchemas/Appliance.js';
-import Structural from '../models/OptionSchemas/StructuralOption.js';
-import UserPlan from '../models/UserHome.js';
+
+
+
 import { signToken, AuthenticationError } from '../services/auth.js';
 import type {
     Auth,

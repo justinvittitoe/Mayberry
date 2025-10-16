@@ -1,7 +1,7 @@
 import { Schema, model, type Document } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { userHomeSelectionSchema } from './UserHome.js';
-import type { UserHomeSelection } from './UserHome.js';
+import { userHomeSelectionSchema } from './UserPlan.js';
+import type { UserHomeSelection } from './UserPlan.js';
 
 export interface UserDocument extends Document {
   username: string;

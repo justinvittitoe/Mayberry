@@ -7,9 +7,9 @@ import InteriorPackage from './OptionSchemas/InteriorPackageOption.js';
 import StructuralOption from './OptionSchemas/StructuralOption.js';
 import AdditionalOption from './OptionSchemas/AdditionalOption.js';
 import LotPremium from './OptionSchemas/Lot.js';
-import UserHome from './UserHome.js';
 import Appliance from './OptionSchemas/Appliance.js';
+import UserPlan from './UserPlan.js';
 
 
-export default { User, Plan, ColorScheme, ElevationOption, InteriorOption, InteriorPackage, StructuralOption, AdditionalOption, LotPremium, Appliance, UserHome };
+export default { User, Plan, ColorScheme, ElevationOption, InteriorOption, InteriorPackage, StructuralOption, AdditionalOption, LotPremium, Appliance, UserPlan };
 
