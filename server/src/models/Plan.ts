@@ -1,12 +1,9 @@
 import { Schema, model, type Document } from 'mongoose';
-import type { OptionDocument } from './OptionSchemas/Option.js';
-import type { InteriorPackageDocument } from './OptionSchemas/InteriorPackage.js';
-import type { LotPremiumDocument } from './OptionSchemas/LotPremium.js';
-import type { ColorSchemeDocument } from './OptionSchemas/ColorScheme.js';
-import type { ApplianceDocument } from './OptionSchemas/Appliance.js';
-import { kMaxLength } from 'buffer';
+
+
 
 export interface PlanTypeDocument extends Document {
+  _id: Schema.Types.ObjectId;
   planType: number; //Unique plan identifier
   name: string; //Plan name (e.g. Beacon)
   bedrooms: number; //Number of bedrooms
@@ -16,17 +13,21 @@ export interface PlanTypeDocument extends Document {
   garage: number; //The number of car garage the floor plan fits
   basePrice: number; //starting price for this floorplan
   description?: string; //Plan description
-  //Available options for this plan type (catalogs of choices)
-  elevations: OptionDocument[]; //Avalable exterior elevations
-  colorScheme: ColorSchemeDocument[]; //Available color schemes
-  interiors: InteriorPackageDocument[]; //Avaailable interior packages
-  structural: OptionDocument[]; //Available structual modifications
-  additional: OptionDocument[]; //Available additional upgrades (e.g. Air Conditioning)
-  kitchenAppliance: ApplianceDocument[]; //Available kitchen appliance package
-  laundryAppliance: ApplianceDocument[]; //Available laundry appliance package
-  lotPremium: LotPremiumDocument[]; //Available lot premium option
   width: number; //Plan width in feet
   length: number; //Plan depth/length in feet
+  //Plan-specific options (embedded documents)
+  elevations: Schema.Types.ObjectId[]; //Plan-specific exterior elevations
+  colorScheme: Schema.Types.ObjectId[]; //Available color schemes (keeping global for now)
+  interiors: Schema.Types.ObjectId[]; //Plan-specific interior packages
+  structural: Schema.Types.ObjectId[]; //Plan-specific structural modifications
+  additional: Schema.Types.ObjectId[]; //Plan-specific additional upgrades
+  kitchenAppliance: Schema.Types.ObjectId[]; //Plan-specific kitchen appliance packages
+  laundryAppliance: Schema.Types.ObjectId[]; //Plan-specific laundry appliance packages
+  lotPremium: Schema.Types.ObjectId[]; //Plan-specific lot premium options
+  isActive: boolean;
+  sortOrder: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const planTypeSchema = new Schema({
@@ -39,20 +40,22 @@ const planTypeSchema = new Schema({
   bathrooms: { type: Number, required: true, min: 2, step: 0.5 }, //Allow half baths
   totalSqft: { type: Number, required: true, min: 500 },
   resSqft: { type: Number, required: true, min: 400 },
-  garage: { type: Number, required: true, enum: [2,3,4,5,6], default: 2 },
+  garage: { type: Number, required: true, enum: [2,3], default: 3 },
   basePrice: { type: Number, required: true, min: 0 },
   description: { type: String, maxLength: 500 },
-  elevations: [{ type: Schema.Types.ObjectId, ref: 'Option'}],
-  colorScheme: [{ type: Schema.Types.ObjectId, ref: 'ColorScheme' }],
+  elevations: [{ type: Schema.Types.ObjectId, ref: 'Elevation'}],
+  colorScheme: [{ type: Schema.Types.ObjectId, ref: 'ColorScheme' }], // Keeping global for now
   interiors: [{ type: Schema.Types.ObjectId, ref: 'InteriorPackage'}],
   structural: [{ type: Schema.Types.ObjectId, ref: 'Structural'}],
-  additional: [{ type: Schema.Types.ObjectId, ref: 'Option'}],
+  additional: [{ type: Schema.Types.ObjectId, ref: 'Additional'}],
   kitchenAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance'}],
-  laundryAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance'}],
-  lotPremium: [{ type: Schema.Types.ObjectId, ref: 'LotPremium' }],
+  laundryAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance' }],
+  lotPremium: [{ type: Schema.Types.ObjectId, ref: 'LotPricing'}],
   width: { type: Number, required: true, min: 10, max: 120 },
-  length: { type: Number, required: true, min: 10, max: 120 }
-}, {timestamps: true});
+  length: { type: Number, required: true, min: 10, max: 120 },
+  isActive: { type: Boolean, default: true},
+  sortOrder: {type: Number, default: 0}
+}, {timestamps: true, _id: true});
 
 //Validation: Residential Sqft should be less than or equal to total sqft
 planTypeSchema.pre('save', function() {
@@ -72,10 +75,10 @@ planTypeSchema.virtual('pricePerSqft').get(function() {
 })
 
 // Add indexes for better query performance
-planTypeSchema.index({ planType: 1 });
+// Note: planType already has unique index from schema definition
 planTypeSchema.index({ basePrice: 1 });
 planTypeSchema.index({ bedrooms: 1, bathrooms: 1 });
-planTypeSchema.index({ squareFootage: 1 });
+planTypeSchema.index({ totalSqft: 1 }); // Fixed field name
 planTypeSchema.index({ width: 1, length: 1 });
 planTypeSchema.index({ name: 1 })
 planTypeSchema.index({ garage: 1 })

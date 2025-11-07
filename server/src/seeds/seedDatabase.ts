@@ -3,7 +3,7 @@ import db from '../config/connection.js';
 import Plan from '../models/Plan.js';
 import Option from '../models/OptionSchemas/Option.js';
 import InteriorPackage from '../models/OptionSchemas/InteriorPackage.js';
-import LotPremium from '../models/OptionSchemas/LotPremium.js';
+import LotPremium from '../models/OptionSchemas/Lot.js';
 import { floorPlanSeedData, floorPlanOptions, floorPlanInteriorPackages, floorPlanLotPremiums } from './floorPlanData.js';
 
 async function seedDatabase() {
@@ -64,7 +64,7 @@ async function seedDatabase() {
     console.log(`✅ Plans: ${createdPlans.length}`);
     console.log('\nFloor Plans Created:');
     createdPlans.forEach((plan, index) => {
-      console.log(`${index + 1}. ${plan.name} - ${plan.bedrooms}BR/${plan.bathrooms}BA - ${plan.squareFootage} sq ft - $${plan.basePrice.toLocaleString()}`);
+      console.log(`${index + 1}. ${plan.name} - ${plan.bedrooms}BR/${plan.bathrooms}BA - ${plan.totalSqft} sq ft - $${plan.basePrice.toLocaleString()}`);
     });
 
     console.log('\nDatabase seeding completed successfully! 🎉');

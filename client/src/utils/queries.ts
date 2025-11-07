@@ -162,8 +162,9 @@ export const GET_PLANS = gql`
             name
             bedrooms
             bathrooms
-            squareFootage
-            garageType
+            totalSqft
+            resSqft
+            garage
             basePrice
             description
             width
@@ -456,6 +457,21 @@ export const GET_OPTIONS = gql`
     }
 `;
 
+export const GET_INTERIOR_OPTIONS = gql`
+    query getInteriorOptions {
+        InteriorOptons {
+            _id
+            name
+            price
+            classification
+            planType
+            description
+            img
+            material
+        }
+    }
+`
+
 export const GET_INTERIOR_PACKAGES = gql`
     query getInteriorPackages {
         interiorPackages {
@@ -522,6 +538,50 @@ export const GET_INTERIOR_PACKAGES = gql`
         }
     }
 `;
+
+export const GET_ELEVATION_OPTIONS = gql`
+    query getElevationOptions {
+        elevationOptions {
+            _id
+            name
+            price
+            classification
+            planType
+            description
+            img
+            garage
+            bedrooms
+            bathrooms
+            width
+            length
+            totalSqft
+            resSqft
+            isActive
+        }
+    }
+`
+
+export const GET_STRUCTURAL_OPTIONS = gql`
+    query getStructuralOptions {
+        structuralOptions {
+            _id
+            name
+            price
+            classification
+            planType
+            description
+            img
+            garage
+            bedrooms
+            bathrooms
+            width
+            length
+            totalSqft
+            resSqft
+            isActive
+        }
+    }
+`
 
 export const GET_LOT_PREMIUMS = gql`
     query getLotPremiums {

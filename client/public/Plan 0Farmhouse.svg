@@ -23,14 +23,14 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.8040765"
-     inkscape:cx="179.31612"
+     inkscape:cx="179.59327"
      inkscape:cy="151.60111"
      inkscape:window-width="1472"
-     inkscape:window-height="920"
+     inkscape:window-height="806"
      inkscape:window-x="0"
-     inkscape:window-y="36"
+     inkscape:window-y="37"
      inkscape:window-maximized="0"
-     inkscape:current-layer="layer13" />
+     inkscape:current-layer="layer9" />
   <defs
      id="defs6">
     <clipPath
@@ -278,7 +278,8 @@
   </g>
   <g
      id="g8"
-     transform="rotate(-90,411.97735,543.21733)">
+     transform="rotate(-90,411.97735,543.21733)"
+     inkscape:label="DrawingLines">
     <g
        id="g34">
       <path

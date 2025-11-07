@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col, Badge } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_COLOR_SCHEMES } from '../utils/queries';
-import { CREATE_COLOR_SCHEME, UPDATE_COLOR_SCHEME, DELETE_COLOR_SCHEME } from '../utils/mutations';
-import { getColorPalette, createGradientFromPalette } from '../utils/colorService';
-import { cleanColorSchemeForMutation } from '../utils/cleanGraphQLObject';
+import { GET_COLOR_SCHEMES } from '../../utils/queries';
+import { CREATE_COLOR_SCHEME, UPDATE_COLOR_SCHEME, DELETE_COLOR_SCHEME } from '../../utils/mutations';
+import { getColorPalette, createGradientFromPalette } from '../../utils/colorService';
+import { cleanColorSchemeForMutation } from '../../utils/cleanGraphQLObject';
 
 interface ColorScheme {
   _id: string;

@@ -11,6 +11,9 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { typeDefs, resolvers } from './schemas/index.js';
 import { getUserFromToken } from './services/auth.js'
 
+// import blob storage
+import { handleImageUpload } from './services/BlobStorage.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -29,6 +32,8 @@ const startApolloServer = async () => {
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
 
+  app.use('/api/upload', handleImageUpload)
+
   app.use('/graphql', expressMiddleware(server, {
     context: async ({ req }) => ({
       user: getUserFromToken(req),
@@ -44,6 +49,7 @@ const startApolloServer = async () => {
   app.listen(PORT, () => {
     console.log(`🌍 Now listening on http://localhost:${PORT}`)
     console.log(`Use GraphQL at http://localhost:${PORT}/graphql`)
+    console.log(`Blob storage endpoint at http://localhost:${PORT}/api/upload`);
   });
 };
 

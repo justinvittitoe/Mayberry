@@ -1,7 +1,7 @@
 import { Schema, model, type Document } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { userHomeSelectionSchema } from './UserHome.js';
-import type { UserHomeSelection } from './UserHome.js';
+import { userHomeSelectionSchema } from './UserPlan.js';
+import type { UserHomeSelection } from './UserPlan.js';
 
 export interface UserDocument extends Document {
   username: string;
@@ -61,10 +61,6 @@ userSchema.methods.isCorrectPassword = async function (password: string) {
   return await bcrypt.compare(password, this.password);
 };
 
-// when we query a user, we'll also get another field called `bookCount` with the number of saved books we have
-userSchema.virtual('homeCount').get(function () {
-  return this.savedHomes.length;
-});
 
 const User = model<UserDocument>('User', userSchema);
 

@@ -7,7 +7,7 @@ import {
   Option, ColorScheme, InteriorPackage, LotPremium, UserHome,
   OptionInput, ColorSchemeInput, InteriorPackageInput, LotPremiumInput, UserHomeInput,
   ColorValuesInput
-} from '../types/models';
+} from '../models/models';
 
 /**
  * Generic GraphQL object cleaner - removes __typename and other metadata
@@ -72,7 +72,7 @@ export const cleanGraphQLObjectKeepId = (obj: any, keepIdFields: string[] = []):
  */
 export const cleanColorSchemeForMutation = (colorScheme: ColorScheme | any): ColorSchemeInput | null => {
   if (!colorScheme) return null;
-  
+
   const colorValues: ColorValuesInput = {
     primary: colorScheme.colorValues?.primary || '#FFFFFF',
     secondary: colorScheme.colorValues?.secondary || '#000000',
@@ -80,7 +80,7 @@ export const cleanColorSchemeForMutation = (colorScheme: ColorScheme | any): Col
     accent: colorScheme.colorValues?.accent || '#0066CC',
     foundation: colorScheme.colorValues?.foundation || undefined
   };
-  
+
   return {
     name: colorScheme.name || '',
     description: colorScheme.description || undefined,
@@ -96,7 +96,7 @@ export const cleanColorSchemeForMutation = (colorScheme: ColorScheme | any): Col
  */
 export const cleanOptionForMutation = (option: Option | any): OptionInput | null => {
   if (!option) return null;
-  
+
   return {
     name: option.name || '',
     price: Number(option.price) || 0,
@@ -115,13 +115,13 @@ export const cleanOptionForMutation = (option: Option | any): OptionInput | null
  */
 export const cleanInteriorPackageForMutation = (interiorPackage: InteriorPackage | any): InteriorPackageInput | null => {
   if (!interiorPackage) return null;
-  
+
   // Helper function to clean option arrays
   const cleanOptionArray = (options: any[]): OptionInput[] => {
     if (!Array.isArray(options)) return [];
     return options.map(opt => cleanOptionForMutation(opt)).filter(Boolean) as OptionInput[];
   };
-  
+
   return {
     name: interiorPackage.name || '',
     totalPrice: Number(interiorPackage.totalPrice) || 0,
@@ -142,7 +142,7 @@ export const cleanInteriorPackageForMutation = (interiorPackage: InteriorPackage
  */
 export const cleanLotPremiumForMutation = (lotPremium: LotPremium | any): LotPremiumInput | null => {
   if (!lotPremium) return null;
-  
+
   return {
     filing: Number(lotPremium.filing) || 0,
     lot: Number(lotPremium.lot) || 0,
@@ -157,13 +157,13 @@ export const cleanLotPremiumForMutation = (lotPremium: LotPremium | any): LotPre
  */
 export const cleanUserHomeForMutation = (userHome: UserHome | any): UserHomeInput | null => {
   if (!userHome) return null;
-  
+
   // Helper function to clean option arrays
   const cleanOptionArray = (options: any[]): OptionInput[] => {
     if (!Array.isArray(options)) return [];
     return options.map(opt => cleanOptionForMutation(opt)).filter(Boolean) as OptionInput[];
   };
-  
+
   return {
     planTypeId: String(userHome.planTypeId) || '',
     planTypeName: String(userHome.planTypeName) || '',
@@ -186,7 +186,7 @@ export const cleanUserHomeForMutation = (userHome: UserHome | any): UserHomeInpu
  */
 export const validateUserHomeForSave = (userHome: UserHomeInput): string[] => {
   const errors: string[] = [];
-  
+
   if (!userHome.planTypeId) errors.push('Plan Type ID is required');
   if (!userHome.planTypeName) errors.push('Plan Type Name is required');
   if (!userHome.basePrice || userHome.basePrice <= 0) errors.push('Valid base price is required');
@@ -196,6 +196,6 @@ export const validateUserHomeForSave = (userHome: UserHomeInput): string[] => {
   if (!userHome.kitchenAppliance) errors.push('Kitchen appliance selection is required');
   if (!userHome.laundryAppliance) errors.push('Laundry appliance selection is required');
   if (!userHome.lotPremium) errors.push('Lot selection is required');
-  
+
   return errors;
 };

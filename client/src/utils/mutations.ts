@@ -113,46 +113,100 @@ export const CREATE_PLAN = gql`
             name
             bedrooms
             bathrooms
-            squareFootage
-            garageType
+            totalSqft
+            resSqft
+            garage
             basePrice
             description
+            width
+            length
             elevations {
                 _id
                 name
                 price
-                classification
+                description
+                img
+                isActive
+                sortOrder
             }
             interiors {
                 _id
                 name
                 totalPrice
+                clientPrice
+                description
+                img
+                upgrade
+                basePackage
+                isActive
+                sortOrder
             }
             structural {
                 _id
                 name
                 price
+                description
+                img
+                garage
+                bedrooms
+                bathrooms
+                width
+                length
+                totalSqft
+                resSqft
+                isActive
+                sortOrder
             }
             additional {
                 _id
                 name
                 price
+                description
+                img
+                category
+                isActive
+                sortOrder
             }
             kitchenAppliance {
                 _id
                 name
                 price
+                type
+                description
+                img
+                brand
+                model
+                appliances
+                isActive
+                sortOrder
             }
             laundryAppliance {
                 _id
                 name
                 price
+                type
+                description
+                img
+                brand
+                model
+                appliances
+                isActive
+                sortOrder
             }
             lotPremium {
                 _id
                 filing
                 lot
-                price
+                width
+                length
+                lotSqft
+                premium
+                address
+                parcelNumber
+                description
+                features
+                isActive
+                sortOrder
             }
         }
     }
@@ -166,46 +220,100 @@ export const UPDATE_PLAN = gql`
             name
             bedrooms
             bathrooms
-            squareFootage
-            garageType
+            totalSqft
+            resSqft
+            garage
             basePrice
             description
+            width
+            length
             elevations {
                 _id
                 name
                 price
-                classification
+                description
+                img
+                isActive
+                sortOrder
             }
             interiors {
                 _id
                 name
                 totalPrice
+                clientPrice
+                description
+                img
+                upgrade
+                basePackage
+                isActive
+                sortOrder
             }
             structural {
                 _id
                 name
                 price
+                description
+                img
+                garage
+                bedrooms
+                bathrooms
+                width
+                length
+                totalSqft
+                resSqft
+                isActive
+                sortOrder
             }
             additional {
                 _id
                 name
                 price
+                description
+                img
+                category
+                isActive
+                sortOrder
             }
             kitchenAppliance {
                 _id
                 name
                 price
+                type
+                description
+                img
+                brand
+                model
+                appliances
+                isActive
+                sortOrder
             }
             laundryAppliance {
                 _id
                 name
                 price
+                type
+                description
+                img
+                brand
+                model
+                appliances
+                isActive
+                sortOrder
             }
             lotPremium {
                 _id
                 filing
                 lot
-                price
+                width
+                length
+                lotSqft
+                premium
+                address
+                parcelNumber
+                description
+                features
+                isActive
+                sortOrder
             }
         }
     }
