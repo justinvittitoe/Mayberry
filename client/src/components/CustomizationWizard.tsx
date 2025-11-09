@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, ProgressBar, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-import { SAVE_USER_HOME, SAVE_USER_HOME_PROGRESS } from '../utils/mutations';
+import { SAVE_USER_HOME, SAVE_USER_HOME_PROGRESS } from '../graphQl/mutations';
 import AuthService from '../utils/auth';
-import { cleanUserHomeForMutation, validateUserHomeForSave } from '../utils/cleanGraphQLObject';
+import { cleanUserHomeForMutation, validateUserHomeForSave } from '../graphQl/cleanGraphQLObject';
 
 
 // Step Components
@@ -392,7 +392,7 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
                             >
                                 <div
                                     className={`step-circle mx-auto mb-1 d-flex align-items-center justify-content-center ${index === currentStep ? 'bg-primary text-white' :
-                                            index < currentStep ? 'bg-success text-white' : 'bg-light text-muted'
+                                        index < currentStep ? 'bg-success text-white' : 'bg-light text-muted'
                                         }`}
                                     style={{ width: '40px', height: '40px', borderRadius: '50%' }}
                                 >

@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col, Badge, ButtonGroup } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_OPTIONS } from '../../utils/queries';
-import { CREATE_OPTION, UPDATE_OPTION, DELETE_OPTION } from '../../utils/mutations';
-import { cleanOptionForMutation } from '../../utils/cleanGraphQLObject';
+import { GET_OPTIONS } from '../../graphQl/queries';
+import { CREATE_OPTION, UPDATE_OPTION, DELETE_OPTION } from '../../graphQl/mutations';
+import { cleanOptionForMutation } from '../../graphQl/cleanGraphQLObject';
 import { InteriorOption, Option, Structural } from '../../models/graphql';
 
 
@@ -45,10 +45,10 @@ const AdminOptionsManager = () => {
   const filteredOptions = useMemo(() => {
     return options.filter((option: Option) => {
       const matchesClassification = selectedClassification === 'all' || option.classification === selectedClassification;
-      const matchesSearch = searchTerm === '' || 
+      const matchesSearch = searchTerm === '' ||
         option.name.toLowerCase().includes(searchTerm.toLowerCase());
-        
-      
+
+
       return matchesClassification && matchesSearch;
     });
   }, [options, selectedClassification, searchTerm]);
@@ -102,7 +102,7 @@ const AdminOptionsManager = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({
@@ -130,7 +130,7 @@ const AdminOptionsManager = () => {
 
     try {
       const cleanedOption = cleanOptionForMutation(formData);
-      
+
       if (editingOption) {
         await updateOption({
           variables: {
@@ -145,7 +145,7 @@ const AdminOptionsManager = () => {
           }
         });
       }
-      
+
       await refetch();
       handleCloseModal();
     } catch (err: any) {
@@ -238,7 +238,7 @@ const AdminOptionsManager = () => {
               </Form.Group>
             </Col>
           </Row>
-          
+
           {/* Active filters display */}
           {(selectedClassification !== 'all' || searchTerm) && (
             <div className="mt-3">
@@ -247,8 +247,8 @@ const AdminOptionsManager = () => {
                 {selectedClassification !== 'all' && (
                   <Badge bg="primary" className="d-flex align-items-center gap-1">
                     Classification: {selectedClassification.replace('_', ' ')}
-                    <button 
-                      className="btn-close btn-close-white" 
+                    <button
+                      className="btn-close btn-close-white"
                       style={{ fontSize: '0.75rem' }}
                       onClick={() => setSelectedClassification('all')}
                     />
@@ -257,8 +257,8 @@ const AdminOptionsManager = () => {
                 {searchTerm && (
                   <Badge bg="primary" className="d-flex align-items-center gap-1">
                     Search: "{searchTerm}"
-                    <button 
-                      className="btn-close btn-close-white" 
+                    <button
+                      className="btn-close btn-close-white"
                       style={{ fontSize: '0.75rem' }}
                       onClick={() => setSearchTerm('')}
                     />
@@ -278,8 +278,8 @@ const AdminOptionsManager = () => {
               {filteredOptions.length !== options.length && ` of ${options.length}`})
             </h5>
             {filteredOptions.length !== options.length && (
-              <Button 
-                variant="outline-secondary" 
+              <Button
+                variant="outline-secondary"
                 size="sm"
                 onClick={() => {
                   setSelectedClassification('all');
@@ -294,7 +294,7 @@ const AdminOptionsManager = () => {
         <Card.Body>
           {filteredOptions.length === 0 ? (
             <div className="text-center py-4 text-muted">
-              {options.length === 0 
+              {options.length === 0
                 ? "No options found. Add your first option to get started."
                 : "No options match your current filters. Try adjusting your search or classification filter."
               }
@@ -375,7 +375,7 @@ const AdminOptionsManager = () => {
             {formError && (
               <Alert variant="danger">{formError}</Alert>
             )}
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Name *</Form.Label>
               <Form.Control

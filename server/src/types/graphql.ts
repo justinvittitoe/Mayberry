@@ -1,11 +1,12 @@
 // TypeScript interfaces corresponding to GraphQL types
+import { Types } from 'mongoose';
 
-export interface Auth {
+export interface AuthType {
     token: string;
-    user: User;
+    user: UserType;
 }
 
-export interface User {
+export interface UserType {
     _id: string;
     username: string;
     email: string;
@@ -13,58 +14,177 @@ export interface User {
     homeCount?: number;
     savedHomes?: UserHome[];
 }
-
-export interface Option {
-    _id?: string;
+//CORRECT
+export interface ElevationType {
+    _id: Types.ObjectId;
     name: string;
-    price: number;
-    classification?: string;
-    planType: number;
+    totalCost: number;
+    clientPrice: number;
+    markup: number;
+    minMarkup: number;
     description?: string;
     img?: string;
+    planId: Types.ObjectId;
+    isActive: boolean;
+    sortOrder: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-export interface InteriorOption {
-    _id?: string;
+//CORRECT
+export interface StructuralType {
+    _id: Types.ObjectId;
     name: string;
-    price: number;
-    classification: string;
-    planType: number;
+    totalCost: number;
+    clientPrice: number;
+    markup: number;
+    minMarkup: number;
     description?: string;
     img?: string;
-    material: string;
-}
-
-export interface Appliance {
-    _id?: string;
-    name: string;
-    price: number;
-    classification: string;
-    type: string;
-    description?: string;
-    img?: string;
-}
-
-export interface Structural {
-    _id?: string;
-    name: string;
-    price: number;
-    classification: string;
-    planType: number;
-    description?: string;
-    img?: string;
+    planId: Types.ObjectId;
     garage?: number;
     bedrooms?: number;
     bathrooms?: number;
-    width: number;
-    length: number;
+    width?: number;
+    length?: number;
     totalSqft?: number;
     resSqft?: number;
+    isActive: boolean;
+    sortOrder: number;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
-export interface Classification {
-    value: 'elevation' | 'colorScheme' | 'interior' | 'structural' | 'additional' | 'appliance' | 'lot' 
+export type Material =
+    | 'fixture'
+    | 'lvp'
+    | 'carpet'
+    | 'backsplash'
+    | 'masterBathTile'
+    | 'countertop'
+    | 'cabinet'
+    | 'cabinetHardware';
+
+export type Tier = 
+    | 'base' 
+    | 'tier-1' 
+    | 'tier-2' 
+    | 'tier-3';
+
+export type CabinetOverlay = 
+    | 'standard'
+    | 'full';
+
+//CORRECT
+export interface InteriorOptionType {
+    _id: Types.ObjectId;
+    name: string;
+    brand: string;
+    color: string;
+    cost: number;
+    markup: number;
+    minMarkup: number;
+    clientPrice: number;
+    material: Material;
+    tier?: Tier;
+    cabinetOverlay?: CabinetOverlay;
+    planId: Types.ObjectId;
+    img?: string;
+    isActive: boolean;
+    sortOrder: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
+
+export interface InteriorPackageType {
+    _id: Types.ObjectId;
+    name: string;
+    totalCost: number;
+    markup: number;
+    minMarkup: number;
+    clientPrice: number;
+    description?: string;
+    img?: string;
+    planId: Types.ObjectId;
+    fixtures?: Types.ObjectId | InteriorOptionType;
+    lvp?: Types.ObjectId | InteriorOptionType;
+    carpet?: Types.ObjectId | InteriorOptionType;
+    backsplash?: Types.ObjectId | InteriorOptionType;
+    masterBathTile?: Types.ObjectId | InteriorOptionType;
+    secondaryBathTile?: Types.ObjectId | InteriorOptionType;
+    countertop?: Types.ObjectId | InteriorOptionType;
+    primaryCabinets?: Types.ObjectId | InteriorOptionType;
+    secondaryCabinets?: Types.ObjectId | InteriorOptionType;
+    cabinetHardware?: Types.ObjectId | InteriorOptionType;
+    softClose: boolean;
+    basePackage: boolean;
+    isActive: boolean;
+    sortOrder: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+// Input type for mutations
+export interface InteriorPackageInput {
+    name: string;
+    totalCost: number;
+    markup?: number;
+    minMarkup?: number;
+    clientPrice?: number;
+    description?: string;
+    img?: string;
+    planId: Types.ObjectId;
+    fixtures?: Types.ObjectId[];
+    lvp?: Types.ObjectId;
+    carpet?: Types.ObjectId;
+    backsplash?: Types.ObjectId;
+    masterBathTile?: Types.ObjectId;
+    secondaryBathTile?: Types.ObjectId;
+    countertop?: Types.ObjectId;
+    primaryCabinets?: Types.ObjectId;
+    secondaryCabinets?: Types.ObjectId;
+    cabinetHardware?: Types.ObjectId;
+    softClose?: boolean;
+    basePackage?: boolean;
+    isActive?: boolean;
+    sortOrder?: number;
+}
+
+export interface ApplianceType {
+    _id: Types.ObjectId;
+    name: string;
+    baseCost: number;
+    totalCost: number;
+    markup: number;
+    minMarkup: number;
+    clientPrice: number;
+    classification: Classification;
+    type: string;
+    brand: string;
+    img?: string;
+    planId: Types.ObjectId;
+    isActive: boolean;
+    sortOrder: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface AdditionalType {
+    _id: Types.ObjectId;
+    name: string;
+    totalCost: number;
+    clientPrice: number;
+    markup: number;
+    minMarkup: number;
+    description?: string;
+    img?: string;
+    planId: Types.ObjectId;
+    isActive: boolean
+    sortOrder: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
 
 export interface ColorValues {
     primary: string;
@@ -75,7 +195,7 @@ export interface ColorValues {
 }
 
 export interface ColorScheme {
-    _id?: string;
+    _id: Types.ObjectId;
     name: string;
     description?: string;
     price: number;
@@ -86,29 +206,8 @@ export interface ColorScheme {
     updatedAt?: string;
 }
 
-export interface InteriorPackage {
-    _id?: string;
-    name: string;
-    planType?: number;
-    totalPrice?: number;
-    clientPrice?: number;
-    fixtures?: InteriorOption[];
-    lvp?: InteriorOption[];
-    carpet?: InteriorOption[];
-    backsplash?: InteriorOption[];
-    masterBathTile?: InteriorOption[];
-    countertop?: InteriorOption[];
-    primaryCabinets?: InteriorOption[];
-    secondaryCabinets?: InteriorOption[];
-    upgrade?: boolean;
-    basePackage?: boolean;
-    isActive?: boolean;
-    createdAt?: string;
-    updatedAt?: string;
-}
-
 export interface LotPremium {
-    _id?: string;
+    _id: Types.ObjectId;
     filing: number;
     lot: number;
     width: number;
@@ -119,8 +218,8 @@ export interface LotPremium {
     parcelNumber: string;
 }
 
-export interface Plan {
-    _id: string;
+export interface PlanType {
+    _id: Types.ObjectId;
     planType: number;
     name: string;
     bedrooms: number;
@@ -146,10 +245,10 @@ export interface Plan {
     updatedAt?: string;
 }
 
-export interface UserHome {
-    _id: string;
-    userId: string;
-    plan: string;
+export interface UserHomeType {
+    _id: Types.ObjectId;
+    userId: Types.ObjectId;
+    planId: Types.ObjectId;
     configurationName: string;
     elevation: string;
     colorScheme: string;
@@ -173,14 +272,6 @@ export interface UserHome {
 }
 
 // Input types for mutations
-export interface OptionInput {
-    name: string;
-    price: number;
-    classification?: string;
-    planType: number;
-    description?: string;
-    img?: string;
-}
 
 export interface ColorValuesInput {
     primary: string;
@@ -197,24 +288,6 @@ export interface ColorSchemeInput {
     colorValues: ColorValuesInput;
     isActive?: boolean;
     sortOrder?: number;
-}
-
-export interface InteriorPackageInput {
-    name: string;
-    planType?: number;
-    totalPrice?: number;
-    clientPrice?: number;
-    fixtures?: string[];
-    lvp?: string[];
-    carpet?: string[];
-    backsplash?: string[];
-    masterBathTile?: string[];
-    countertop?: string[];
-    primaryCabinets?: string[];
-    secondaryCabinets?: string[];
-    upgrade?: boolean;
-    basePackage?: boolean;
-    isActive?: boolean;
 }
 
 export interface LotPremiumInput {

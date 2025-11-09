@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { Container, Alert } from 'react-bootstrap';
 import CustomizationWizard from '../components/CustomizationWizard';
-import { GET_PLAN, GET_OPTIONS, GET_INTERIOR_PACKAGES, GET_LOT_PREMIUMS, GET_COLOR_SCHEMES } from '../utils/queries';
+import { GET_PLAN, GET_OPTIONS, GET_INTERIOR_PACKAGES, GET_LOT_PREMIUMS, GET_COLOR_SCHEMES } from '../graphQl/queries';
 
 const CustomizeHome = () => {
     const { planId } = useParams<{ planId: string }>();

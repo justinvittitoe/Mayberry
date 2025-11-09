@@ -4,7 +4,6 @@ import { Schema, Types, model, type Document } from 'mongoose';
 export interface ColorSchemeDocument extends Document {
   _id: Types.ObjectId;
   name: string;
-  classification: 'colorScheme';
   planId: Types.ObjectId;
   description?: string;
   price: number;
@@ -27,7 +26,6 @@ export interface ColorSchemeDocument extends Document {
 
 const colorSchemeSchema = new Schema<ColorSchemeDocument>({
   name: { type: String, required: true },
-  classification: { type: String, required: true, enum: ['colorScheme']},
   planId: { type: Schema.Types.ObjectId, required: true, ref: 'Plan'},
   description: { type: String },
   price: { type: Number, required: true, default: 0 },

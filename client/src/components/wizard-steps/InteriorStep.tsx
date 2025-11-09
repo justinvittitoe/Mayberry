@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Row, Col, Card, Badge, Button, ButtonGroup, Modal, Form, Table } from 'react-bootstrap';
 import { useQuery } from '@apollo/client';
-import { GET_OPTIONS } from '../../utils/queries';
+import { GET_OPTIONS } from '../../graphQl/queries';
 
 interface InteriorStepProps {
     interiors: any[];
@@ -30,7 +30,7 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
     // Get interior options for custom selection
     const { data: optionsData } = useQuery(GET_OPTIONS);
     const allOptions = optionsData?.options || [];
-    
+
     const interiorOptions = {
         fixtures: allOptions.filter((opt: any) => opt.classification === 'fixture'),
         lvp: allOptions.filter((opt: any) => opt.classification === 'flooring'),
@@ -43,7 +43,7 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
     };
     const getPackageFeatures = (interior: any) => {
         const features = [];
-        
+
         if (interior.fixtures?.length > 0) {
             features.push(`${interior.fixtures.length} Fixture${interior.fixtures.length > 1 ? 's' : ''}`);
         }
@@ -65,7 +65,7 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
         if (interior.masterBathTile?.length > 0) {
             features.push('Bath Tile Upgrade');
         }
-        
+
         return features;
     };
 
@@ -101,7 +101,7 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
             ...customSelections,
             isCustom: true
         };
-        
+
         onSelect(customPackage);
         setShowCustomModal(false);
     };
@@ -138,7 +138,7 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
                     </ButtonGroup>
                 </div>
                 <p className="text-muted">
-                    {selectionMode === 'package' 
+                    {selectionMode === 'package'
                         ? 'Select from our curated interior packages featuring coordinated fixtures, finishes, and materials.'
                         : 'Build your own custom interior package by selecting individual components.'
                     }
@@ -151,89 +151,89 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
                         const features = getPackageFeatures(interior);
                         const packageLevel = getPackageLevel(interior);
                         const isSelected = selected?._id === interior._id || selected?.name === interior.name;
-                        
+
                         return (
                             <Col key={interior._id || interior.name} lg={6} className="mb-4">
-                            <Card 
-                                className={`h-100 interior-option ${isSelected ? 'border-primary selected' : 'border-light'}`}
-                                style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
-                                onClick={() => onSelect(interior)}
-                            >
-                                <Card.Header className="bg-transparent border-0 d-flex justify-content-between align-items-center">
-                                    <div className="d-flex align-items-center">
-                                        <span className="me-2" style={{ fontSize: '1.5rem' }}>{packageLevel.icon}</span>
-                                        <div>
-                                            <h6 className="mb-0">{interior.name}</h6>
-                                            <Badge bg={packageLevel.color} className="mt-1">
-                                                {packageLevel.level}
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                    {isSelected && (
-                                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px' }}>
-                                            ✓
-                                        </div>
-                                    )}
-                                </Card.Header>
-
-                                <Card.Body>
-                                    <div className="mb-3">
-                                        <div className="fw-bold text-primary mb-2">
-                                            +${interior.totalPrice?.toLocaleString() || 0}
-                                        </div>
-                                        <p className="text-muted small mb-3">
-                                            {interior.description || 'Complete interior package with coordinated finishes'}
-                                        </p>
-                                    </div>
-
-                                    {features.length > 0 && (
-                                        <div className="features-list">
-                                            <div className="small fw-bold text-muted mb-2">Included Features:</div>
-                                            <div className="d-flex flex-wrap gap-1">
-                                                {features.slice(0, 6).map((feature, index) => (
-                                                    <Badge key={index} bg="light" text="dark" className="small">
-                                                        {feature}
-                                                    </Badge>
-                                                ))}
-                                                {features.length > 6 && (
-                                                    <Badge bg="light" text="muted" className="small">
-                                                        +{features.length - 6} more
-                                                    </Badge>
-                                                )}
+                                <Card
+                                    className={`h-100 interior-option ${isSelected ? 'border-primary selected' : 'border-light'}`}
+                                    style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
+                                    onClick={() => onSelect(interior)}
+                                >
+                                    <Card.Header className="bg-transparent border-0 d-flex justify-content-between align-items-center">
+                                        <div className="d-flex align-items-center">
+                                            <span className="me-2" style={{ fontSize: '1.5rem' }}>{packageLevel.icon}</span>
+                                            <div>
+                                                <h6 className="mb-0">{interior.name}</h6>
+                                                <Badge bg={packageLevel.color} className="mt-1">
+                                                    {packageLevel.level}
+                                                </Badge>
                                             </div>
                                         </div>
-                                    )}
-
-                                    {/* Detailed breakdown for selected package */}
-                                    {isSelected && (
-                                        <div className="mt-3 pt-3 border-top">
-                                            <div className="small text-muted mb-2">Package Details:</div>
-                                            <div className="row small">
-                                                {interior.fixtures && interior.fixtures.length > 0 && (
-                                                    <div className="col-6 mb-1">
-                                                        <strong>Fixtures:</strong> {interior.fixtures[0].name}
-                                                    </div>
-                                                )}
-                                                {interior.countertop && interior.countertop.length > 0 && (
-                                                    <div className="col-6 mb-1">
-                                                        <strong>Countertops:</strong> {interior.countertop[0].name}
-                                                    </div>
-                                                )}
-                                                {interior.primaryCabinets && interior.primaryCabinets.length > 0 && (
-                                                    <div className="col-6 mb-1">
-                                                        <strong>Cabinets:</strong> {interior.primaryCabinets[0].name}
-                                                    </div>
-                                                )}
-                                                {interior.backsplash && interior.backsplash.length > 0 && (
-                                                    <div className="col-6 mb-1">
-                                                        <strong>Backsplash:</strong> {interior.backsplash[0].name}
-                                                    </div>
-                                                )}
+                                        {isSelected && (
+                                            <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px' }}>
+                                                ✓
                                             </div>
+                                        )}
+                                    </Card.Header>
+
+                                    <Card.Body>
+                                        <div className="mb-3">
+                                            <div className="fw-bold text-primary mb-2">
+                                                +${interior.totalPrice?.toLocaleString() || 0}
+                                            </div>
+                                            <p className="text-muted small mb-3">
+                                                {interior.description || 'Complete interior package with coordinated finishes'}
+                                            </p>
                                         </div>
-                                    )}
-                                </Card.Body>
-                            </Card>
+
+                                        {features.length > 0 && (
+                                            <div className="features-list">
+                                                <div className="small fw-bold text-muted mb-2">Included Features:</div>
+                                                <div className="d-flex flex-wrap gap-1">
+                                                    {features.slice(0, 6).map((feature, index) => (
+                                                        <Badge key={index} bg="light" text="dark" className="small">
+                                                            {feature}
+                                                        </Badge>
+                                                    ))}
+                                                    {features.length > 6 && (
+                                                        <Badge bg="light" text="muted" className="small">
+                                                            +{features.length - 6} more
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Detailed breakdown for selected package */}
+                                        {isSelected && (
+                                            <div className="mt-3 pt-3 border-top">
+                                                <div className="small text-muted mb-2">Package Details:</div>
+                                                <div className="row small">
+                                                    {interior.fixtures && interior.fixtures.length > 0 && (
+                                                        <div className="col-6 mb-1">
+                                                            <strong>Fixtures:</strong> {interior.fixtures[0].name}
+                                                        </div>
+                                                    )}
+                                                    {interior.countertop && interior.countertop.length > 0 && (
+                                                        <div className="col-6 mb-1">
+                                                            <strong>Countertops:</strong> {interior.countertop[0].name}
+                                                        </div>
+                                                    )}
+                                                    {interior.primaryCabinets && interior.primaryCabinets.length > 0 && (
+                                                        <div className="col-6 mb-1">
+                                                            <strong>Cabinets:</strong> {interior.primaryCabinets[0].name}
+                                                        </div>
+                                                    )}
+                                                    {interior.backsplash && interior.backsplash.length > 0 && (
+                                                        <div className="col-6 mb-1">
+                                                            <strong>Backsplash:</strong> {interior.backsplash[0].name}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </Card.Body>
+                                </Card>
                             </Col>
                         );
                     })}
@@ -245,15 +245,15 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
                         <Card.Body>
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h6 className="mb-0">Custom Interior Package</h6>
-                                <Button 
-                                    variant="primary" 
+                                <Button
+                                    variant="primary"
                                     onClick={() => setShowCustomModal(true)}
                                     disabled={interiorOptions.fixtures.length === 0}
                                 >
                                     🔧 Build Custom Package
                                 </Button>
                             </div>
-                            
+
                             {selected?.isCustom ? (
                                 <div className="bg-light p-3 rounded">
                                     <div className="d-flex justify-content-between align-items-center mb-2">
@@ -297,7 +297,7 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
                         <div>
                             <h6 className="mb-1">Interior Package Benefits</h6>
                             <p className="small mb-0 text-muted">
-                                Our interior packages are professionally designed with coordinated materials and finishes. 
+                                Our interior packages are professionally designed with coordinated materials and finishes.
                                 Each package includes fixtures, flooring, countertops, cabinets, and tile selections that work beautifully together.
                             </p>
                         </div>
@@ -337,7 +337,7 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
                                             const isSelected = customSelections[category as keyof typeof customSelections]?._id === option._id;
                                             return (
                                                 <Col key={option._id} md={6} lg={4} className="mb-3">
-                                                    <Card 
+                                                    <Card
                                                         className={`h-100 ${isSelected ? 'border-primary bg-primary bg-opacity-10' : 'border-light'}`}
                                                         style={{ cursor: 'pointer', transition: 'all 0.2s' }}
                                                         onClick={() => handleCustomSelection(category, option)}
@@ -359,10 +359,10 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
                                             );
                                         })}
                                         <Col md={6} lg={4} className="mb-3">
-                                            <Card 
+                                            <Card
                                                 className="h-100 border-secondary text-center d-flex align-items-center justify-content-center"
-                                                style={{ 
-                                                    cursor: 'pointer', 
+                                                style={{
+                                                    cursor: 'pointer',
                                                     minHeight: '100px',
                                                     backgroundColor: customSelections[category as keyof typeof customSelections] === null ? '#f8f9fa' : 'transparent'
                                                 }}
@@ -390,8 +390,8 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
                     <Button variant="secondary" onClick={() => setShowCustomModal(false)}>
                         Cancel
                     </Button>
-                    <Button 
-                        variant="primary" 
+                    <Button
+                        variant="primary"
                         onClick={createCustomPackage}
                         disabled={!isCustomPackageComplete()}
                     >

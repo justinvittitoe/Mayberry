@@ -20,8 +20,8 @@ import {
   UPDATE_PLAN_LOT,
   REMOVE_PLAN_LOT,
   REORDER_PLAN_OPTIONS
-} from '../../utils/planOptionMutations';
-import { GET_PLAN_WITH_OPTIONS } from '../../utils/planOptionQueries';
+} from '../../graphQl/planOptionMutations';
+import { GET_PLAN_WITH_OPTIONS } from '../../graphQl/planOptionQueries';
 import { Appliance, InteriorPackage, LotPremium, Structural, Plan } from '../../models/graphql';
 
 interface PlanOption {
@@ -38,7 +38,7 @@ interface PlanOption {
 type OptionType = 'elevations' | 'structural' | 'interiors' | 'kitchenAppliance' | 'laundryAppliance' | 'additional' | 'lotPremium';
 
 
-const PlanOptionManager: React.FC<{ plan: Plan; onPlanUpdate: () => void}> = ({ plan, onPlanUpdate }) => {
+const PlanOptionManager: React.FC<{ plan: Plan; onPlanUpdate: () => void }> = ({ plan, onPlanUpdate }) => {
   const [activeTab, setActiveTab] = useState<OptionType>('elevations');
   const [editingOption, setEditingOption] = useState<PlanOption | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_INTERIOR_PACKAGES } from '../../utils/queries';
-import { CREATE_INTERIOR_PACKAGE, UPDATE_INTERIOR_PACKAGE, DELETE_INTERIOR_PACKAGE } from '../../utils/mutations';
-import { cleanInteriorPackageForMutation } from '../../utils/cleanGraphQLObject';
+import { GET_INTERIOR_PACKAGES } from '../../graphQl/queries';
+import { CREATE_INTERIOR_PACKAGE, UPDATE_INTERIOR_PACKAGE, DELETE_INTERIOR_PACKAGE } from '../../graphQl/mutations';
+import { cleanInteriorPackageForMutation } from '../../graphQl/cleanGraphQLObject';
 import { InteriorPackage } from '../../models/graphql';
 
 
@@ -110,7 +110,7 @@ const AdminInteriorPackagesManager = () => {
 
     try {
       const cleanedPackage = cleanInteriorPackageForMutation(formData);
-      
+
       if (editingPackage) {
         await updateInteriorPackage({
           variables: {
@@ -125,7 +125,7 @@ const AdminInteriorPackagesManager = () => {
           }
         });
       }
-      
+
       await refetch();
       handleCloseModal();
     } catch (err: any) {
@@ -246,7 +246,7 @@ const AdminInteriorPackagesManager = () => {
             {formError && (
               <Alert variant="danger">{formError}</Alert>
             )}
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -312,7 +312,7 @@ const AdminInteriorPackagesManager = () => {
                   />
                 </Form.Group>
               </Col>
-              
+
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Master Bath Tile</Form.Label>

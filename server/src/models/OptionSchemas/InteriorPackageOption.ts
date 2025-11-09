@@ -3,7 +3,6 @@ import { Schema, model, type Document, Types } from 'mongoose';
 export interface InteriorPackageDocument extends Document {
   _id: Types.ObjectId;
   name: string;
-  baseCost: number; //Base package price specific to plantype = sum of option base prices
   totalCost: number; //sum of the costs for each interior option = sum of option costs
   markup: number; //mark-up for package -> admin sets this
   minMarkup: number;
@@ -13,7 +12,7 @@ export interface InteriorPackageDocument extends Document {
   //Plan ID refrence
   planId: Types.ObjectId;
   // Interior package contents (simplified for plan-specific use)
-  fixtures?: Types.ObjectId[];          // Array of fixture ID's includes sink fixtures and light fixtures
+  fixtures?: Types.ObjectId;          // fixtures include sink fixtures and light fixtures
   lvp?: Types.ObjectId;              // Luxury Vinyl Plank option
   carpet?: Types.ObjectId;           // Carpet option
   backsplash?: Types.ObjectId;       // Backsplash option
@@ -33,7 +32,6 @@ export interface InteriorPackageDocument extends Document {
 
 const interiorPackageSchema = new Schema<InteriorPackageDocument>({
   name: {type: String, required: true, trim: true, maxLength: 100},
-  baseCost: {type: Number, required: true},
   totalCost: {type: Number, required: true},
   markup: {type: Number, required: true, default: 0.35},
   minMarkup: {type: Number, required: true, default: 200},
@@ -41,11 +39,12 @@ const interiorPackageSchema = new Schema<InteriorPackageDocument>({
   description: {type: String,maxLength: 500,trim: true},
   img: {type: String, trim: true},
   planId: {type: Schema.Types.ObjectId, required: true, ref: 'Plan'},
-  fixtures: [{type: Types.ObjectId, ref: 'InteriorOption'}],
+  fixtures: {type: Types.ObjectId, ref: 'InteriorOption'},
   lvp: { type: Types.ObjectId, ref: 'InteriorOption' },
   carpet: { type: Types.ObjectId, ref: 'InteriorOption' },
   backsplash: { type: Types.ObjectId, ref: 'InteriorOption' },
   masterBathTile: { type: Types.ObjectId, ref: 'InteriorOption' },
+  secondaryBathTile: { type: Schema.Types.ObjectId, ref: 'InteriorOption'},
   countertop: { type: Types.ObjectId, ref: 'InteriorOption' },
   primaryCabinets: { type: Types.ObjectId, ref: 'InteriorOption' },
   secondaryCabinets: { type: Types.ObjectId, ref: 'InteriorOption' },
@@ -59,12 +58,12 @@ const interiorPackageSchema = new Schema<InteriorPackageDocument>({
   _id: true
 });
 
-//Virtual
-
 
 // Add index for sorting and base package queries
 interiorPackageSchema.index({ sortOrder: 1, name: 1 });
-interiorPackageSchema.index({ basePackage: 1, upgrade: 1 });
+interiorPackageSchema.index({ basePackage: 1});
+interiorPackageSchema.index({ planId: 1, basePackage: 1 });
+interiorPackageSchema.index({ isActive: 1 });
 
 const InteriorPackage = model<InteriorPackageDocument>('InteriorPackage', interiorPackageSchema)
 
