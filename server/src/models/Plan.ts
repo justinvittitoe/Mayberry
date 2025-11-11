@@ -2,6 +2,7 @@ import { Schema, model, type Document } from 'mongoose';
 
 
 
+
 export interface PlanTypeDocument extends Document {
   _id: Schema.Types.ObjectId;
   planType: number; //Unique plan identifier
@@ -23,7 +24,7 @@ export interface PlanTypeDocument extends Document {
   additional: Schema.Types.ObjectId[]; //Plan-specific additional upgrades
   kitchenAppliance: Schema.Types.ObjectId[]; //Plan-specific kitchen appliance packages
   laundryAppliance: Schema.Types.ObjectId[]; //Plan-specific laundry appliance packages
-  lotPremium: Schema.Types.ObjectId[]; //Plan-specific lot premium options
+  lot: Schema.Types.ObjectId[]; //Plan-specific lot premium options
   isActive: boolean;
   sortOrder: number;
   createdAt?: Date;
@@ -50,7 +51,7 @@ const planTypeSchema = new Schema({
   additional: [{ type: Schema.Types.ObjectId, ref: 'Additional'}],
   kitchenAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance'}],
   laundryAppliance: [{ type: Schema.Types.ObjectId, ref: 'Appliance' }],
-  lotPremium: [{ type: Schema.Types.ObjectId, ref: 'LotPricing'}],
+  lot: [{ type: Schema.Types.ObjectId, ref: 'LotPricing'}],
   width: { type: Number, required: true, min: 10, max: 120 },
   length: { type: Number, required: true, min: 10, max: 120 },
   isActive: { type: Boolean, default: true},

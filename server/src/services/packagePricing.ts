@@ -1,6 +1,5 @@
 import { Types } from 'mongoose';
 import InteriorPackage, { InteriorPackageDocument } from '../models/OptionSchemas/InteriorPackageOption';
-import InteriorOption from '../models/OptionSchemas/InteriorOption';
 
 /**
  * Calculate total cost of a package by summing all option costs
@@ -44,7 +43,6 @@ export async function calculatePackageTotalCost(
     addOptionCost(packageDoc.secondaryBathTile);
     addOptionCost(packageDoc.countertop);
     addOptionCost(packageDoc.primaryCabinets);
-    addOptionCost(packageDoc.secondaryCabinets);
     addOptionCost(packageDoc.cabinetHardware);
 
     return totalCost;
@@ -152,49 +150,3 @@ export async function recalculateAllPackagesForPlan(
     return updatedPackages;
 }
 
-/**
- * Determine and set the base package for a plan
- * Base package = lowest total cost package
- * If tie, maintain existing base package
- */
-export async function determineBasePackage(
-    planId: Types.ObjectId
-): Promise<InteriorPackageDocument | null> {
-    const packages = await InteriorPackage.find({ planId, isActive: true }).sort({
-        totalCost: 1,
-    });
-
-    if (packages.length === 0) {
-        return null;
-    }
-
-    const lowestCost = packages[0].totalCost;
-
-    // Find all packages with the lowest cost
-    const lowestCostPackages = packages.filter((pkg) => pkg.totalCost === lowestCost);
-
-    // Check if any of them is already the base package
-    const existingBase = lowestCostPackages.find((pkg) => pkg.basePackage);
-
-    let newBasePackage: InteriorPackageDocument;
-
-    if (existingBase) {
-        // Maintain existing base package
-        newBasePackage = existingBase;
-    } else {
-        // Set the first lowest-cost package as base
-        newBasePackage = lowestCostPackages[0];
-
-        // Remove base package flag from all others
-        await InteriorPackage.updateMany({ planId }, { basePackage: false });
-
-        // Set this as base
-        newBasePackage.basePackage = true;
-        await newBasePackage.save();
-    }
-
-    // Recalculate all packages for this plan
-    await recalculateAllPackagesForPlan(planId);
-
-    return newBasePackage;
-}

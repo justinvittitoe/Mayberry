@@ -13,7 +13,7 @@ export interface User {
   email: string;
   role: 'admin' | 'user';
   homeCount?: number;
-  savedHomes?: UserHome[];
+  savedPlans?: UserPlan[];
 }
 //CORRECT
 export interface Elevation {
@@ -131,12 +131,17 @@ export interface InteriorPackage {
 export interface Appliance {
   _id: string;
   name: string;
-  price: number;
-  classification: string;
+  baseCost: number;
+  totalCost: number;
+  markup: number;
+  minMarkup: number;
   type: string;
-  description?: string;
+  brand?: string;
   img?: string;
   isActive: boolean;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string
 }
 
 
@@ -149,7 +154,6 @@ export interface Additional {
   minMarkup: number;
   description?: string;
   img?: string;
-  classification: Classification;
   planId: string;
   isActive: boolean;
   sortOrder: number;
@@ -158,24 +162,25 @@ export interface Additional {
 }
 
 //Verified with GraphQL schema
-export interface ColorValues {
-  primary: string; //Main Siding
-  secondary: string; //Secondary Siding
-  roof: string; //Roof Color
-  accent: string; //Trim Color
-  stone?: string; //Stone Color
-  foundation?: string; //Foundation Color
-}
-
-//Verified with GraphQL schema
 export interface ColorScheme {
   _id: string;
   name: string;
-  classification: Classification;
-  planType?: number;
+  planId: string;
   description?: string;
   price: number;
-  colorValues: ColorValues;
+  primaryName?: string;
+  primaryCode?: string;
+  secondaryName?: string;
+  secondaryCode?: string;
+  trimName: string;
+  trimCode: string;
+  doorName: string;
+  doorCode: string;
+  shingleBrand: string;
+  shingleColor: string;
+  stone: boolean;
+  stoneColor?: string;
+  colorSchemeImg?: string;
   isActive: boolean;
   sortOrder?: number;
   createdAt?: string;
@@ -183,17 +188,32 @@ export interface ColorScheme {
 }
 
 //Verified with GraphQL schema
-export interface LotPremium {
+export interface Lot {
   _id: string;
   filing: number;
   lot: number;
   width: number;
   length: number;
   lotSqft: number;
-  premium: number;
-  address: string;
+  streetNumber: string;
+  streetName: string;
+  garageDir: string;
   parcelNumber: string;
+  notes?: string;
   isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Verified with GraphQLL schema
+export interface LotPricing {
+  _id: string;
+  lot: string;
+  plan: string;
+  lotPremium: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 //Verified with GraphQL schema
@@ -210,14 +230,14 @@ export interface Plan {
   description?: string;
   width: number;
   length: number;
-  elevations?: Option[];
+  elevations?: Elevation[];
   colorScheme?: ColorScheme[];
   interiors?: InteriorPackage[];
   structural?: Structural[];
-  additional?: Option[];
+  additional?: Additional[];
   kitchenAppliance?: Appliance[];
   laundryAppliance?: Appliance[];
-  lotPremium?: LotPremium[];
+  lot?: LotPricing[];
   isActive: boolean;
   garageSqft?: number;
   pricePerSqft?: number;
@@ -225,18 +245,32 @@ export interface Plan {
   updatedAt?: string;
 }
 
+export interface BasePlan {
+  planType: string;
+  name: string;
+  bedrooms: number;
+  bathrooms: number;
+  totalSqft: number;
+  resSqft: number;
+  garage: number;
+  basePrice: number;
+  description: string;
+  width: number;
+  length: number;
+}
+
 //Verified with GraphQL schema
-export interface UserHome {
+export interface UserPlan {
   _id: string;
   userId: string;
-  plan: string;
+  planId: string;
   configurationName: string;
   elevation: string;
   colorScheme: string;
   interiorPackage: string;
   kitchenAppliance: string;
   laundryAppliance?: string;
-  lotPremium?: string;
+  lot?: string;
   structuralOptions: string[];
   additionalOptions: string[];
   basePlanPrice?: number;
@@ -256,7 +290,7 @@ export interface UserHome {
 export interface CustomizationSelections {
   elevation: string;
   colorScheme: string;
-  interior: string;
+  interiorPackage: string;
   structural: string[];
   additional: string[];
   kitchenAppliance: string;

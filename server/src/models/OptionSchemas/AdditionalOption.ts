@@ -9,7 +9,6 @@ export interface AdditionalOptionDocument extends Document {
   minMarkup: number;
   description?: string;
   img?: string;
-  classification: 'additional';
   planId: Types.ObjectId;
   isActive: boolean;
   sortOrder: number;
@@ -25,7 +24,6 @@ const additionalOptionSchema = new Schema<AdditionalOptionDocument>({
   minMarkup: {type: Number, required: true, min: 0, default: 200},
   description: {type: String, maxLength: 500, trim: true},
   img: {type: String, trim: true},
-  classification: {type: String, default: 'additional', enum: ['additional']},
   planId: {type: Schema.Types.ObjectId, required: true, ref: 'Plan'},
   isActive: {type: Boolean, default: true},
   sortOrder: {type: Number, default: 0}

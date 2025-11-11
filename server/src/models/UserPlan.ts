@@ -3,6 +3,7 @@ import { Schema, type Document, Types, model } from 'mongoose';
 
 // Main user home selection schema
 export interface UserPlanSelection extends Document {
+    _id: Types.ObjectId;
     userId: Types.ObjectId;
     planId: Types.ObjectId;
     configurationName: string; //User can make their own name
@@ -33,6 +34,8 @@ export interface UserPlanSelection extends Document {
     contractedAt?: Date;
     notes?: string;
     customerNotes?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 const userPlanSchema = new Schema<UserPlanSelection>({

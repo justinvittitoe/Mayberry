@@ -6,53 +6,72 @@ import {
     calculatePackageClientPrice,
     recalculatePackage,
     recalculateAllPackagesForPlan,
-    determineBasePackage,
 } from '../services/packagePricing.js'
 
 //Type Interfaces
 import {
+    ColorSchemeType,
     ElevationType,
     StructuralType,
-    InteriorOptionType 
+    InteriorOptionType,
     InteriorPackageType,
     ApplianceType,
     AdditionalType,
     PlanType,
-    UserHomeType, 
-    UserType 
+    UserPlanType,
+    UserPlanPopulated,
+    UserType,
+    AuthType
 } from '../types/graphql.js';
 
 //Inputs
 import {
+    ColorSchemeInput,
     ElevationInput,
-    StructuralInput,
     InteriorOptionInput,
     InteriorPackageInput,
-    ApplianceInput,
+    StructuralInput,
     AdditionalInput,
+    ApplianceInput,
+    LotInput,
+    LotPricingInput,
     PlanInput,
-    UserHomeInput,
+    UserPlanInput,
+    CustomizationSelectionsInput,
     UserInput
 } from '../types/graphql.js'
 
 //Schemas
 import { signToken, AuthenticationError } from '../services/auth.js';
 import User from '../models/User.js';
-import Plan from '../models/Plan.js';
+import Plan, { PlanTypeDocument } from '../models/Plan.js';
 import ElevationOption from '../models/OptionSchemas/ElevationOption.js';
-import ColorScheme from '../models/OptionSchemas/ColorScheme.js';
+import ColorScheme, { ColorSchemeDocument } from '../models/OptionSchemas/ColorScheme.js';
 import InteriorOption from '../models/OptionSchemas/InteriorOption.js';
-import InteriorPackage from '../models/OptionSchemas/InteriorPackageOption.js';
+import InteriorPackage, { InteriorPackageDocument } from '../models/OptionSchemas/InteriorPackageOption.js';
 import StructuralOption from '../models/OptionSchemas/StructuralOption.js';
 import AdditionalOption from '../models/OptionSchemas/AdditionalOption.js';
-import LotPremium from '../models/OptionSchemas/Lot.js';
+import LotPremium, { LotDocument } from '../models/OptionSchemas/Lot.js';
 import LotPricing from '../models/OptionSchemas/LotPricing.js';
 import Appliance from '../models/OptionSchemas/Appliance.js';
 import UserPlan from '../models/UserPlan.js';
 import mongoose from 'mongoose';
 
+
+//Context Type
+export interface Context {
+    user?: {
+        _id: Types.ObjectId;
+        username: string;
+        email: string;
+        role: 'admin' | 'user';
+        homeCount?: number;
+        savedPlans?: UserPlanPopulated[]
+    };
+}
+
 // Helper function to check if user is admin
-const requireAdmin = (context: any) => {
+const requireAdmin = (context: Context) => {
     if (!context.user) {
         throw new AuthenticationError('Not authenticated');
     }
@@ -62,7 +81,7 @@ const requireAdmin = (context: any) => {
 };
 
 // Helper function to check if user is authenticated
-const requireAuth = (context: any) => {
+const requireAuth = (context: Context) => {
     if (!context.user) {
         throw new AuthenticationError('Not authenticated');
     }
@@ -112,18 +131,18 @@ const resolvers = {
             if (!context.user) {
                 throw new AuthenticationError("Not Authenticated")
             }
-            const userDoc = await User.findOne({ _id: context.user._id }).populate('savedHomes');
+            const userDoc = await User.findOne({ _id: context.user._id }).populate('savedPlans').lean<UserType>();
             if (!userDoc) {
                 return null
             }
 
-            return userDoc.toObject 
+            return userDoc
         },
 
         user: async (_parent: unknown, args: { id?: string; username?: string }) => {
             const userDoc = await User.findOne({
                 $or: [{ _id: args.id }, { username: args.username }]
-            }).populate('savedHomes');
+            }).populate('savedPlans');
             if (!userDoc) {
                 return null
             }
@@ -140,8 +159,9 @@ const resolvers = {
                 .populate('structural')
                 .populate('additional')
                 .populate('kitchenAppliance')
-                .populate('laundryAppliance');
-            return plans.map(toPlanType);
+                .populate('laundryAppliance')
+                .lean<PlanType[]>();
+            return plans;
         },
 
         plan: async (_parent: unknown, args: { id: string }): Promise<PlanType | null> => {
@@ -153,53 +173,71 @@ const resolvers = {
                 .populate('structural')
                 .populate('additional')
                 .populate('kitchenAppliance')
-                .populate('laundryAppliance');
-            return plan ? toPlanType(plan) : null;
+                .populate('laundryAppliance')
+                .lean<PlanType>();
+            return plan;
         },
 
         planByType: async (_parent: unknown, args: { planType: number }): Promise<PlanType | null> => {
-            const plan = await Plan.findOne({ planType: args.planType })
-                .populate('lotPremium')
-                .populate('colorScheme')
-                .populate('elevations')
-                .populate('interiors')
-                .populate('structural')
-                .populate('additional')
-                .populate('kitchenAppliance')
-                .populate('laundryAppliance');
-            return plan ? toPlanType(plan) : null;
+            try {
+                const plan = await Plan.findOne({ planType: args.planType })
+                    .populate('lotPremium')
+                    .populate('colorScheme')
+                    .populate('elevations')
+                    .populate('interiors')
+                    .populate('structural')
+                    .populate('additional')
+                    .populate('kitchenAppliance')
+                    .populate('laundryAppliance')
+                    .lean<PlanType>();
+
+                if(!plan) {
+                    throw new GraphQLError('User plans not found')
+                }
+                
+                return plan;
+                
+            } catch (error) {
+                throw new GraphQLError('Internal server error', {
+                    extensions: { code: 'INTERNAL_SERVER_ERROR'}
+                })
+            }
+            
         },
 
-        // User home queries
-        userHomes: async (_parent: unknown, _args: unknown, context: any): Promise<UserHomeType[]> => {
+        // User plan queries
+        userPlans: async (_parent: any, _args: { userId?: string }, context: Context): Promise<UserPlanPopulated[]> => {
             requireAuth(context);
-            const userPlans = await UserPlan.find({ userId: context.user._id, isActive: true })
-                .populate('plan')
+
+            const userPlans = await UserPlan.find({ userId: context.user?._id, isActive: true })
+                .populate('planId')
                 .populate('elevation')
                 .populate('colorScheme')
                 .populate('interiorPackage')
                 .populate('kitchenAppliance')
                 .populate('laundryAppliance')
-                .populate('lotPremium')
+                .populate('lot')
                 .populate('structuralOptions')
                 .populate('additionalOptions')
+                .lean<UserPlanPopulated[]>()
                 .sort({ createdAt: -1 });
-            return userPlans.map(toUserHomeType);
+            return userPlans;
         },
 
-        userHome: async (_parent: unknown, args: { id: string }, context: any): Promise<UserHomeType | null> => {
+        userPlan: async (_parent: unknown, args: { id: string }, context: Context): Promise<UserPlanPopulated | null> => {
             requireAuth(context);
-            const userPlan = await UserPlan.findOne({ _id: args.id, userId: context.user._id })
-                .populate('plan')
+            const userPlan = await UserPlan.findOne({ _id: args.id, userId: context.user?._id })
+                .populate('planId')
                 .populate('elevation')
                 .populate('colorScheme')
                 .populate('interiorPackage')
                 .populate('kitchenAppliance')
                 .populate('laundryAppliance')
-                .populate('lotPremium')
+                .populate('lot')
                 .populate('structuralOptions')
-                .populate('additionalOptions');
-            return userPlan ? toUserHomeType(userPlan) : null;
+                .populate('additionalOptions')
+                .lean<UserPlanPopulated>();
+            return userPlan;
         },
 
 
@@ -319,16 +357,16 @@ const resolvers = {
 
     Mutation: {
         // Auth mutations
-        createUser: async (_parent: unknown, args: { username: string; email: string; password: string }): Promise<Auth> => {
+        createUser: async (_parent: unknown, args: { username: string; email: string; password: string }): Promise<AuthType> => {
             const user = await User.create(args);
             if (!user) {
                 throw new Error('Something went wrong!');
             }
             const token = signToken(user.username, user.email, user._id, 'user');
-            return { token, user: toUserType(user) };
+            return { token, user };
         },
 
-        login: async (_parent: unknown, args: { username?: string; email?: string; password: string }): Promise<Auth> => {
+        login: async (_parent: unknown, args: { username?: string; email?: string; password: string }): Promise<AuthType> => {
             const user = await User.findOne({
                 $or: [{ username: args.username }, { email: args.email }],
             });
@@ -340,85 +378,142 @@ const resolvers = {
                 throw new AuthenticationError("Incorrect Password");
             }
             const token = signToken(user.username, user.email, user._id, user.role);
-            return { token, user: toUserType(user) };
+            return { token, user };
         },
 
         // Plan mutations (admin only)
         createPlan: async (_parent: unknown, args: { plan: PlanInput }, context: any): Promise<PlanType> => {
             requireAdmin(context);
-            console.log('📥 CREATE_PLAN Request from user:', context.user?.username || 'Unknown');
-            console.log('📋 Plan data received:', JSON.stringify(args.plan, null, 2));
+            console.log('CREATE_PLAN Request from user:', context.user?.username || 'Unknown');
+            console.log('Plan data received:', JSON.stringify(args.plan, null, 2));
 
             try {
                 const plan = await Plan.create(args.plan);
-                console.log('✅ Plan created successfully:', {
+                console.log('Plan created successfully:', {
                     id: plan._id,
                     name: plan.name,
                     planType: plan.planType
                 });
-                return toPlanType(plan);
+                return plan as any;
             } catch (error) {
-                console.error('❌ Plan creation failed:', error);
+                console.error(' Plan creation failed:', error);
                 throw error;
             }
         },
 
         updatePlan: async (_parent: unknown, args: { id: string; plan: PlanInput }, context: any): Promise<PlanType | null> => {
             requireAdmin(context);
-            console.log('📥 UPDATE_PLAN Request from user:', context.user?.username || 'Unknown');
-            console.log('📋 Plan ID:', args.id);
-            console.log('📋 Plan data received:', JSON.stringify(args.plan, null, 2));
+            console.log('UPDATE_PLAN Request from user:', context.user?.username || 'Unknown');
+            console.log('Plan ID:', args.id);
+            console.log('Plan data received:', JSON.stringify(args.plan, null, 2));
 
             try {
                 const plan = await Plan.findByIdAndUpdate(args.id, args.plan, { new: true });
                 if (plan) {
-                    console.log('✅ Plan updated successfully:', {
+                    console.log('Plan updated successfully:', {
                         id: plan._id,
                         name: plan.name,
                         planType: plan.planType
                     });
-                    return toPlanType(plan);
+                    return plan as any;
                 } else {
-                    console.warn('⚠️ Plan not found for update:', args.id);
+                    console.warn('Plan not found for update:', args.id);
                     return null;
                 }
             } catch (error) {
-                console.error('❌ Plan update failed:', error);
+                console.error('Plan update failed:', error);
                 throw error;
             }
         },
 
-        deletePlan: async (_parent: unknown, args: { id: string }, context: any): Promise<PlanType | null> => {
+        deletePlan: async (_parent: unknown, args: { id: string }, context: Context): Promise<PlanTypeDocument | null> => {
             requireAdmin(context);
             const plan = await Plan.findByIdAndDelete(args.id);
-            return plan ? toPlanType(plan) : null;
+            return plan;
         },
 
-        // Color Scheme mutations (admin only)
-        createColorScheme: async (_parent: unknown, args: { colorScheme: ColorSchemeInput }, context: any): Promise<ColorSchemeType> => {
-            requireAdmin(context);
-            const colorScheme = await ColorScheme.create(args.colorScheme);
-            return toColorSchemeType(colorScheme);
+        // User Plan mutations
+        createUserPlan: async (_parent: unknown, args: { userPlan: UserPlanInput }, context: Context): Promise<UserPlanPopulated|null> => {
+            requireAuth(context);
+            const userPlan = await UserPlan.create({
+                ...args.userPlan,
+                userId: context.user?._id
+            });
+
+            const populatedPlan = await UserPlan.findById(userPlan._id)
+                .populate('planId')
+                .populate('elevation')
+                .populate('colorScheme')
+                .populate('interiorPackage')
+                .populate('kitchenAppliance')
+                .populate('laundryAppliance')
+                .populate('lot')
+                .populate('structuralOptions')
+                .populate('additionalOptions')
+                .lean<UserPlanPopulated>();
+
+            return populatedPlan;
         },
 
-        updateColorScheme: async (_parent: unknown, args: { id: string; colorScheme: ColorSchemeInput }, context: any): Promise<ColorSchemeType | null> => {
-            requireAdmin(context);
-            const colorScheme = await ColorScheme.findByIdAndUpdate(args.id, args.colorScheme, { new: true });
-            return colorScheme ? toColorSchemeType(colorScheme) : null;
+        updateUserPlan: async (_parent: unknown, args: { id: string; userPlan: UserPlanInput }, context: Context): Promise<UserPlanPopulated | null> => {
+            requireAuth(context);
+            const updatedPlan = await UserPlan.findOneAndUpdate(
+                { _id: args.id, userId: context.user?._id },
+                args.userPlan,
+                { new: true }
+            )
+                .populate('planId')
+                .populate('elevation')
+                .populate('colorScheme')
+                .populate('interiorPackage')
+                .populate('kitchenAppliance')
+                .populate('laundryAppliance')
+                .populate('lot')
+                .populate('structuralOptions')
+                .populate('additionalOptions')
+                .lean<UserPlanPopulated>();
+
+            return updatedPlan;
         },
 
-        deleteColorScheme: async (_parent: unknown, args: { id: string }, context: any): Promise<ColorSchemeType | null> => {
-            requireAdmin(context);
-            const colorScheme = await ColorScheme.findByIdAndDelete(args.id);
-            return colorScheme ? toColorSchemeType(colorScheme) : null;
+        deleteUserPlan: async (_parent: unknown, args: { id: string }, context: Context): Promise<Boolean> => {
+            requireAuth(context);
+            const deletedPlan = await UserPlan.findOneAndDelete({
+                _id: args.id,
+                userId: context.user?._id
+            })
+                .populate('planId')
+                .populate('elevation')
+                .populate('colorScheme')
+                .populate('interiorPackage')
+                .populate('kitchenAppliance')
+                .populate('laundryAppliance')
+                .populate('lot')
+                .populate('structuralOptions')
+                .populate('additionalOptions');
+
+            return !!deletedPlan;
+        },
+
+        // Elevation mutations
+        createElevation: async (_parent: unknown, args: { appliance: any }, context: any): Promise<any> => {
+
+        },
+
+        updateElevation: async (_parent: unknown, args: { id: string; appliance: any }, context: any): Promise<any> => {
+
+        },
+
+        deleteElevation: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
+
         },
 
         //Interior Option mutations
-        createInteriorOption: async (_parent: any, { input }: { input: any }) => {
+        createInteriorOption: async (_parent: any, { input }: { input: any }, _context: Context):Promise<InteriorOptionType|null> => {    
             try {
                 const newOption = new InteriorOption(input);
                 await newOption.save();
-                return newOption;
+                return newOption as InteriorOptionType;
             } catch (error: any) {
                 throw new GraphQLError(`Error creating interior option: ${error.message}`, {
                     extensions: { code: 'BAD_USER_INPUT' },
@@ -426,7 +521,7 @@ const resolvers = {
             }
         },
 
-        updateInteriorOption: async (_parent: any, { id, input }: { id: Types.ObjectId; input: any }) => {
+        updateInteriorOption: async (_parent: any, { id, input }: { id: Types.ObjectId; input: any }, _context: Context):Promise<InteriorOptionType|null> => {
             try {
                 const option = await InteriorOption.findByIdAndUpdate(
                     id,
@@ -461,7 +556,7 @@ const resolvers = {
                     await recalculatePackage(pkg._id);
                 }
 
-                return option;
+                return option as InteriorOptionType;
             } catch (error: any) {
                 throw new GraphQLError(`Error updating interior option: ${error.message}`, {
                     extensions: { code: 'BAD_USER_INPUT' },
@@ -469,7 +564,7 @@ const resolvers = {
             }
         },
 
-        deleteInteriorOption: async (_parent: any, { id }: { id: Types.ObjectId }) => {
+        deleteInteriorOption: async (_parent: any, { id }: { id: Types.ObjectId }, _context:Context):Promise<boolean> => {
             try {
                 // Check if option is used in any packages
                 const packagesUsingOption = await InteriorPackage.find({
@@ -505,7 +600,7 @@ const resolvers = {
             }
         },
         // Interior Package mutations (admin only)
-        createInteriorPackage: async (_parent: any, { input }: { input: InteriorPackageInput }) => {
+        createInteriorPackage: async (_parent: any, { input }: { input: InteriorPackageInput }, _context:Context):Promise<InteriorPackageType|null> => {
             try {
                 // Validate that all referenced interior options exist
                 const optionIds = [
@@ -545,9 +640,6 @@ const resolvers = {
 
                 await newPackage.save();
 
-                // Determine if this should be the new base package
-                await determineBasePackage(newPackage.planId);
-
                 // Re-fetch with population
                 const createdPackage = await InteriorPackage.findById(newPackage._id).populate([
                     'fixtures',
@@ -562,7 +654,7 @@ const resolvers = {
                     'cabinetHardware',
                 ]);
 
-                return createdPackage;
+                return createdPackage as InteriorPackageType;
             } catch (error: any) {
                 throw new GraphQLError(`Error creating interior package: ${error.message}`, {
                     extensions: { code: 'BAD_USER_INPUT' },
@@ -573,7 +665,7 @@ const resolvers = {
         updateInteriorPackage: async (
             _parent: any,
             { id, input }: { id: Types.ObjectId; input: Partial<InteriorPackageInput> }
-        ) => {
+        ):Promise<InteriorPackageType|null> => {
             try {
                 // Validate referenced options if they're being updated
                 const optionIds = [
@@ -620,9 +712,6 @@ const resolvers = {
 
                 await package_.save();
 
-                // Check if base package needs to be reassigned
-                await determineBasePackage(package_.planId);
-
                 // Re-populate and return
                 await package_.populate([
                     'fixtures',
@@ -637,7 +726,7 @@ const resolvers = {
                     'cabinetHardware',
                 ]);
 
-                return package_;
+                return package_ as InteriorPackageType;
             } catch (error: any) {
                 throw new GraphQLError(`Error updating interior package: ${error.message}`, {
                     extensions: { code: 'BAD_USER_INPUT' },
@@ -645,7 +734,7 @@ const resolvers = {
             }
         },
 
-        deleteInteriorPackage: async (_parent: any, { id }: { id: Types.ObjectId }) => {
+        deleteInteriorPackage: async (_parent: any, { id }: { id: Types.ObjectId }):Promise<boolean> => {
             try {
                 const package_ = await InteriorPackage.findById(id);
 
@@ -655,16 +744,8 @@ const resolvers = {
                     });
                 }
 
-                const planId = package_.planId;
-                const wasBasePackage = package_.basePackage;
-
                 // Delete the package
                 await InteriorPackage.findByIdAndDelete(id);
-
-                // If we deleted the base package, reassign a new one
-                if (wasBasePackage) {
-                    await determineBasePackage(planId);
-                }
 
                 return true;
             } catch (error: any) {
@@ -675,7 +756,7 @@ const resolvers = {
         },
 
         //Utility Interior Package mutations
-        recalculatePackagePrice: async (_parent: any, { id }: { id: Types.ObjectId }) => {
+        recalculatePackagePrice: async (_parent: any, { id }: { id: Types.ObjectId }):Promise<InteriorPackageType|null> => {
             try {
                 return await recalculatePackage(id);
             } catch (error: any) {
@@ -688,7 +769,7 @@ const resolvers = {
         recalculateAllPackagePrices: async (
             _parent: any,
             { planId }: { planId: Types.ObjectId }
-        ) => {
+        ):Promise<InteriorPackageType[]|[]> => {
             try {
                 return await recalculateAllPackagesForPlan(planId);
             } catch (error: any) {
@@ -698,7 +779,7 @@ const resolvers = {
             }
         },
 
-        setBasePackage: async (_parent: any, { id }: { id: Types.ObjectId }) => {
+        setBasePackage: async (_parent: any, { id }: { id: Types.ObjectId }, _context:Context): Promise<InteriorPackageType> => {
             try {
                 const package_ = await InteriorPackage.findById(id);
 
@@ -735,7 +816,7 @@ const resolvers = {
                     'cabinetHardware',
                 ]);
 
-                return package_;
+                return package_ as InteriorPackageType;
             } catch (error: any) {
                 throw new GraphQLError(`Error setting base package: ${error.message}`, {
                     extensions: { code: 'INTERNAL_SERVER_ERROR' },
@@ -743,145 +824,79 @@ const resolvers = {
             }
         },
 
-        reassignBasePackage: async (_parent: any, { planId }: { planId: Types.ObjectId }) => {
-            try {
-                return await determineBasePackage(planId);
-            } catch (error: any) {
-                throw new GraphQLError(`Error reassigning base package: ${error.message}`, {
-                    extensions: { code: 'INTERNAL_SERVER_ERROR' },
-                });
-            }
-        },
-    },
-};
-
-        // Lot Premium mutations (admin only)
-        
-
-        // User Home mutations
-        saveUserHome: async (_parent: unknown, args: { userHome: UserHomeInput }, context: any): Promise<UserType> => {
+        // Structural mutations (admin only)
+        createStructural: async (_parent: unknown, args: { structural: any }, context: any): Promise<any> => {
 
         },
 
-        updateUserHome: async (_parent: unknown, args: { id: string; userHome: UserHomeInput }, context: any): Promise<UserHomeType> => {
-        
+        updateStructural: async (_parent: unknown, args: { id: string; structural: any }, context: any): Promise<any> => {
+
         },
 
-        deleteUserHome: async (_parent: unknown, args: { id: string }, context: any): Promise<UserType> => {
-            
+        deleteStructural: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
+
+        },
+
+        // Additional Option Mutation
+        createAdditionalOption: async (_parent: unknown, args: { appliance: any }, context: any): Promise<any> => {
+
+        },
+
+        updateAdditionalOption: async (_parent: unknown, args: { id: string; appliance: any }, context: any): Promise<any> => {
+
+        },
+
+        deleteAdditionalOption: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
+
         },
 
         // Appliance mutations (admin only)
         createAppliance: async (_parent: unknown, args: { appliance: any }, context: any): Promise<any> => {
-            
+
         },
 
         updateAppliance: async (_parent: unknown, args: { id: string; appliance: any }, context: any): Promise<any> => {
-            
+
         },
 
         deleteAppliance: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
+
+        },
+
+        // Color Scheme mutations (admin only)
+        createColorScheme: async (_parent: unknown, args: { colorScheme: ColorSchemeInput }, context: any): Promise<ColorSchemeDocument> => {
+            requireAdmin(context);
+            const colorScheme = await ColorScheme.create(args.colorScheme);
+            return colorScheme;
+        },
+
+        updateColorScheme: async (_parent: unknown, args: { id: string; colorScheme: ColorSchemeInput }, context: any): Promise<ColorSchemeDocument | null> => {
+            requireAdmin(context);
+            const colorScheme = await ColorScheme.findByIdAndUpdate(args.id, args.colorScheme, { new: true });
+            return colorScheme;
+        },
+
+        deleteColorScheme: async (_parent: unknown, args: { id: string }, context: any): Promise<ColorSchemeDocument | null> => {
+            requireAdmin(context);
+            const colorScheme = await ColorScheme.findByIdAndDelete(args.id);
+            return colorScheme;
+        },
+
+        // Lot Management
+        createLot: async (_parent: unknown, args: { colorScheme: ColorSchemeInput }, context: any): Promise<LotDocument> => {
             
         },
 
-        // Structural mutations (admin only)
-        createStructural: async (_parent: unknown, args: { structural: any }, context: any): Promise<any> => {
+        updateLot: async (_parent: unknown, args: { id: string; colorScheme: ColorSchemeInput }, context: any): Promise<LotDocument | null> => {
             
         },
 
-        updateStructural: async (_parent: unknown, args: { id: string; structural: any }, context: any): Promise<any> => {
+        deleteLot: async (_parent: unknown, args: { id: string }, context: any): Promise<LotDocument | null> => {
             
         },
 
-        deleteStructural: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
-            
-        },
+        //Lot Premium union with PlanId
 
-        // InteriorOption mutations (admin only)
-        createInteriorOption: async (_parent: unknown, args: { interiorOption: any }, context: any): Promise<any> => {
-            
-        },
-
-        updateInteriorOption: async (_parent: unknown, args: { id: string; interiorOption: any }, context: any): Promise<any> => {
-            
-        },
-
-        deleteInteriorOption: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
-            
-        },
-
-        // Plan-specific option management mutations
-        addElevationToPlan: async (_parent: unknown, args: { planId: string; elevation: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        updatePlanElevation: async (_parent: unknown, args: { planId: string; elevationId: string; elevation: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        removePlanElevation: async (_parent: unknown, args: { planId: string; elevationId: string }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        addStructuralToPlan: async (_parent: unknown, args: { planId: string; structural: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        updatePlanStructural: async (_parent: unknown, args: { planId: string; structuralId: string; structural: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        removePlanStructural: async (_parent: unknown, args: { planId: string; structuralId: string }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        addInteriorToPlan: async (_parent: unknown, args: { planId: string; interior: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        updatePlanInterior: async (_parent: unknown, args: { planId: string; interiorId: string; interior: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        removePlanInterior: async (_parent: unknown, args: { planId: string; interiorId: string }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        addApplianceToPlan: async (_parent: unknown, args: { planId: string; appliance: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        updatePlanAppliance: async (_parent: unknown, args: { planId: string; applianceId: string; appliance: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        removePlanAppliance: async (_parent: unknown, args: { planId: string; applianceId: string }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        addAdditionalToPlan: async (_parent: unknown, args: { planId: string; additional: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        updatePlanAdditional: async (_parent: unknown, args: { planId: string; additionalId: string; additional: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        removePlanAdditional: async (_parent: unknown, args: { planId: string; additionalId: string }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        addLotToPlan: async (_parent: unknown, args: { planId: string; lot: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        updatePlanLot: async (_parent: unknown, args: { planId: string; lotId: string; lot: any }, context: any): Promise<PlanType | null> => {
-            
-        },
-
-        removePlanLot: async (_parent: unknown, args: { planId: string; lotId: string }, context: any): Promise<PlanType | null> => {
-            
-        },
     }
 };
 

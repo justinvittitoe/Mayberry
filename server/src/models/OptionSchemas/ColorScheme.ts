@@ -13,6 +13,8 @@ export interface ColorSchemeDocument extends Document {
   secondaryCode?: string;
   trimName: string;       // Trim color
   trimCode: string;
+  doorName: string;
+  doorCode: string;
   shingleBrand: string;       // Roof color
   shingleColor: string;
   stone?: boolean;      // Stone color
@@ -35,6 +37,8 @@ const colorSchemeSchema = new Schema<ColorSchemeDocument>({
   secondaryCode: {type: String, maxlength: 200, trim: true},
   trimName: {type: String, required: true, maxlength: 200, trim: true},
   trimCode: {type: String, required: true, maxlength: 200, trim: true},
+  doorName: { type: String, required: true, maxlength: 200, trim: true },
+  doorCode: { type: String, required: true, maxlength: 200, trim: true },
   shingleBrand: {type: String, required: true, maxlength: 200, trim: true},
   shingleColor: {type: String, required: true, maxlength: 200, trim: true},
   stone: {type: Boolean, default: false},

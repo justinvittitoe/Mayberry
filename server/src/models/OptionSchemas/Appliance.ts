@@ -8,7 +8,6 @@ export interface ApplianceDocument extends Document {
     markup: number;
     minMarkup: number;
     clientPrice: number;
-    classification: 'appliance';
     type: 'laundry' | 'kitchen';
     brand?: string,
     img?: string;
@@ -26,8 +25,8 @@ const applianceSchema = new Schema<ApplianceDocument>({
     markup: {type: Number, required: true, default: 0.35},
     minMarkup: {type: Number, required: true, default: 200},
     clientPrice: {type: Number, required: true, min: 0, default: 0},
-    classification: {type: String, required: true, default: 'appliance', enum: ['appliance']},
     type: {type: String, required: true, enum: ['kitchen', 'laundry']},
+    brand: { type: String, trim: true},
     img: {type: String},
     planId: {type: Schema.Types.ObjectId, required: true, ref: 'Plan'},
     isActive: {type: Boolean, default: true},
