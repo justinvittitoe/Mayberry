@@ -1,6 +1,6 @@
 import { Schema, model, type Document, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { userPlanSelectionSchema, UserPlanSelection } from './UserPlan.js';
+import { userPlanSelectionSchema, UserPlanSelectionDocument } from './UserPlan.js';
 
 
 export interface UserDocument extends Document {
@@ -9,7 +9,7 @@ export interface UserDocument extends Document {
   email: string;
   password: string;
   role: 'admin' | 'user';
-  savedPlans: UserPlanSelection[];
+  savedPlans: UserPlanSelectionDocument[];
   isCorrectPassword(password: string): Promise<boolean>;
   homeCount: number;
   createdAt: Date;

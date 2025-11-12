@@ -119,7 +119,7 @@ const typeDefs = gql`
         type: String!
         brand: String!
         img: String
-        planId: ObjectId!
+        planId: [ObjectId!]
         isActive: Boolean!
         sortOrder: Int!
         createdAt: String
@@ -267,11 +267,14 @@ const typeDefs = gql`
         #User queries
         me: User
         user(id: ObjectId, username: String): User
+        users: [User]
 
         #Plan queries
         plans: [Plan]
         plan(id: ObjectId!): Plan
         planByType(planType: Int!): Plan
+        activePlans: [Plan]
+        searchPlans(minPrice: Float, maxPrice: Float, minBedrooms: Int, maxBedrooms: Int, minBathrooms: Float, maxBathrooms: Float, minSqft: Int, maxSqft: Int): [Plan]
 
         #User plan queries
         userPlans(userId: ObjectId): [UserPlan]
@@ -307,7 +310,12 @@ const typeDefs = gql`
         # Auth mutations
         login(email: String!, password: String!): Auth
         createUser(username: String!, email: String!, password: String!): Auth
-        
+
+        # Admin user management mutations (admin only)
+        createAdminUser(username: String!, email: String!, password: String!): Auth
+        updateUserRole(userId: ObjectId!, role: String!): User
+        deleteUser(userId: ObjectId!): Boolean!
+
         # Plan mutations (admin only)
         createPlan(plan: PlanInput!): Plan
         updatePlan(id: ObjectId!, plan: PlanInput!): Plan
@@ -369,7 +377,8 @@ const typeDefs = gql`
         createUserPlan(userPlan: UserPlanInput!): UserPlan
         updateUserPlan(id: ObjectId!, userPlan: UserPlanInput!): UserPlan
         deleteUserPlan(id: ObjectId!): UserPlan
-        
+        duplicateUserPlan(id: ObjectId!, newConfigurationName: String!): UserPlan
+
         # Plan-option relationship mutations
         addElevationToPlan(planId: ObjectId!, elevationId: ID!): Plan
         removeElevationFromPlan(planId: ObjectId!, elevationId: ID!): Plan

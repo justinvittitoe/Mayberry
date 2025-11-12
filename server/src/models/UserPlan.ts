@@ -2,7 +2,7 @@ import { Schema, type Document, Types, model } from 'mongoose';
 
 
 // Main user home selection schema
-export interface UserPlanSelection extends Document {
+export interface UserPlanSelectionDocument extends Document {
     _id: Types.ObjectId;
     userId: Types.ObjectId;
     planId: Types.ObjectId;
@@ -38,7 +38,7 @@ export interface UserPlanSelection extends Document {
     updatedAt: Date;
 }
 
-const userPlanSchema = new Schema<UserPlanSelection>({
+const userPlanSchema = new Schema<UserPlanSelectionDocument>({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     planId: {type: Schema.Types.ObjectId, ref: 'Plan', required: true},
     configurationName: { type: String, trim: true, maxLength: 100, default: function() {
@@ -130,7 +130,7 @@ userPlanSchema.statics.findActiveByUser = function (userId: Types.ObjectId) {
     return this.find({ userId, isActive: true }).sort({ createdAt: -1 });
 };
 
-const UserPlan = model<UserPlanSelection>('UserPlan', userPlanSchema);
+const UserPlan = model<UserPlanSelectionDocument>('UserPlan', userPlanSchema);
 
 export const userPlanSelectionSchema = userPlanSchema;
 export default UserPlan;

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import db from '../config/connection.js';
-import { User } from '../models/index.js';
+import User from '../models/User.js';
 
 async function createAdminUser() {
   try {
@@ -24,6 +24,7 @@ async function createAdminUser() {
     });
 
     await adminUser.save();
+
     console.log('Admin user created successfully!');
     console.log('Email: admin@mayberry.com');
     console.log('Password: admin123');

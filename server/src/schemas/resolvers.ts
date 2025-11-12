@@ -8,22 +8,6 @@ import {
     recalculateAllPackagesForPlan,
 } from '../services/packagePricing.js'
 
-//Type Interfaces
-import {
-    ColorSchemeType,
-    ElevationType,
-    StructuralType,
-    InteriorOptionType,
-    InteriorPackageType,
-    ApplianceType,
-    AdditionalType,
-    PlanType,
-    UserPlanType,
-    UserPlanPopulated,
-    UserType,
-    AuthType
-} from '../types/graphql.js';
-
 //Inputs
 import {
     ColorSchemeInput,
@@ -38,24 +22,25 @@ import {
     PlanInput,
     UserPlanInput,
     CustomizationSelectionsInput,
-    UserInput
+    UserInput,
+    AuthType
 } from '../types/graphql.js'
 
 //Schemas
 import { signToken, AuthenticationError } from '../services/auth.js';
-import User from '../models/User.js';
+import User, { UserDocument } from '../models/User.js';
 import Plan, { PlanTypeDocument } from '../models/Plan.js';
-import ElevationOption from '../models/OptionSchemas/ElevationOption.js';
+import ElevationOption, { ElevationOptionDocument } from '../models/OptionSchemas/ElevationOption.js';
 import ColorScheme, { ColorSchemeDocument } from '../models/OptionSchemas/ColorScheme.js';
-import InteriorOption from '../models/OptionSchemas/InteriorOption.js';
+import InteriorOption, { InteriorOptionDocument } from '../models/OptionSchemas/InteriorOption.js';
 import InteriorPackage, { InteriorPackageDocument } from '../models/OptionSchemas/InteriorPackageOption.js';
-import StructuralOption from '../models/OptionSchemas/StructuralOption.js';
-import AdditionalOption from '../models/OptionSchemas/AdditionalOption.js';
-import LotPremium, { LotDocument } from '../models/OptionSchemas/Lot.js';
-import LotPricing from '../models/OptionSchemas/LotPricing.js';
-import Appliance from '../models/OptionSchemas/Appliance.js';
-import UserPlan from '../models/UserPlan.js';
-import mongoose from 'mongoose';
+import StructuralOption, { StructuralDocument } from '../models/OptionSchemas/StructuralOption.js';
+import AdditionalOption, { AdditionalOptionDocument } from '../models/OptionSchemas/AdditionalOption.js';
+import LotPricing, { LotPricingDocument } from '../models/OptionSchemas/LotPricing.js';
+import Appliance, { ApplianceDocument } from '../models/OptionSchemas/Appliance.js';
+import UserPlan, { UserPlanSelectionDocument} from '../models/UserPlan.js';
+import Lot, { LotDocument } from '../models/OptionSchemas/Lot.js';
+
 
 
 //Context Type
@@ -66,7 +51,7 @@ export interface Context {
         email: string;
         role: 'admin' | 'user';
         homeCount?: number;
-        savedPlans?: UserPlanPopulated[]
+        savedPlans?: UserPlanSelectionDocument[]
     };
 }
 
@@ -127,11 +112,11 @@ const resolvers = {
     },
 
     Query: {
-        me: async (_parent: unknown, _args: unknown, context: any): Promise<UserType | null> => {
+        me: async (_parent: unknown, _args: unknown, context: any): Promise<UserDocument | null> => {
             if (!context.user) {
                 throw new AuthenticationError("Not Authenticated")
             }
-            const userDoc = await User.findOne({ _id: context.user._id }).populate('savedPlans').lean<UserType>();
+            const userDoc = await User.findOne({ _id: context.user._id }).populate('savedPlans');
             if (!userDoc) {
                 return null
             }
@@ -139,7 +124,7 @@ const resolvers = {
             return userDoc
         },
 
-        user: async (_parent: unknown, args: { id?: string; username?: string }) => {
+        user: async (_parent: unknown, args: { id?: string; username?: string }):Promise<UserDocument|null> => {
             const userDoc = await User.findOne({
                 $or: [{ _id: args.id }, { username: args.username }]
             }).populate('savedPlans');
@@ -149,8 +134,14 @@ const resolvers = {
             return userDoc
         },
 
+        users: async (_parent: unknown, _args: unknown, context: Context): Promise<UserDocument[]> => {
+            requireAdmin(context);
+            const users = await User.find({}).populate('savedPlans');
+            return users;
+        },
+
         // Plan queries
-        plans: async (): Promise<PlanType[]> => {
+        plans: async (): Promise<PlanTypeDocument[]|[]> => {
             const plans = await Plan.find({})
                 .populate('lotPremium')
                 .populate('colorScheme')
@@ -159,12 +150,11 @@ const resolvers = {
                 .populate('structural')
                 .populate('additional')
                 .populate('kitchenAppliance')
-                .populate('laundryAppliance')
-                .lean<PlanType[]>();
+                .populate('laundryAppliance');
             return plans;
         },
 
-        plan: async (_parent: unknown, args: { id: string }): Promise<PlanType | null> => {
+        plan: async (_parent: unknown, args: { id: string }): Promise<PlanTypeDocument | null> => {
             const plan = await Plan.findById(args.id)
                 .populate('lotPremium')
                 .populate('colorScheme')
@@ -173,12 +163,12 @@ const resolvers = {
                 .populate('structural')
                 .populate('additional')
                 .populate('kitchenAppliance')
-                .populate('laundryAppliance')
-                .lean<PlanType>();
+                .populate('laundryAppliance');
             return plan;
         },
 
-        planByType: async (_parent: unknown, args: { planType: number }): Promise<PlanType | null> => {
+        planByType: async (_parent: unknown, args: { planType: number }, context: Context): Promise<PlanTypeDocument | null> => {
+            requireAuth(context)
             try {
                 const plan = await Plan.findOne({ planType: args.planType })
                     .populate('lotPremium')
@@ -188,8 +178,7 @@ const resolvers = {
                     .populate('structural')
                     .populate('additional')
                     .populate('kitchenAppliance')
-                    .populate('laundryAppliance')
-                    .lean<PlanType>();
+                    .populate('laundryAppliance');
 
                 if(!plan) {
                     throw new GraphQLError('User plans not found')
@@ -202,11 +191,70 @@ const resolvers = {
                     extensions: { code: 'INTERNAL_SERVER_ERROR'}
                 })
             }
-            
+
+        },
+
+        activePlans: async (): Promise<PlanTypeDocument[]> => {
+            const plans = await Plan.find({ isActive: true })
+                .populate('lot')
+                .populate('colorScheme')
+                .populate('elevations')
+                .populate('interiors')
+                .populate('structural')
+                .populate('additional')
+                .populate('kitchenAppliance')
+                .populate('laundryAppliance');
+            return plans;
+        },
+
+        searchPlans: async (_parent: unknown, args: {
+            minPrice?: number;
+            maxPrice?: number;
+            minBedrooms?: number;
+            maxBedrooms?: number;
+            minBathrooms?: number;
+            maxBathrooms?: number;
+            minSqft?: number;
+            maxSqft?: number;
+        }): Promise<PlanTypeDocument[]> => {
+            const filter: any = { isActive: true };
+
+            if (args.minPrice !== undefined || args.maxPrice !== undefined) {
+                filter.basePrice = {};
+                if (args.minPrice !== undefined) filter.basePrice.$gte = args.minPrice;
+                if (args.maxPrice !== undefined) filter.basePrice.$lte = args.maxPrice;
+            }
+
+            if (args.minBedrooms !== undefined) filter.bedrooms = { $gte: args.minBedrooms };
+            if (args.maxBedrooms !== undefined) {
+                filter.bedrooms = { ...filter.bedrooms, $lte: args.maxBedrooms };
+            }
+
+            if (args.minBathrooms !== undefined) filter.bathrooms = { $gte: args.minBathrooms };
+            if (args.maxBathrooms !== undefined) {
+                filter.bathrooms = { ...filter.bathrooms, $lte: args.maxBathrooms };
+            }
+
+            if (args.minSqft !== undefined) filter.totalSqft = { $gte: args.minSqft };
+            if (args.maxSqft !== undefined) {
+                filter.totalSqft = { ...filter.totalSqft, $lte: args.maxSqft };
+            }
+
+            const plans = await Plan.find(filter)
+                .populate('lot')
+                .populate('colorScheme')
+                .populate('elevations')
+                .populate('interiors')
+                .populate('structural')
+                .populate('additional')
+                .populate('kitchenAppliance')
+                .populate('laundryAppliance');
+
+            return plans;
         },
 
         // User plan queries
-        userPlans: async (_parent: any, _args: { userId?: string }, context: Context): Promise<UserPlanPopulated[]> => {
+        userPlans: async (_parent: any, _args: { userId?: string }, context: Context): Promise<UserPlanSelectionDocument[]|[]> => {
             requireAuth(context);
 
             const userPlans = await UserPlan.find({ userId: context.user?._id, isActive: true })
@@ -219,12 +267,11 @@ const resolvers = {
                 .populate('lot')
                 .populate('structuralOptions')
                 .populate('additionalOptions')
-                .lean<UserPlanPopulated[]>()
                 .sort({ createdAt: -1 });
             return userPlans;
         },
 
-        userPlan: async (_parent: unknown, args: { id: string }, context: Context): Promise<UserPlanPopulated | null> => {
+        userPlan: async (_parent: unknown, args: { id: string }, context: Context): Promise<UserPlanSelectionDocument | null> => {
             requireAuth(context);
             const userPlan = await UserPlan.findOne({ _id: args.id, userId: context.user?._id })
                 .populate('planId')
@@ -235,14 +282,13 @@ const resolvers = {
                 .populate('laundryAppliance')
                 .populate('lot')
                 .populate('structuralOptions')
-                .populate('additionalOptions')
-                .lean<UserPlanPopulated>();
+                .populate('additionalOptions');
             return userPlan;
         },
 
 
         // Interior queries
-        interiorOption: async (_parent: any, { id }: { id: Types.ObjectId }) => {
+        interiorOption: async (_parent: any, { id }: { id: Types.ObjectId }): Promise<InteriorOptionDocument> => {
             const option = await InteriorOption.findById(id);
             if (!option) {
                 throw new GraphQLError('Interior option not found', {
@@ -255,7 +301,7 @@ const resolvers = {
         interiorOptions: async (
             _parent: any,
             { planId, material }: { planId?: Types.ObjectId; material?: string }
-        ) => {
+        ): Promise<InteriorOptionDocument[]|[]> => {
             const query: any = { isActive: true };
             if (planId) query.planId = planId;
             if (material) query.material = material;
@@ -264,7 +310,7 @@ const resolvers = {
         },
 
 
-        interiorPackage: async (_parent: any, { id }: { id: Types.ObjectId }) => {
+        interiorPackage: async (_parent: any, { id }: { id: Types.ObjectId }): Promise<InteriorPackageDocument> => {
             const package_ = await InteriorPackage.findById(id).populate([
                 'fixtures',
                 'lvp',
@@ -290,7 +336,7 @@ const resolvers = {
         interiorPackages: async (
             _parent: any,
             { planId, basePackage }: { planId?: Types.ObjectId; basePackage?: boolean }
-        ) => {
+        ): Promise<InteriorPackageDocument[]|[]> => {
             const query: any = { isActive: true };
             if (planId) query.planId = planId;
             if (basePackage !== undefined) query.basePackage = basePackage;
@@ -311,7 +357,7 @@ const resolvers = {
                 .sort({ sortOrder: 1, name: 1 });
         },
 
-        baseInteriorPackage: async (_parent: any, { planId }: { planId: Types.ObjectId }) => {
+        baseInteriorPackage: async (_parent: any, { planId }: { planId: Types.ObjectId }): Promise<InteriorPackageDocument> => {
             const package_ = await InteriorPackage.findOne({
                 planId,
                 basePackage: true,
@@ -340,19 +386,184 @@ const resolvers = {
     
 
         // Appliance queries
-        
+        allAppliances: async (_parent: any, context: Context): Promise<ApplianceDocument[]|[]> => {
+            const query = { isActive: true }
+            requireAuth(context)
+
+            return Appliance.find(query).sort({ sortOrder: 1, name: 1 })
+        },
+
+        appliance: async (_parent: any, {_id, name }: {_id: Types.ObjectId, name: string}, context: Context): Promise<ApplianceDocument|null> => {
+            requireAuth(context)
+
+            return Appliance.findOne({
+                _id: _id,
+                name: name,
+                isActive: true
+            })
+        },
 
         // Structural option queries
-        
+        allStructuralOptions: async (_parent: any, context:Context): Promise<StructuralDocument[]|[]> => {
+            const query = { isActive: true }
+            requireAuth(context)
+
+            return StructuralOption.find(query).sort({ sortOrder: 1, name: 1 })
+        },
+
+        structuralOption: async (_parent: any, {_id, name}: {_id: Types.ObjectId, name: string}, context: Context):Promise<StructuralDocument|null> => {
+            requireAuth(context)
+
+            return StructuralOption.findOne({
+                _id: _id,
+                name: name,
+                isActive: true
+            })
+        },
 
         // Color Scheme queries
-        
+        allColorSchemes: async (_parent: any, context: Context):Promise<ColorSchemeDocument[]|[]> => {
+            const query = { isActive: true }
+            requireAuth(context)
+
+            return ColorScheme.find(query).sort({ sortOrder: 1, name: 1 })
+        },
+
+        colorSchemeOption: async (_parent: any, { _id, name }: { _id: Types.ObjectId, name: string }, context: Context): Promise<ColorSchemeDocument|null> => {
+            requireAuth(context)
+
+            return ColorScheme.findOne({
+                _id: _id,
+                name: name,
+                isActive: true
+            })
+        },
 
         // Lot premium queries
-        
+        allLots: async (_parent: any, context: Context): Promise<LotDocument[]|[]> => {
+            const query = { isActive: true }
+            requireAuth(context)
+
+            return Lot.find(query).sort({ sortOrder: 1, name: 1 })
+        },
+
+        LotOption: async (_parent: any, { _id, name }: { _id: Types.ObjectId, name: string }, _context: Context) => {
+            if (!_context.user) return 'Not Authenticated'
+
+            return Lot.findOne({
+                _id: _id,
+                name: name,
+                isActive: true
+            })
+        },
+
+        allLotPremiums: async (_parent: any, context: Context): Promise<LotPricingDocument[] | []> => {
+            const query = { isActive: true }
+            requireAuth(context)
+
+            return LotPricing.find(query)
+                .populate('lot')
+                .populate('plan')
+                .sort({ sortOrder: 1, name: 1 });
+        },
+
+        LotPremiumOption: async (_parent: any, { _id, name }: { _id: Types.ObjectId, name: string }, context: Context) => {
+            requireAuth(context)
+
+            return LotPricing.findOne({
+                _id: _id,
+                name: name,
+                isActive: true
+            })
+            .populate('lot')
+            .populate('plan');
+        },
+
+      
 
         // Plan-specific option queries (for browsing across all plans)
         
+        planSpecificElevationOptions: async (
+            _parent: any,
+            { planId }: { planId: Types.ObjectId },
+            context: Context
+        ): Promise<ElevationOptionDocument[]|[]> => {
+            requireAuth(context)
+            
+            return ElevationOption.find({
+                planId: planId,
+                isActive: true
+            });
+        },
+
+        planSpecificInteriorOptions: async (
+            _parent: any,
+            { planId }: { planId: Types.ObjectId },
+            context: Context
+        ): Promise<InteriorOptionDocument[] | []> => {
+            requireAuth(context)
+
+            return InteriorOption.find({
+                planId: planId,
+                isActive: true
+            });
+        },
+
+        planSpecificInteriorPackages: async (
+            _parent: any,
+            { planId }: { planId: Types.ObjectId },
+            context: Context
+        ): Promise<InteriorPackageDocument[] | []> => {
+            requireAuth(context)
+
+            return InteriorPackage.find({
+                planId: planId,
+                isActive: true
+            });
+        },
+
+        planSpecificStructuralOptions: async (
+            _parent: any, 
+            { planId }: { planId: Types.ObjectId }, 
+            context: Context
+        ): Promise<StructuralDocument[]|[]> => {
+            requireAuth(context)
+
+            return StructuralOption.find({
+                planId: planId,
+                isActive: true
+            });
+        },
+        
+        planSpecificAdditionalOptions: async (
+            _parent: any,
+            { planId }: { planId: Types.ObjectId },
+            context: Context
+        ): Promise<AdditionalOptionDocument[]|[]> => {
+            requireAuth(context)
+
+            return AdditionalOption.find({
+                planId: planId,
+                isActive: true
+            });
+        },
+
+        planSpecificLotPremiums: async (
+            _parent: any,
+            { planId }: { planId: Types.ObjectId },
+            context: Context
+        ):Promise<LotPricingDocument[]|[]> => {
+            requireAuth(context);
+
+            return LotPricing.find({
+                plan: planId,
+                isActive: true
+            })
+            .populate('lot')
+            .populate('plan');
+        },
+
+
     },
 
     Mutation: {
@@ -381,8 +592,67 @@ const resolvers = {
             return { token, user };
         },
 
+        // Admin user management mutations
+        createAdminUser: async (_parent: unknown, args: { username: string; email: string; password: string }, context: Context): Promise<AuthType> => {
+            requireAdmin(context);
+
+            // Create user with admin role
+            const user = await User.create({
+                username: args.username,
+                email: args.email,
+                password: args.password,
+                role: 'admin'
+            });
+
+            if (!user) {
+                throw new Error('Failed to create admin user');
+            }
+
+            const token = signToken(user.username, user.email, user._id, 'admin');
+            return { token, user };
+        },
+
+        updateUserRole: async (_parent: unknown, args: { userId: Types.ObjectId; role: string }, context: Context): Promise<UserDocument | null> => {
+            requireAdmin(context);
+
+            // Validate role
+            if (args.role !== 'admin' && args.role !== 'user') {
+                throw new Error('Invalid role. Must be "admin" or "user"');
+            }
+
+            // Update user role
+            const user = await User.findByIdAndUpdate(
+                args.userId,
+                { role: args.role },
+                { new: true }
+            );
+
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            return user;
+        },
+
+        deleteUser: async (_parent: unknown, args: { userId: Types.ObjectId }, context: Context): Promise<boolean> => {
+            requireAdmin(context);
+
+            // Prevent admins from deleting themselves
+            if (context.user && context.user._id.toString() === args.userId.toString()) {
+                throw new Error('Cannot delete your own account');
+            }
+
+            const user = await User.findByIdAndDelete(args.userId);
+
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            return true;
+        },
+
         // Plan mutations (admin only)
-        createPlan: async (_parent: unknown, args: { plan: PlanInput }, context: any): Promise<PlanType> => {
+        createPlan: async (_parent: unknown, args: { plan: PlanInput }, context: any): Promise<PlanTypeDocument> => {
             requireAdmin(context);
             console.log('CREATE_PLAN Request from user:', context.user?.username || 'Unknown');
             console.log('Plan data received:', JSON.stringify(args.plan, null, 2));
@@ -394,14 +664,14 @@ const resolvers = {
                     name: plan.name,
                     planType: plan.planType
                 });
-                return plan as any;
+                return plan;
             } catch (error) {
                 console.error(' Plan creation failed:', error);
                 throw error;
             }
         },
 
-        updatePlan: async (_parent: unknown, args: { id: string; plan: PlanInput }, context: any): Promise<PlanType | null> => {
+        updatePlan: async (_parent: unknown, args: { id: string; plan: PlanInput }, context: any): Promise<PlanTypeDocument | null> => {
             requireAdmin(context);
             console.log('UPDATE_PLAN Request from user:', context.user?.username || 'Unknown');
             console.log('Plan ID:', args.id);
@@ -415,7 +685,7 @@ const resolvers = {
                         name: plan.name,
                         planType: plan.planType
                     });
-                    return plan as any;
+                    return plan;
                 } else {
                     console.warn('Plan not found for update:', args.id);
                     return null;
@@ -433,7 +703,7 @@ const resolvers = {
         },
 
         // User Plan mutations
-        createUserPlan: async (_parent: unknown, args: { userPlan: UserPlanInput }, context: Context): Promise<UserPlanPopulated|null> => {
+        createUserPlan: async (_parent: unknown, args: { userPlan: UserPlanInput }, context: Context): Promise<UserPlanSelectionDocument|null> => {
             requireAuth(context);
             const userPlan = await UserPlan.create({
                 ...args.userPlan,
@@ -449,13 +719,12 @@ const resolvers = {
                 .populate('laundryAppliance')
                 .populate('lot')
                 .populate('structuralOptions')
-                .populate('additionalOptions')
-                .lean<UserPlanPopulated>();
+                .populate('additionalOptions');
 
             return populatedPlan;
         },
 
-        updateUserPlan: async (_parent: unknown, args: { id: string; userPlan: UserPlanInput }, context: Context): Promise<UserPlanPopulated | null> => {
+        updateUserPlan: async (_parent: unknown, args: { id: string; userPlan: UserPlanInput }, context: Context): Promise<UserPlanSelectionDocument | null> => {
             requireAuth(context);
             const updatedPlan = await UserPlan.findOneAndUpdate(
                 { _id: args.id, userId: context.user?._id },
@@ -470,8 +739,7 @@ const resolvers = {
                 .populate('laundryAppliance')
                 .populate('lot')
                 .populate('structuralOptions')
-                .populate('additionalOptions')
-                .lean<UserPlanPopulated>();
+                .populate('additionalOptions');
 
             return updatedPlan;
         },
@@ -495,25 +763,84 @@ const resolvers = {
             return !!deletedPlan;
         },
 
-        // Elevation mutations
-        createElevation: async (_parent: unknown, args: { appliance: any }, context: any): Promise<any> => {
+        duplicateUserPlan: async (_parent: unknown, args: { id: Types.ObjectId; newConfigurationName: string }, context: Context): Promise<UserPlanSelectionDocument | null> => {
+            requireAuth(context);
 
+            // Find the original plan
+            const originalPlan = await UserPlan.findOne({
+                _id: args.id,
+                userId: context.user?._id
+            });
+
+            if (!originalPlan) {
+                throw new Error('User plan not found');
+            }
+
+            // Create a copy with new configuration name
+            const duplicatedPlan = await UserPlan.create({
+                userId: context.user?._id,
+                planId: originalPlan.planId,
+                configurationName: args.newConfigurationName,
+                elevation: originalPlan.elevation,
+                colorScheme: originalPlan.colorScheme,
+                interiorPackage: originalPlan.interiorPackage,
+                kitchenAppliance: originalPlan.kitchenAppliance,
+                laundryAppliance: originalPlan.laundryAppliance,
+                lot: originalPlan.lot,
+                structuralOptions: originalPlan.structuralOptions,
+                additionalOptions: originalPlan.additionalOptions,
+                status: 'draft',
+                isActive: true,
+                notes: originalPlan.notes,
+                customerNotes: originalPlan.customerNotes
+            });
+
+            // Populate the duplicated plan
+            const populatedPlan = await UserPlan.findById(duplicatedPlan._id)
+                .populate('planId')
+                .populate('elevation')
+                .populate('colorScheme')
+                .populate('interiorPackage')
+                .populate('kitchenAppliance')
+                .populate('laundryAppliance')
+                .populate('lot')
+                .populate('structuralOptions')
+                .populate('additionalOptions');
+
+            return populatedPlan;
         },
 
-        updateElevation: async (_parent: unknown, args: { id: string; appliance: any }, context: any): Promise<any> => {
-
+        // Elevation mutations (admin only)
+        createElevation: async (_parent: unknown, args: { elevation: ElevationInput }, context: Context): Promise<ElevationOptionDocument> => {
+            requireAdmin(context);
+            const elevation = await ElevationOption.create(args.elevation);
+            return elevation;
         },
 
-        deleteElevation: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
+        updateElevation: async (_parent: unknown, args: { id: Types.ObjectId; elevation: ElevationInput }, context: Context): Promise<ElevationOptionDocument | null> => {
+            requireAdmin(context);
+            const elevation = await ElevationOption.findByIdAndUpdate(args.id, args.elevation, { new: true });
+            if (!elevation) {
+                throw new Error('Elevation not found');
+            }
+            return elevation;
+        },
 
+        deleteElevation: async (_parent: unknown, args: { id: Types.ObjectId }, context: Context): Promise<Boolean> => {
+            requireAdmin(context);
+            const elevation = await ElevationOption.findByIdAndDelete(args.id);
+            if (!elevation) {
+                throw new Error('Elevation not found');
+            }
+            return true;
         },
 
         //Interior Option mutations
-        createInteriorOption: async (_parent: any, { input }: { input: any }, _context: Context):Promise<InteriorOptionType|null> => {    
+        createInteriorOption: async (_parent: any, { input }: { input: any }, _context: Context):Promise<InteriorOptionDocument|null> => {    
             try {
                 const newOption = new InteriorOption(input);
                 await newOption.save();
-                return newOption as InteriorOptionType;
+                return newOption;
             } catch (error: any) {
                 throw new GraphQLError(`Error creating interior option: ${error.message}`, {
                     extensions: { code: 'BAD_USER_INPUT' },
@@ -521,7 +848,7 @@ const resolvers = {
             }
         },
 
-        updateInteriorOption: async (_parent: any, { id, input }: { id: Types.ObjectId; input: any }, _context: Context):Promise<InteriorOptionType|null> => {
+        updateInteriorOption: async (_parent: any, { id, input }: { id: Types.ObjectId; input: any }, _context: Context):Promise<InteriorOptionDocument|null> => {
             try {
                 const option = await InteriorOption.findByIdAndUpdate(
                     id,
@@ -556,7 +883,7 @@ const resolvers = {
                     await recalculatePackage(pkg._id);
                 }
 
-                return option as InteriorOptionType;
+                return option;
             } catch (error: any) {
                 throw new GraphQLError(`Error updating interior option: ${error.message}`, {
                     extensions: { code: 'BAD_USER_INPUT' },
@@ -564,7 +891,7 @@ const resolvers = {
             }
         },
 
-        deleteInteriorOption: async (_parent: any, { id }: { id: Types.ObjectId }, _context:Context):Promise<boolean> => {
+        deleteInteriorOption: async (_parent: any, { id }: { id: Types.ObjectId }, _context:Context):Promise<Boolean> => {
             try {
                 // Check if option is used in any packages
                 const packagesUsingOption = await InteriorPackage.find({
@@ -600,7 +927,7 @@ const resolvers = {
             }
         },
         // Interior Package mutations (admin only)
-        createInteriorPackage: async (_parent: any, { input }: { input: InteriorPackageInput }, _context:Context):Promise<InteriorPackageType|null> => {
+        createInteriorPackage: async (_parent: any, { input }: { input: InteriorPackageInput }, _context:Context):Promise<InteriorPackageDocument|null> => {
             try {
                 // Validate that all referenced interior options exist
                 const optionIds = [
@@ -654,7 +981,7 @@ const resolvers = {
                     'cabinetHardware',
                 ]);
 
-                return createdPackage as InteriorPackageType;
+                return createdPackage;
             } catch (error: any) {
                 throw new GraphQLError(`Error creating interior package: ${error.message}`, {
                     extensions: { code: 'BAD_USER_INPUT' },
@@ -665,7 +992,7 @@ const resolvers = {
         updateInteriorPackage: async (
             _parent: any,
             { id, input }: { id: Types.ObjectId; input: Partial<InteriorPackageInput> }
-        ):Promise<InteriorPackageType|null> => {
+        ):Promise<InteriorPackageDocument|null> => {
             try {
                 // Validate referenced options if they're being updated
                 const optionIds = [
@@ -726,7 +1053,7 @@ const resolvers = {
                     'cabinetHardware',
                 ]);
 
-                return package_ as InteriorPackageType;
+                return package_;
             } catch (error: any) {
                 throw new GraphQLError(`Error updating interior package: ${error.message}`, {
                     extensions: { code: 'BAD_USER_INPUT' },
@@ -734,7 +1061,7 @@ const resolvers = {
             }
         },
 
-        deleteInteriorPackage: async (_parent: any, { id }: { id: Types.ObjectId }):Promise<boolean> => {
+        deleteInteriorPackage: async (_parent: any, { id }: { id: Types.ObjectId }):Promise<Boolean> => {
             try {
                 const package_ = await InteriorPackage.findById(id);
 
@@ -745,9 +1072,9 @@ const resolvers = {
                 }
 
                 // Delete the package
-                await InteriorPackage.findByIdAndDelete(id);
+                const result = await InteriorPackage.findByIdAndDelete(id);
 
-                return true;
+                return !!result;
             } catch (error: any) {
                 throw new GraphQLError(`Error deleting interior package: ${error.message}`, {
                     extensions: { code: 'INTERNAL_SERVER_ERROR' },
@@ -756,7 +1083,7 @@ const resolvers = {
         },
 
         //Utility Interior Package mutations
-        recalculatePackagePrice: async (_parent: any, { id }: { id: Types.ObjectId }):Promise<InteriorPackageType|null> => {
+        recalculatePackagePrice: async (_parent: any, { id }: { id: Types.ObjectId }):Promise<InteriorPackageDocument|null> => {
             try {
                 return await recalculatePackage(id);
             } catch (error: any) {
@@ -769,7 +1096,7 @@ const resolvers = {
         recalculateAllPackagePrices: async (
             _parent: any,
             { planId }: { planId: Types.ObjectId }
-        ):Promise<InteriorPackageType[]|[]> => {
+        ):Promise<InteriorPackageDocument[]|[]> => {
             try {
                 return await recalculateAllPackagesForPlan(planId);
             } catch (error: any) {
@@ -779,7 +1106,7 @@ const resolvers = {
             }
         },
 
-        setBasePackage: async (_parent: any, { id }: { id: Types.ObjectId }, _context:Context): Promise<InteriorPackageType> => {
+        setBasePackage: async (_parent: any, { id }: { id: Types.ObjectId }, _context:Context): Promise<InteriorPackageDocument> => {
             try {
                 const package_ = await InteriorPackage.findById(id);
 
@@ -816,7 +1143,7 @@ const resolvers = {
                     'cabinetHardware',
                 ]);
 
-                return package_ as InteriorPackageType;
+                return package_;
             } catch (error: any) {
                 throw new GraphQLError(`Error setting base package: ${error.message}`, {
                     extensions: { code: 'INTERNAL_SERVER_ERROR' },
@@ -825,42 +1152,78 @@ const resolvers = {
         },
 
         // Structural mutations (admin only)
-        createStructural: async (_parent: unknown, args: { structural: any }, context: any): Promise<any> => {
-
+        createStructural: async (_parent: unknown, args: { structural: StructuralInput }, context: Context): Promise<StructuralDocument> => {
+            requireAdmin(context);
+            const structural = await StructuralOption.create(args.structural);
+            return structural;
         },
 
-        updateStructural: async (_parent: unknown, args: { id: string; structural: any }, context: any): Promise<any> => {
-
+        updateStructural: async (_parent: unknown, args: { id: Types.ObjectId; structural: StructuralInput }, context: Context): Promise<StructuralDocument | null> => {
+            requireAdmin(context);
+            const structural = await StructuralOption.findByIdAndUpdate(args.id, args.structural, { new: true });
+            if (!structural) {
+                throw new Error('Structural option not found');
+            }
+            return structural;
         },
 
-        deleteStructural: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
-
+        deleteStructural: async (_parent: unknown, args: { id: Types.ObjectId }, context: Context): Promise<StructuralDocument | null> => {
+            requireAdmin(context);
+            const structural = await StructuralOption.findByIdAndDelete(args.id);
+            if (!structural) {
+                throw new Error('Structural option not found');
+            }
+            return structural;
         },
 
-        // Additional Option Mutation
-        createAdditionalOption: async (_parent: unknown, args: { appliance: any }, context: any): Promise<any> => {
-
+        // Additional Option Mutations (admin only)
+        createAdditional: async (_parent: unknown, args: { additional: AdditionalInput }, context: Context): Promise<AdditionalOptionDocument> => {
+            requireAdmin(context);
+            const additional = await AdditionalOption.create(args.additional);
+            return additional;
         },
 
-        updateAdditionalOption: async (_parent: unknown, args: { id: string; appliance: any }, context: any): Promise<any> => {
-
+        updateAdditional: async (_parent: unknown, args: { id: Types.ObjectId; additional: AdditionalInput }, context: Context): Promise<AdditionalOptionDocument | null> => {
+            requireAdmin(context);
+            const additional = await AdditionalOption.findByIdAndUpdate(args.id, args.additional, { new: true });
+            if (!additional) {
+                throw new Error('Additional option not found');
+            }
+            return additional;
         },
 
-        deleteAdditionalOption: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
-
+        deleteAdditional: async (_parent: unknown, args: { id: Types.ObjectId }, context: Context): Promise<AdditionalOptionDocument | null> => {
+            requireAdmin(context);
+            const additional = await AdditionalOption.findByIdAndDelete(args.id);
+            if (!additional) {
+                throw new Error('Additional option not found');
+            }
+            return additional;
         },
 
         // Appliance mutations (admin only)
-        createAppliance: async (_parent: unknown, args: { appliance: any }, context: any): Promise<any> => {
-
+        createAppliance: async (_parent: unknown, args: { appliance: ApplianceInput }, context: Context): Promise<ApplianceDocument> => {
+            requireAdmin(context);
+            const appliance = await Appliance.create(args.appliance);
+            return appliance;
         },
 
-        updateAppliance: async (_parent: unknown, args: { id: string; appliance: any }, context: any): Promise<any> => {
-
+        updateAppliance: async (_parent: unknown, args: { id: Types.ObjectId; appliance: ApplianceInput }, context: Context): Promise<ApplianceDocument | null> => {
+            requireAdmin(context);
+            const appliance = await Appliance.findByIdAndUpdate(args.id, args.appliance, { new: true });
+            if (!appliance) {
+                throw new Error('Appliance not found');
+            }
+            return appliance;
         },
 
-        deleteAppliance: async (_parent: unknown, args: { id: string }, context: any): Promise<any> => {
-
+        deleteAppliance: async (_parent: unknown, args: { id: Types.ObjectId }, context: Context): Promise<ApplianceDocument | null> => {
+            requireAdmin(context);
+            const appliance = await Appliance.findByIdAndDelete(args.id);
+            if (!appliance) {
+                throw new Error('Appliance not found');
+            }
+            return appliance;
         },
 
         // Color Scheme mutations (admin only)
@@ -882,20 +1245,55 @@ const resolvers = {
             return colorScheme;
         },
 
-        // Lot Management
-        createLot: async (_parent: unknown, args: { colorScheme: ColorSchemeInput }, context: any): Promise<LotDocument> => {
-            
+        // Lot Management (admin only)
+        createLot: async (_parent: unknown, args: { lot: LotInput }, context: Context): Promise<LotDocument> => {
+            requireAdmin(context);
+            const lot = await Lot.create(args.lot);
+            return lot;
         },
 
-        updateLot: async (_parent: unknown, args: { id: string; colorScheme: ColorSchemeInput }, context: any): Promise<LotDocument | null> => {
-            
+        updateLot: async (_parent: unknown, args: { id: Types.ObjectId; lot: LotInput }, context: Context): Promise<LotDocument | null> => {
+            requireAdmin(context);
+            const lot = await Lot.findByIdAndUpdate(args.id, args.lot, { new: true });
+            if (!lot) {
+                throw new Error('Lot not found');
+            }
+            return lot;
         },
 
-        deleteLot: async (_parent: unknown, args: { id: string }, context: any): Promise<LotDocument | null> => {
-            
+        deleteLot: async (_parent: unknown, args: { id: Types.ObjectId }, context: Context): Promise<LotDocument | null> => {
+            requireAdmin(context);
+            const lot = await Lot.findByIdAndDelete(args.id);
+            if (!lot) {
+                throw new Error('Lot not found');
+            }
+            return lot;
         },
 
-        //Lot Premium union with PlanId
+        // Lot Pricing mutations (admin only)
+        createLotPricing: async (_parent: unknown, args: { lotPricing: LotPricingInput }, context: Context): Promise<LotPricingDocument> => {
+            requireAdmin(context);
+            const lotPricing = await LotPricing.create(args.lotPricing);
+            return lotPricing;
+        },
+
+        updateLotPricing: async (_parent: unknown, args: { id: Types.ObjectId; lotPricing: LotPricingInput }, context: Context): Promise<LotPricingDocument | null> => {
+            requireAdmin(context);
+            const lotPricing = await LotPricing.findByIdAndUpdate(args.id, args.lotPricing, { new: true });
+            if (!lotPricing) {
+                throw new Error('Lot pricing not found');
+            }
+            return lotPricing;
+        },
+
+        deleteLotPricing: async (_parent: unknown, args: { id: Types.ObjectId }, context: Context): Promise<LotPricingDocument | null> => {
+            requireAdmin(context);
+            const lotPricing = await LotPricing.findByIdAndDelete(args.id);
+            if (!lotPricing) {
+                throw new Error('Lot pricing not found');
+            }
+            return lotPricing;
+        },
 
     }
 };

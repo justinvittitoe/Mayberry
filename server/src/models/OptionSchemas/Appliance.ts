@@ -11,7 +11,7 @@ export interface ApplianceDocument extends Document {
     type: 'laundry' | 'kitchen';
     brand?: string,
     img?: string;
-    planId: Types.ObjectId;
+    planId: Types.ObjectId[];
     isActive: boolean;
     sortOrder?: number;
     createdAt?: Date;
@@ -28,7 +28,7 @@ const applianceSchema = new Schema<ApplianceDocument>({
     type: {type: String, required: true, enum: ['kitchen', 'laundry']},
     brand: { type: String, trim: true},
     img: {type: String},
-    planId: {type: Schema.Types.ObjectId, required: true, ref: 'Plan'},
+    planId: [{type: Schema.Types.ObjectId, required: true, ref: 'Plan'}],
     isActive: {type: Boolean, default: true},
     sortOrder: {type: Number, default: 0},
 }, {timestamps: true, _id: true});
