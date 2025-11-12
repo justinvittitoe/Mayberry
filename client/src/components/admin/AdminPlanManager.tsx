@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Container, Row, Col, Card, Button, Modal, Form, Alert, Table, Badge } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_PLANS_WITH_OPTIONS } from '../../utils/planOptionQueries';
-import { CREATE_PLAN, UPDATE_PLAN, DELETE_PLAN } from '../../utils/mutations';
+import { GET_PLANS_WITH_OPTIONS } from '../../graphQl/planOptionQueries';
+import { CREATE_PLAN, UPDATE_PLAN, DELETE_PLAN } from '../../graphQl/mutations';
 import PlanOptionManager from './PlanOptionManager';
 import './AdminPlanManager.css';
 import { Plan } from '../../models/graphql';
@@ -18,9 +18,9 @@ const AdminPlanManager = () => {
     name: '',
     bedrooms: 3,
     bathrooms: 2,
-    totalSqft: 1500, 
-    resSqft: 1200, 
-    garage: 2, 
+    totalSqft: 1500,
+    resSqft: 1200,
+    garage: 2,
     basePrice: 300000,
     description: '',
     colorScheme: [],
@@ -372,166 +372,166 @@ const AdminPlanManager = () => {
         <Form onSubmit={handleSubmit}>
           <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
             <div className="basic-info-form">
-                    <Row>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Plan Type Number</Form.Label>
-                          <Form.Control
-                            type="number"
-                            value={formData.planType !== undefined ? formData.planType : ''}
-                            onChange={(e) => handleInputChange('planType', parseInt(e.target.value))}
-                            required
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Plan Name</Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="e.g., The Aspen"
-                            value={formData.name || ''}
-                            onChange={(e) => handleInputChange('name', e.target.value)}
-                            required
-                          />
-                        </Form.Group>
-                      </Col>
-                    </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Plan Type Number</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData.planType !== undefined ? formData.planType : ''}
+                      onChange={(e) => handleInputChange('planType', parseInt(e.target.value))}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Plan Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="e.g., The Aspen"
+                      value={formData.name || ''}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-                    <Row>
-                      <Col md={4}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Bedrooms</Form.Label>
-                          <Form.Control
-                            type="number"
-                            min="1"
-                            max="10"
-                            value={formData.bedrooms || ''}
-                            onChange={(e) => handleInputChange('bedrooms', parseInt(e.target.value))}
-                            required
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col md={4}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Bathrooms</Form.Label>
-                          <Form.Control
-                            type="number"
-                            step="0.5"
-                            min="1"
-                            max="10"
-                            value={formData.bathrooms || ''}
-                            onChange={(e) => handleInputChange('bathrooms', parseFloat(e.target.value))}
-                            required
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col md={4}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Total Square Footage</Form.Label>
-                          <Form.Control
-                            type="number"
-                            min="500"
-                            value={formData.totalSqft || ''}
-                            onChange={(e) => handleInputChange('totalSqft', parseInt(e.target.value))}
-                            required
-                          />
-                        </Form.Group>
-                      </Col>
-                    </Row>
+              <Row>
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Bedrooms</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={formData.bedrooms || ''}
+                      onChange={(e) => handleInputChange('bedrooms', parseInt(e.target.value))}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Bathrooms</Form.Label>
+                    <Form.Control
+                      type="number"
+                      step="0.5"
+                      min="1"
+                      max="10"
+                      value={formData.bathrooms || ''}
+                      onChange={(e) => handleInputChange('bathrooms', parseFloat(e.target.value))}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Total Square Footage</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="500"
+                      value={formData.totalSqft || ''}
+                      onChange={(e) => handleInputChange('totalSqft', parseInt(e.target.value))}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-                    <Row>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Residential Square Footage</Form.Label>
-                          <Form.Control
-                            type="number"
-                            min="400"
-                            value={formData.resSqft || ''}
-                            onChange={(e) => handleInputChange('resSqft', parseInt(e.target.value))}
-                            required
-                          />
-                          <Form.Text className="text-muted">
-                            Typically 80% of total square footage
-                          </Form.Text>
-                        </Form.Group>
-                      </Col>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Garage Size</Form.Label>
-                          <Form.Select
-                            value={formData.garage || ''}
-                            onChange={(e) => handleInputChange('garage', parseInt(e.target.value))}
-                            required
-                          >
-                            <option value="">Select garage size</option>
-                            <option value={2}>2-Car Garage</option>
-                            <option value={3}>3-Car Garage</option>
-                            <option value={4}>4-Car Garage</option>
-                            <option value={5}>5-Car Garage</option>
-                            <option value={6}>6-Car Garage</option>
-                          </Form.Select>
-                        </Form.Group>
-                      </Col>
-                    </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Residential Square Footage</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="400"
+                      value={formData.resSqft || ''}
+                      onChange={(e) => handleInputChange('resSqft', parseInt(e.target.value))}
+                      required
+                    />
+                    <Form.Text className="text-muted">
+                      Typically 80% of total square footage
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Garage Size</Form.Label>
+                    <Form.Select
+                      value={formData.garage || ''}
+                      onChange={(e) => handleInputChange('garage', parseInt(e.target.value))}
+                      required
+                    >
+                      <option value="">Select garage size</option>
+                      <option value={2}>2-Car Garage</option>
+                      <option value={3}>3-Car Garage</option>
+                      <option value={4}>4-Car Garage</option>
+                      <option value={5}>5-Car Garage</option>
+                      <option value={6}>6-Car Garage</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-                    <Row>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Base Price</Form.Label>
-                          <Form.Control
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={formData.basePrice || ''}
-                            onChange={(e) => handleInputChange('basePrice', parseInt(e.target.value))}
-                            required
-                          />
-                        </Form.Group>
-                      </Col>
-                    </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Base Price</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={formData.basePrice || ''}
+                      onChange={(e) => handleInputChange('basePrice', parseInt(e.target.value))}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-                    <Row>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Width</Form.Label>
-                          <Form.Control
-                            type="number"
-                            min="0"
-                            value={formData.width || ''}
-                            onChange={(e) => handleInputChange('width', parseInt(e.target.value))}
-                            required
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Depth</Form.Label>
-                          <Form.Control
-                            type="number"
-                            min="0"
-                            value={formData.length || ''}
-                            onChange={(e) => handleInputChange('length', parseInt(e.target.value))}
-                            required
-                          />
-                        </Form.Group>
-                      </Col>
-                    </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Width</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="0"
+                      value={formData.width || ''}
+                      onChange={(e) => handleInputChange('width', parseInt(e.target.value))}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Depth</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="0"
+                      value={formData.length || ''}
+                      onChange={(e) => handleInputChange('length', parseInt(e.target.value))}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-                    <Form.Group className="mb-3">
-                      <Form.Label>Description</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        placeholder="Brief description of the floor plan..."
-                        value={formData.description || ''}
-                        onChange={(e) => handleInputChange('description', e.target.value)}
-                      />
-                    </Form.Group>
-                    
-                    <Alert variant="info">
-                      <strong>Note:</strong> After creating this plan, use the "Options" button to add elevations, interiors, appliances, and other plan-specific options.
-                    </Alert>
+              <Form.Group className="mb-3">
+                <Form.Label>Description</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  placeholder="Brief description of the floor plan..."
+                  value={formData.description || ''}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                />
+              </Form.Group>
+
+              <Alert variant="info">
+                <strong>Note:</strong> After creating this plan, use the "Options" button to add elevations, interiors, appliances, and other plan-specific options.
+              </Alert>
             </div>
           </Modal.Body>
           <Modal.Footer>
@@ -552,8 +552,8 @@ const AdminPlanManager = () => {
             <Modal.Title>Manage Options - {selectedPlan.name}</Modal.Title>
           </Modal.Header>
           <Modal.Body style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-            <PlanOptionManager 
-              plan={selectedPlan} 
+            <PlanOptionManager
+              plan={selectedPlan}
               onPlanUpdate={handlePlanUpdate}
             />
           </Modal.Body>

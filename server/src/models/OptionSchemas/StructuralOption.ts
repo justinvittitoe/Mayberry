@@ -1,6 +1,6 @@
 import {Schema, Types, type Document, model} from 'mongoose';
 
-
+//CORRECT
 //Remove the Option Document extension and create a unique model document
 export interface StructuralDocument extends Document{
     _id: Types.ObjectId;
@@ -26,6 +26,7 @@ export interface StructuralDocument extends Document{
     updatedAt?:Date;
 }
 
+//CORRECT
 const structuralSchema = new Schema<StructuralDocument>({
     name: { type: String, required: true, trim: true, maxLength: 100 },
     totalCost: { type: Number, required: true, min: 0 },

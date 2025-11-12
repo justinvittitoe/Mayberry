@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor, fireEvent } from '../../test/utils';
 import { render } from '../../test/utils';
 import CustomizationWizard from '../../components/CustomizationWizard';
-import { SAVE_USER_HOME, SAVE_USER_HOME_PROGRESS } from '../../utils/mutations';
+import { SAVE_USER_HOME, SAVE_USER_HOME_PROGRESS } from '../../graphQl/mutations';
 import * as AuthService from '../../utils/auth';
 
 // Mock AuthService
@@ -231,7 +231,7 @@ describe('CustomizationWizard', () => {
     // Navigate through all steps
     const steps = [
       'Next: Interior',
-      'Next: Structure', 
+      'Next: Structure',
       'Next: Features',
       'Next: Appliances',
       'Next: Lot Selection',
@@ -261,7 +261,7 @@ describe('CustomizationWizard', () => {
     const stepIndicators = screen.getAllByRole('button').filter(
       button => button.textContent?.match(/^\d+$/)
     );
-    
+
     fireEvent.click(stepIndicators[2]); // Step 3
 
     await waitFor(() => {
@@ -300,7 +300,7 @@ describe('CustomizationWizard', () => {
     const stepIndicators = screen.getAllByRole('button').filter(
       button => button.textContent?.match(/^\d+$/)
     );
-    
+
     expect(stepIndicators[0]).toHaveClass('btn-success'); // Completed step
     expect(stepIndicators[1]).toHaveClass('btn-primary'); // Current step
   });
@@ -335,7 +335,7 @@ describe('CustomizationWizard', () => {
     // Navigate to final step
     const steps = [
       'Next: Interior',
-      'Next: Structure', 
+      'Next: Structure',
       'Next: Features',
       'Next: Appliances',
       'Next: Lot Selection',

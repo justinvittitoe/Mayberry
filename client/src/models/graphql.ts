@@ -1,69 +1,48 @@
 // Shared TypeScript interfaces for GraphQL types (client-side)
 
 //Verified with GraphQL schema
-export interface Option {
-  _id: string;
-  name: string;
-  price: number;
-  classification: Classification;
-  planType: number;
-  description?: string;
-  img?: string;
-  isActive: boolean;
-}
-
-export type Classification =
-  | 'elevation'
-  | 'colorScheme'
-  | 'interior'
-  | 'structural'
-  | 'additional'
-  | 'lot';
-
-export type Material = 
-  | 'fixture' 
-  | 'lvp' 
-  | 'carpet' 
-  | 'backsplash' 
-  | 'masterBathTile' 
-  | 'countertop' 
-  | 'cabinet';
-
-
-//Verified with GraphQL schema
-export interface InteriorOption {
-  _id: string;
-  name: string;
-  price: number;
-  classification: Classification;
-  planType: number;
-  description?: string;
-  img?: string;
-  material: Material;
-  isActive: boolean;
+export interface Auth {
+  token: string;
+  user: User;
 }
 
 //Verified with GraphQL schema
-export interface Appliance {
+export interface User {
+  _id: string;
+  username: string;
+  email: string;
+  role: 'admin' | 'user';
+  homeCount?: number;
+  savedPlans?: UserPlan[];
+}
+//CORRECT
+export interface Elevation {
   _id: string;
   name: string;
-  price: number;
-  classification: string;
-  type: string;
+  totalCost: number;
+  clientPrice: number;
+  markup: number;
+  minMarkup: number;
   description?: string;
   img?: string;
+  planId: string;
   isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-//Verified with GraphQL schema
+//Verified with GraphQL schema - CORRECT
 export interface Structural {
   _id: string;
   name: string;
-  price: number;
-  classification: string;
-  planType: number;
+  totalCost: number;
+  clientPrice: number;
+  markup: number;
+  minMarkup: number;
   description?: string;
   img?: string;
+  planId: string;
   garage?: number;
   bedrooms?: number;
   bathrooms?: number;
@@ -72,27 +51,136 @@ export interface Structural {
   totalSqft?: number;
   resSqft?: number;
   isActive: boolean;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type Material = 
+  | 'fixture' 
+  | 'lvp' 
+  | 'carpet' 
+  | 'backsplash' 
+  | 'masterBathTile' 
+  | 'countertop' 
+  | 'cabinet'
+  | 'cabinetHardware';
+
+export type Tier =
+  | 'base'
+  | 'tier-1'
+  | 'tier-2'
+  | 'tier-3';
+
+export type CabinetOverlay =
+  | 'standard'
+  | 'full';
+
+//Verified with GraphQL schema - CORRECT
+export interface InteriorOption {
+  _id: string;
+  name: string;
+  brand: string;
+  color: string;
+  cost: number;
+  markup: number;
+  minMarkup: number;
+  clientPrice: number;
+  material: string;
+  tier?: string;
+  cabinetOverlay?: string;
+  softClosePrice?: number;
+  planId: string;
+  img?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 //Verified with GraphQL schema
-export interface ColorValues {
-  primary: string; //Main Siding
-  secondary: string; //Secondary Siding
-  roof: string; //Roof Color
-  accent: string; //Trim Color
-  stone?: string; //Stone Color
-  foundation?: string; //Foundation Color
+export interface InteriorPackage {
+  _id: string;
+  name: string;
+  totalCost: number;
+  markup: number;
+  minMarkup: number;
+  clientPrice: number;
+  description?: string;
+  img?: string;
+  planId: string;
+  fixtures?: InteriorOption;
+  lvp?: InteriorOption;
+  carpet?: InteriorOption;
+  backsplash?: InteriorOption;
+  masterBathTile?: InteriorOption;
+  secondaryBathTile?: InteriorOption;
+  countertop?: InteriorOption;
+  primaryCabinets?: InteriorOption;
+  secondaryCabinets?: InteriorOption;
+  cabinetHardware?: InteriorOption;
+  softClose: boolean;
+  basePackage: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+//Verified with GraphQL schema
+export interface Appliance {
+  _id: string;
+  name: string;
+  baseCost: number;
+  totalCost: number;
+  markup: number;
+  minMarkup: number;
+  type: string;
+  brand?: string;
+  img?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string
+}
+
+
+export interface Additional {
+  _id: string;
+  name: string;
+  totalCost: number;
+  clientPrice: number;
+  markup: number;
+  minMarkup: number;
+  description?: string;
+  img?: string;
+  planId: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 //Verified with GraphQL schema
 export interface ColorScheme {
   _id: string;
   name: string;
-  classification: Classification;
-  planType?: number;
+  planId: string;
   description?: string;
   price: number;
-  colorValues: ColorValues;
+  primaryName?: string;
+  primaryCode?: string;
+  secondaryName?: string;
+  secondaryCode?: string;
+  trimName: string;
+  trimCode: string;
+  doorName: string;
+  doorCode: string;
+  shingleBrand: string;
+  shingleColor: string;
+  stone: boolean;
+  stoneColor?: string;
+  colorSchemeImg?: string;
   isActive: boolean;
   sortOrder?: number;
   createdAt?: string;
@@ -100,39 +188,32 @@ export interface ColorScheme {
 }
 
 //Verified with GraphQL schema
-export interface InteriorPackage {
-  _id: string;
-  name: string;
-  planType?: number;
-  totalPrice?: number;
-  clientPrice?: number;
-  fixtures?: InteriorOption[];
-  lvp?: InteriorOption[];
-  carpet?: InteriorOption[];
-  backsplash?: InteriorOption[];
-  masterBathTile?: InteriorOption[];
-  countertop?: InteriorOption[];
-  primaryCabinets?: InteriorOption[];
-  secondaryCabinets?: InteriorOption[];
-  upgrade?: boolean;
-  basePackage?: boolean;
-  isActive?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-//Verified with GraphQL schema
-export interface LotPremium {
+export interface Lot {
   _id: string;
   filing: number;
   lot: number;
   width: number;
   length: number;
   lotSqft: number;
-  premium: number;
-  address: string;
+  streetNumber: string;
+  streetName: string;
+  garageDir: string;
   parcelNumber: string;
+  notes?: string;
   isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Verified with GraphQLL schema
+export interface LotPricing {
+  _id: string;
+  lot: string;
+  plan: string;
+  lotPremium: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 //Verified with GraphQL schema
@@ -149,14 +230,14 @@ export interface Plan {
   description?: string;
   width: number;
   length: number;
-  elevations?: Option[];
+  elevations?: Elevation[];
   colorScheme?: ColorScheme[];
   interiors?: InteriorPackage[];
   structural?: Structural[];
-  additional?: Option[];
+  additional?: Additional[];
   kitchenAppliance?: Appliance[];
   laundryAppliance?: Appliance[];
-  lotPremium?: LotPremium[];
+  lot?: LotPricing[];
   isActive: boolean;
   garageSqft?: number;
   pricePerSqft?: number;
@@ -164,18 +245,32 @@ export interface Plan {
   updatedAt?: string;
 }
 
+export interface BasePlan {
+  planType: string;
+  name: string;
+  bedrooms: number;
+  bathrooms: number;
+  totalSqft: number;
+  resSqft: number;
+  garage: number;
+  basePrice: number;
+  description: string;
+  width: number;
+  length: number;
+}
+
 //Verified with GraphQL schema
-export interface UserHome {
+export interface UserPlan {
   _id: string;
   userId: string;
-  plan: string;
+  planId: string;
   configurationName: string;
   elevation: string;
   colorScheme: string;
   interiorPackage: string;
   kitchenAppliance: string;
   laundryAppliance?: string;
-  lotPremium?: string;
+  lot?: string;
   structuralOptions: string[];
   additionalOptions: string[];
   basePlanPrice?: number;
@@ -195,7 +290,7 @@ export interface UserHome {
 export interface CustomizationSelections {
   elevation: string;
   colorScheme: string;
-  interior: string;
+  interiorPackage: string;
   structural: string[];
   additional: string[];
   kitchenAppliance: string;
@@ -203,18 +298,5 @@ export interface CustomizationSelections {
   lotPremium: string;
 }
 
-//Verified with GraphQL schema
-export interface User {
-  _id: string;
-  username: string;
-  email: string;
-  role: 'admin' | 'user';
-  homeCount?: number;
-  savedHomes?: UserHome[];
-}
 
-//Verified with GraphQL schema
-export interface Auth {
-  token: string;
-  user: User;
-}
+

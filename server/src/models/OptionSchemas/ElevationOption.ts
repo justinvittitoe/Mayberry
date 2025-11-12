@@ -1,5 +1,5 @@
 import { Schema, model, type Document, Types } from 'mongoose';
-
+//CORRECT
 export interface ElevationOptionDocument extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -15,7 +15,7 @@ export interface ElevationOptionDocument extends Document {
   createdAt?: Date;
   updatedAt?: Date;
 }
-
+//CORRECT
 const ElevationOptionSchema = new Schema<ElevationOptionDocument>({
   name: {type: String, required: true, trim: true, maxLength: 100},
   totalCost: {type: Number, required: true, min: 0},

@@ -1,7 +1,7 @@
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_ME } from '../utils/queries';
-import { DELETE_USER_HOME } from '../utils/mutations';
+import { GET_ME } from '../graphQl/queries';
+import { DELETE_USER_HOME } from '../graphQl/mutations';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AuthService from '../utils/auth';
 import { removeHomeId } from '../utils/localStorage';

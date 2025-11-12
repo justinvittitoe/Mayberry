@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { useQuery } from '@apollo/client';
-import { GET_PLANS } from '../utils/planOptionQueries';
+import { GET_PLANS } from '../graphQl/planOptionQueries';
 import { Link, useNavigate } from 'react-router-dom';
 import EnhancedFloorPlanSelector from '../components/EnhancedFloorPlanSelector';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -30,7 +30,7 @@ const Home = () => {
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
   };
-  
+
   //Customize selected floor plan
   const handleCustomizeClick = () => {
     if (!isAuthenticated) {
@@ -111,7 +111,7 @@ const Home = () => {
                   <Link to="/admin">
                     <Button variant="primary" size="lg" className="px-5">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="me-2">
-                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
                       </svg>
                       Admin Dashboard
                     </Button>
@@ -124,12 +124,12 @@ const Home = () => {
       )}
 
       {/* Floor Plan Selection */}
-      <EnhancedFloorPlanSelector 
+      <EnhancedFloorPlanSelector
         onPlanSelect={isAuthenticated ? handlePlanSelect : undefined}
         selectedPlanId={selectedPlan?.id}
         plans={transformedPlans}
       />
-      
+
       {!isAuthenticated && (
         <div className="sign-in-prompt">
           <Container>
@@ -163,8 +163,8 @@ const Home = () => {
                   <p className="text-muted mb-4">
                     Start personalizing your home with our interactive customization tools.
                   </p>
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     size="lg"
                     onClick={handleCustomizeClick}
                     className="px-5"
@@ -189,13 +189,13 @@ const Home = () => {
               </p>
             </Col>
           </Row>
-          
+
           <Row className="g-4">
             <Col md={4}>
               <div className="feature-card text-center">
                 <div className="feature-icon mb-3">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                   </svg>
                 </div>
                 <h4 className="fw-bold mb-3">Premium Quality</h4>
@@ -204,12 +204,12 @@ const Home = () => {
                 </p>
               </div>
             </Col>
-            
+
             <Col md={4}>
               <div className="feature-card text-center">
                 <div className="feature-icon mb-3">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                   </svg>
                 </div>
                 <h4 className="fw-bold mb-3">Customizable</h4>
@@ -218,12 +218,12 @@ const Home = () => {
                 </p>
               </div>
             </Col>
-            
+
             <Col md={4}>
               <div className="feature-card text-center">
                 <div className="feature-icon mb-3">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                    <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
                   </svg>
                 </div>
                 <h4 className="fw-bold mb-3">Great Value</h4>

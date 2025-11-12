@@ -4,7 +4,6 @@ import { Schema, Types, model, type Document } from 'mongoose';
 export interface ColorSchemeDocument extends Document {
   _id: Types.ObjectId;
   name: string;
-  classification: 'colorScheme';
   planId: Types.ObjectId;
   description?: string;
   price: number;
@@ -14,6 +13,8 @@ export interface ColorSchemeDocument extends Document {
   secondaryCode?: string;
   trimName: string;       // Trim color
   trimCode: string;
+  doorName: string;
+  doorCode: string;
   shingleBrand: string;       // Roof color
   shingleColor: string;
   stone?: boolean;      // Stone color
@@ -27,7 +28,6 @@ export interface ColorSchemeDocument extends Document {
 
 const colorSchemeSchema = new Schema<ColorSchemeDocument>({
   name: { type: String, required: true },
-  classification: { type: String, required: true, enum: ['colorScheme']},
   planId: { type: Schema.Types.ObjectId, required: true, ref: 'Plan'},
   description: { type: String },
   price: { type: Number, required: true, default: 0 },
@@ -37,6 +37,8 @@ const colorSchemeSchema = new Schema<ColorSchemeDocument>({
   secondaryCode: {type: String, maxlength: 200, trim: true},
   trimName: {type: String, required: true, maxlength: 200, trim: true},
   trimCode: {type: String, required: true, maxlength: 200, trim: true},
+  doorName: { type: String, required: true, maxlength: 200, trim: true },
+  doorCode: { type: String, required: true, maxlength: 200, trim: true },
   shingleBrand: {type: String, required: true, maxlength: 200, trim: true},
   shingleColor: {type: String, required: true, maxlength: 200, trim: true},
   stone: {type: Boolean, default: false},

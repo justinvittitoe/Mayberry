@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col, Badge } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_COLOR_SCHEMES } from '../../utils/queries';
-import { CREATE_COLOR_SCHEME, UPDATE_COLOR_SCHEME, DELETE_COLOR_SCHEME } from '../../utils/mutations';
+import { GET_COLOR_SCHEMES } from '../../graphQl/queries';
+import { CREATE_COLOR_SCHEME, UPDATE_COLOR_SCHEME, DELETE_COLOR_SCHEME } from '../../graphQl/mutations';
 import { getColorPalette, createGradientFromPalette } from '../../utils/colorService';
-import { cleanColorSchemeForMutation } from '../../utils/cleanGraphQLObject';
+import { cleanColorSchemeForMutation } from '../../graphQl/cleanGraphQLObject';
 
 interface ColorScheme {
   _id: string;
@@ -92,7 +92,7 @@ const AdminColorSchemeManager = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({
@@ -130,12 +130,12 @@ const AdminColorSchemeManager = () => {
     // Validate hex colors
     const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
     const colorValues = formData.colorValues;
-    
-    if (!hexColorRegex.test(colorValues.primary) || 
-        !hexColorRegex.test(colorValues.secondary) || 
-        !hexColorRegex.test(colorValues.roof) || 
-        !hexColorRegex.test(colorValues.accent) ||
-        (colorValues.foundation && !hexColorRegex.test(colorValues.foundation))) {
+
+    if (!hexColorRegex.test(colorValues.primary) ||
+      !hexColorRegex.test(colorValues.secondary) ||
+      !hexColorRegex.test(colorValues.roof) ||
+      !hexColorRegex.test(colorValues.accent) ||
+      (colorValues.foundation && !hexColorRegex.test(colorValues.foundation))) {
       setFormError('All colors must be valid hex codes (e.g., #FF0000)');
       setSubmitting(false);
       return;
@@ -158,7 +158,7 @@ const AdminColorSchemeManager = () => {
           }
         });
       }
-      
+
       await refetch();
       handleCloseModal();
     } catch (err: any) {
@@ -187,7 +187,7 @@ const AdminColorSchemeManager = () => {
         ...colorScheme,
         isActive: !colorScheme.isActive
       };
-      
+
       await updateColorScheme({
         variables: {
           id: colorScheme._id,
@@ -254,16 +254,16 @@ const AdminColorSchemeManager = () => {
                   .map((colorScheme: ColorScheme) => {
                     const palette = getColorPalette(colorScheme);
                     const gradient = createGradientFromPalette(palette);
-                    
+
                     return (
                       <tr key={colorScheme._id}>
                         <td>
-                          <div 
+                          <div
                             className="color-preview border rounded"
-                            style={{ 
-                              width: '60px', 
-                              height: '40px', 
-                              background: gradient 
+                            style={{
+                              width: '60px',
+                              height: '40px',
+                              background: gradient
                             }}
                             title="Color scheme preview"
                           />
@@ -292,7 +292,7 @@ const AdminColorSchemeManager = () => {
                         </td>
                         <td>${colorScheme.price.toLocaleString()}</td>
                         <td>
-                          <Badge 
+                          <Badge
                             bg={colorScheme.isActive ? 'success' : 'secondary'}
                             style={{ cursor: 'pointer' }}
                             onClick={() => toggleActive(colorScheme)}
@@ -339,7 +339,7 @@ const AdminColorSchemeManager = () => {
             {formError && (
               <Alert variant="danger">{formError}</Alert>
             )}
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -407,7 +407,7 @@ const AdminColorSchemeManager = () => {
 
               <Col md={6}>
                 <h6 className="mb-3">Color Palette</h6>
-                
+
                 <Form.Group className="mb-3">
                   <Form.Label>Primary Color (Main Siding)</Form.Label>
                   <div className="d-flex align-items-center gap-2">
@@ -511,11 +511,11 @@ const AdminColorSchemeManager = () => {
                 {/* Color Preview */}
                 <div className="mt-4">
                   <h6>Preview</h6>
-                  <div 
+                  <div
                     className="color-preview-large border rounded shadow-sm"
-                    style={{ 
-                      width: '100%', 
-                      height: '80px', 
+                    style={{
+                      width: '100%',
+                      height: '80px',
                       background: createGradientFromPalette(getColorPalette({ colorValues: formData.colorValues } as any))
                     }}
                   />

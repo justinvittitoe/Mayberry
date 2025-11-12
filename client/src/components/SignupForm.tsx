@@ -3,7 +3,7 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap';
 import { useMutation } from '@apollo/client'
 import { Link, useNavigate } from 'react-router-dom';
-import { ADD_USER } from '../utils/mutations';
+import { ADD_USER } from '../graphQl/mutations';
 import AuthService from '../utils/auth';
 
 const SignupForm = () => {

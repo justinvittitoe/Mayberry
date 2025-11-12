@@ -4,7 +4,7 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap';
 import { useMutation } from '@apollo/client';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LOGIN_USER } from '../utils/mutations';
+import { LOGIN_USER } from '../graphQl/mutations';
 import AuthService from '../utils/auth';
 
 const LoginForm = () => {
