@@ -1118,7 +1118,7 @@ export const GET_STRUCTURAL_OPTIONS = gql`
 
 export const GET_ADDITIONAL_OPTIONS = gql`
     query getAdditionalOptions {
-        additional {
+        additionalOptions {
             _id
             name
             totalCost
@@ -1220,6 +1220,410 @@ export const GET_LOT_PRICING = gql`
         }
     }
 `;
+
+//Get single options
+export const GET_ELEVATION_OPTION = gql`
+    query getElevationOption($_id: ObjectId!) {
+        elevationOption(_id: $_id) {
+            _id
+            name
+            totalCost
+            clientPrice
+            markup
+            minMarkup
+            description
+            img
+            planId
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const GET_APPLIANCE = gql`
+    query getAppliance($_id: ObjectId!) {
+        appliance(_id: $_id) {
+            _id
+            name
+            baseCost
+            totalCost
+            markup
+            minMarkup
+            clientPrice
+            type
+            brand
+            img
+            planId
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const GET_STRUCTURAL_OPTION = gql`
+    query getStructuralOption($_id: ObjectId!) {
+        structuralOption(_id: $_id) {
+            _id
+            name
+            totalCost
+            clientPrice
+            markup
+            minMarkup
+            description
+            img
+            planId
+            classification
+            garage
+            bedrooms
+            bathrooms
+            width
+            length
+            totalSqft
+            resSqft
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const GET_ADDITIONAL_OPTION = gql`
+    query getAdditionalOption($_id: ObjectId!) {
+        additionalOption(_id: $_id) {
+            _id
+            name
+            totalCost
+            clientPrice
+            markup
+            minMarkup
+            description
+            img
+            classification
+            planId
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const GET_COLOR_SCHEME_OPTION = gql`
+    query getColorSchemeOption($_id: ObjectId!) {
+        colorSchemeOption(_id: $_id) {
+            _id
+            name
+            planId
+            description
+            price
+            primaryName
+            primaryCode
+            secondaryName
+            secondaryCode
+            trimName
+            trimCode
+            doorName
+            doorCode
+            shingleBrand
+            shingleColor
+            stone
+            stoneColor
+            colorSchemeImg
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const GET_LOT = gql`
+    query getLot($_id: ObjectId!) {
+        lot(_id: $_id) {
+            _id
+            filing
+            lot
+            width
+            length
+            lotSqft
+            streetNumber
+            streetName
+            garageDir
+            parcelNumber
+            notes
+            isActive
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const GET_SINGLE_LOT_PRICING = gql`
+    query getSingleLotPricing($_id: ObjectId!) {
+        singleLotPricing(_id: $_id) {
+            _id
+            lotPremium
+            isActive
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const GET_INTERIOR_OPTION = gql`
+    query getInteriorOption($id: ObjectId!) {
+        interiorOption(id: $id) {
+            _id
+            name
+            brand
+            color
+            cost
+            markup
+            minMarkup
+            clientPrice
+            material
+            tier
+            cabinetOverlay
+            softClosePrice
+            planId
+            img
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const GET_INTERIOR_PACKAGE = gql`
+    query getInteriorPackage($id: ObjectId!) {
+        interiorPackage(id: $id) {
+            _id
+            name
+            totalCost
+            markup
+            minMarkup
+            clientPrice
+            description
+            img
+            planId
+            softClose
+            basePackage
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+            fixtures {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            lvp {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            carpet {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            backsplash {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            masterBathTile {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            secondaryBathTile {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            countertop {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            primaryCabinets {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            secondaryCabinets {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            cabinetHardware {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+        }
+    }
+`;
+
+export const GET_BASE_INTERIOR_PACKAGE = gql`
+    query getBaseInteriorPackage($planId: ObjectId!) {
+        baseInteriorPackage(planId: $planId) {
+            _id
+            name
+            totalCost
+            markup
+            minMarkup
+            clientPrice
+            description
+            img
+            planId
+            softClose
+            basePackage
+            isActive
+            sortOrder
+            createdAt
+            updatedAt
+            fixtures {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            lvp {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            carpet {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            backsplash {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            masterBathTile {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            secondaryBathTile {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            countertop {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            primaryCabinets {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            secondaryCabinets {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+            cabinetHardware {
+                _id
+                name
+                brand
+                color
+                cost
+                clientPrice
+                material
+            }
+        }
+    }`;
+
+
 
 // ============================================
 // PLAN-SPECIFIC OPTION QUERIES

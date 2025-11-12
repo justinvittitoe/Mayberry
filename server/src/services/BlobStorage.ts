@@ -8,6 +8,10 @@ const accountName = process.env.ACCOUNT_NAME || '';
 const sasToken = process.env.SAS_TOKEN || '';
 const containerName = process.env.CONTAINER_NAME || '';
 
+if(!accountName || !sasToken || !containerName) {
+    throw new Error('Azure Storage configuration missing. Check environment variables.')
+}
+
 //connect to blob storage
 const blobServiceClient = new BlobServiceClient(`https://${accountName}.blob.core.windows.net/?${sasToken}`)
 const containerClient = blobServiceClient.getContainerClient(containerName)
