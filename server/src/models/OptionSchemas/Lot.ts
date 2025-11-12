@@ -43,6 +43,6 @@ lotSchema.index({ filing: 1, lot: 1 });
 lotSchema.index({ width: 1, length: 1 });
 lotSchema.index({ price: 1 });
 
-const LotPremium = model<LotDocument>('Lot', lotSchema);
+const Lot = model<LotDocument>('Lot', lotSchema);
 
-export default LotPremium;
+export default Lot;

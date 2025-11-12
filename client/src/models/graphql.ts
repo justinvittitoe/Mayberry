@@ -135,9 +135,11 @@ export interface Appliance {
   totalCost: number;
   markup: number;
   minMarkup: number;
+  clientPrice: number;
   type: string;
   brand?: string;
   img?: string;
+  planId: string[]
   isActive: boolean;
   sortOrder: number;
   createdAt?: string;

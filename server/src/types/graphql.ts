@@ -223,7 +223,7 @@ export interface ApplianceType {
     type: string;
     brand?: string;
     img?: string;
-    planId: ObjectId;
+    planId: ObjectId[];
     isActive: boolean;
     sortOrder: number;
     createdAt?: Date;

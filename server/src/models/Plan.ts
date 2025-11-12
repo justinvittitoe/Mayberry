@@ -2,7 +2,6 @@ import { Schema, model, type Document } from 'mongoose';
 
 
 
-
 export interface PlanTypeDocument extends Document {
   _id: Schema.Types.ObjectId;
   planType: number; //Unique plan identifier
