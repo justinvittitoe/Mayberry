@@ -72,6 +72,29 @@ const requireAuth = (context: Context) => {
     }
 };
 
+//Helper function for plan-specific options (single-planId)
+async function validateOptionBelongsToPlan(
+    Model: any,
+    optionId: Types.ObjectId,
+    planId: Types.ObjectId,
+    optionName: string
+): Promise<void> {
+    const option = await Model.findById(optionId);
+
+    if (!option) {
+        throw new GraphQLError(`${optionName} not found`, {
+            extensions: { code: 'NOT_FOUND' }
+        });
+    }
+
+    if (option.planId.toString() !== planId.toString()) {
+        throw new GraphQLError(
+            `This ${optionName} belongs to a different plan and cannot be added here`,
+            { extensions: { code: 'INVALID_OPERATION' } }
+        );
+    }
+}
+
 
 const resolvers = {
     ObjectId: ObjectIdScalar,
@@ -140,10 +163,52 @@ const resolvers = {
             return users;
         },
 
+        searchOptions: async (
+            _parent: any,
+            args: { query: string; type: string },
+            context: Context
+        ): Promise<any[]> => {
+            requireAuth(context);
+
+            const searchRegex = new RegExp(args.query, 'i');
+            const commonQuery = { name: searchRegex, isActive: true };
+
+            switch (args.type.toLowerCase()) {
+                case 'elevation':
+                    return await ElevationOption.find(commonQuery);
+                case 'structural':
+                    return await StructuralOption.find(commonQuery);
+                case 'interioroption':
+                    return await InteriorOption.find(commonQuery);
+                case 'interiorpackage':
+                    return await InteriorPackage.find(commonQuery);
+                case 'appliance':
+                    return await Appliance.find(commonQuery);
+                case 'additional':
+                    return await AdditionalOption.find(commonQuery);
+                case 'colorscheme':
+                    return await ColorScheme.find(commonQuery);
+                case 'lot':
+                    return await Lot.find({
+                        $or: [
+                            { streetName: searchRegex },
+                            { streetNumber: searchRegex }
+                        ],
+                        isActive: true
+                    });
+                case 'lotpricing':
+                    return await LotPricing.find(commonQuery)
+                        .populate('lot')
+                        .populate('plan');
+                default:
+                    throw new Error('Invalid search type');
+            }
+        },
+
         // Plan queries
         plans: async (): Promise<PlanTypeDocument[]|[]> => {
             const plans = await Plan.find({})
-                .populate('lotPremium')
+                .populate('lot')
                 .populate('colorScheme')
                 .populate('elevations')
                 .populate('interiors')
@@ -156,7 +221,7 @@ const resolvers = {
 
         plan: async (_parent: unknown, args: { id: string }): Promise<PlanTypeDocument | null> => {
             const plan = await Plan.findById(args.id)
-                .populate('lotPremium')
+                .populate('lot')
                 .populate('colorScheme')
                 .populate('elevations')
                 .populate('interiors')
@@ -171,7 +236,7 @@ const resolvers = {
             requireAuth(context)
             try {
                 const plan = await Plan.findOne({ planType: args.planType })
-                    .populate('lotPremium')
+                    .populate('lot')
                     .populate('colorScheme')
                     .populate('elevations')
                     .populate('interiors')
@@ -286,6 +351,32 @@ const resolvers = {
             return userPlan;
         },
 
+        elevationOptions: async (_parent: any, context: Context): Promise<ElevationOptionDocument[] | []> => {
+            requireAuth(context)
+            return ElevationOption.find({ isActive: true }).sort({ sortOrder: 1, name: 1 });
+        },
+
+        elevationOption: async (_parent: any, {_id}: {_id: Types.ObjectId}, context: Context): Promise<ElevationOptionDocument | null> => {
+            requireAuth(context)
+            return ElevationOption.findById({ _id: _id }).sort({ sortOrder: 1, name: 1 });
+        },
+
+        // Color Scheme queries
+        colorSchemes: async (_parent: any, context: Context): Promise<ColorSchemeDocument[] | []> => {
+            const query = { isActive: true }
+            requireAuth(context)
+
+            return ColorScheme.find(query).sort({ sortOrder: 1, name: 1 })
+        },
+
+        colorSchemeOption: async (_parent: any, { _id }: { _id: Types.ObjectId }, context: Context): Promise<ColorSchemeDocument | null> => {
+            requireAuth(context)
+
+            return ColorScheme.findOne({
+                _id: _id,
+                isActive: true
+            })
+        },
 
         // Interior queries
         interiorOption: async (_parent: any, { id }: { id: Types.ObjectId }): Promise<InteriorOptionDocument> => {
@@ -385,79 +476,75 @@ const resolvers = {
         },
     
 
+        // Structural option queries
+        structuralOptions: async (_parent: any, context:Context): Promise<StructuralDocument[]|[]> => {
+            const query = { isActive: true }
+            requireAuth(context)
+            
+            return StructuralOption.find(query).sort({ sortOrder: 1, name: 1 })
+        },
+        
+        structuralOption: async (_parent: any, {_id}: {_id: Types.ObjectId}, context: Context):Promise<StructuralDocument|null> => {
+            requireAuth(context)
+            
+            return StructuralOption.findOne({
+                _id: _id,
+                isActive: true
+            })
+        },
+        
+        //Additional queries
+        additionalOptions: async (_parent: any, context: Context): Promise<AdditionalOptionDocument[] | []> => {
+            const query = { isActive: true }
+            requireAuth(context)
+
+            return AdditionalOption.find(query).sort({ sortOrder: 1, name: 1 })
+        },
+
+        additionalOption: async (_parent: any, { _id }: { _id: Types.ObjectId }, context: Context): Promise<AdditionalOptionDocument | null> => {
+            requireAuth(context)
+
+            return AdditionalOption.findOne({
+                _id: _id,
+                isActive: true
+            })
+        },
+
         // Appliance queries
-        allAppliances: async (_parent: any, context: Context): Promise<ApplianceDocument[]|[]> => {
+        appliances: async (_parent: any, context: Context): Promise<ApplianceDocument[]|[]> => {
             const query = { isActive: true }
             requireAuth(context)
 
             return Appliance.find(query).sort({ sortOrder: 1, name: 1 })
         },
 
-        appliance: async (_parent: any, {_id, name }: {_id: Types.ObjectId, name: string}, context: Context): Promise<ApplianceDocument|null> => {
+        appliance: async (_parent: any, {_id }: {_id: Types.ObjectId}, context: Context): Promise<ApplianceDocument|null> => {
             requireAuth(context)
 
             return Appliance.findOne({
                 _id: _id,
-                name: name,
-                isActive: true
-            })
-        },
-
-        // Structural option queries
-        allStructuralOptions: async (_parent: any, context:Context): Promise<StructuralDocument[]|[]> => {
-            const query = { isActive: true }
-            requireAuth(context)
-
-            return StructuralOption.find(query).sort({ sortOrder: 1, name: 1 })
-        },
-
-        structuralOption: async (_parent: any, {_id, name}: {_id: Types.ObjectId, name: string}, context: Context):Promise<StructuralDocument|null> => {
-            requireAuth(context)
-
-            return StructuralOption.findOne({
-                _id: _id,
-                name: name,
-                isActive: true
-            })
-        },
-
-        // Color Scheme queries
-        allColorSchemes: async (_parent: any, context: Context):Promise<ColorSchemeDocument[]|[]> => {
-            const query = { isActive: true }
-            requireAuth(context)
-
-            return ColorScheme.find(query).sort({ sortOrder: 1, name: 1 })
-        },
-
-        colorSchemeOption: async (_parent: any, { _id, name }: { _id: Types.ObjectId, name: string }, context: Context): Promise<ColorSchemeDocument|null> => {
-            requireAuth(context)
-
-            return ColorScheme.findOne({
-                _id: _id,
-                name: name,
                 isActive: true
             })
         },
 
         // Lot premium queries
-        allLots: async (_parent: any, context: Context): Promise<LotDocument[]|[]> => {
+        lots: async (_parent: any, context: Context): Promise<LotDocument[]|[]> => {
             const query = { isActive: true }
             requireAuth(context)
 
             return Lot.find(query).sort({ sortOrder: 1, name: 1 })
         },
 
-        LotOption: async (_parent: any, { _id, name }: { _id: Types.ObjectId, name: string }, _context: Context) => {
+        lot: async (_parent: any, { _id }: { _id: Types.ObjectId }, _context: Context) => {
             if (!_context.user) return 'Not Authenticated'
 
             return Lot.findOne({
                 _id: _id,
-                name: name,
                 isActive: true
             })
         },
 
-        allLotPremiums: async (_parent: any, context: Context): Promise<LotPricingDocument[] | []> => {
+        lotPricing: async (_parent: any, context: Context): Promise<LotPricingDocument[] | []> => {
             const query = { isActive: true }
             requireAuth(context)
 
@@ -467,12 +554,11 @@ const resolvers = {
                 .sort({ sortOrder: 1, name: 1 });
         },
 
-        LotPremiumOption: async (_parent: any, { _id, name }: { _id: Types.ObjectId, name: string }, context: Context) => {
+        singleLotPricing: async (_parent: any, { _id }: { _id: Types.ObjectId }, context: Context) => {
             requireAuth(context)
 
             return LotPricing.findOne({
                 _id: _id,
-                name: name,
                 isActive: true
             })
             .populate('lot')
@@ -483,7 +569,7 @@ const resolvers = {
 
         // Plan-specific option queries (for browsing across all plans)
         
-        planSpecificElevationOptions: async (
+        planElevations: async (
             _parent: any,
             { planId }: { planId: Types.ObjectId },
             context: Context
@@ -496,7 +582,16 @@ const resolvers = {
             });
         },
 
-        planSpecificInteriorOptions: async (
+        planColorSchemes: async (
+            _parent: any,
+            { planId }: { planId: Types.ObjectId },
+            context: Context
+        ): Promise<ColorSchemeDocument[] | []> => {
+            requireAuth(context)
+            return ColorScheme.find({ planId: planId, isActive: true });
+        },
+
+        planInteriorOptions: async (
             _parent: any,
             { planId }: { planId: Types.ObjectId },
             context: Context
@@ -509,7 +604,7 @@ const resolvers = {
             });
         },
 
-        planSpecificInteriorPackages: async (
+        planInteriorPackages: async (
             _parent: any,
             { planId }: { planId: Types.ObjectId },
             context: Context
@@ -522,7 +617,7 @@ const resolvers = {
             });
         },
 
-        planSpecificStructuralOptions: async (
+        planStructural: async (
             _parent: any, 
             { planId }: { planId: Types.ObjectId }, 
             context: Context
@@ -535,7 +630,7 @@ const resolvers = {
             });
         },
         
-        planSpecificAdditionalOptions: async (
+        planAdditional: async (
             _parent: any,
             { planId }: { planId: Types.ObjectId },
             context: Context
@@ -548,7 +643,16 @@ const resolvers = {
             });
         },
 
-        planSpecificLotPremiums: async (
+        planAppliances: async (
+            _parent: any,
+            { planId }: { planId: Types.ObjectId },
+            context: Context
+        ): Promise<ApplianceDocument[] | []> => {
+            requireAuth(context)
+            return Appliance.find({ planId: planId, isActive: true });
+        },
+
+        planLotPricing: async (
             _parent: any,
             { planId }: { planId: Types.ObjectId },
             context: Context
@@ -1293,6 +1397,427 @@ const resolvers = {
                 throw new Error('Lot pricing not found');
             }
             return lotPricing;
+        },
+
+        // Elevation relationships
+        addElevationToPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; elevationId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            // Verify elevation belongs to this plan
+            await validateOptionBelongsToPlan(
+                ElevationOption,
+                args.elevationId,
+                args.planId,
+                'Elevation'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $addToSet: { elevations: args.elevationId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        removeElevationFromPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; elevationId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            // Verify elevation belongs to this plan
+            await validateOptionBelongsToPlan(
+                ElevationOption,
+                args.elevationId,
+                args.planId,
+                'Elevation'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $pull: { elevations: args.elevationId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        // Structural relationships
+        addStructuralToPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; structuralId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                StructuralOption,
+                args.structuralId,
+                args.planId,
+                'Structural option'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $addToSet: { structural: args.structuralId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        removeStructuralFromPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; structuralId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                StructuralOption,
+                args.structuralId,
+                args.planId,
+                'Structural option'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $pull: { structural: args.structuralId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+
+        // Interior Option relationships
+        addInteriorOptionToPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; interiorOptionId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                InteriorOption,
+                args.interiorOptionId,
+                args.planId,
+                'Interior option'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $addToSet: { interiors: args.interiorOptionId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        removeInteriorOptionFromPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; interiorOptionId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                InteriorOption,
+                args.interiorOptionId,
+                args.planId,
+                'Interior option'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $pull: { interiors: args.interiorOptionId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        // Interior Package relationships  
+        addInteriorPackageToPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; interiorPackageId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                InteriorPackage,
+                args.interiorPackageId,
+                args.planId,
+                'Interior package'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $addToSet: { interiors: args.interiorPackageId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        removeInteriorPackageFromPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; interiorPackageId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                InteriorPackage,
+                args.interiorPackageId,
+                args.planId,
+                'Interior package'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $pull: { interiors: args.interiorPackageId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        // Appliance relationships
+        addApplianceToPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; applianceId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            // Find the appliance
+            const appliance = await Appliance.findById(args.applianceId);
+            if (!appliance) {
+                throw new GraphQLError('Appliance not found', {
+                    extensions: { code: 'NOT_FOUND' }
+                });
+            }
+
+            // Determine which field to update based on appliance type
+            const planField = appliance.type === 'kitchen' ? 'kitchenAppliance' : 'laundryAppliance';
+
+            // Update appliance to include this plan in its planId array
+            await Appliance.findByIdAndUpdate(
+                args.applianceId,
+                { $addToSet: { planId: args.planId } },
+                { new: true }
+            );
+
+            // Update plan to include this appliance
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $addToSet: { [planField]: args.applianceId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        removeApplianceFromPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; applianceId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            // Find the appliance
+            const appliance = await Appliance.findById(args.applianceId);
+            if (!appliance) {
+                throw new GraphQLError('Appliance not found', {
+                    extensions: { code: 'NOT_FOUND' }
+                });
+            }
+
+            // Determine which field to update based on appliance type
+            const planField = appliance.type === 'kitchen' ? 'kitchenAppliance' : 'laundryAppliance';
+
+            // Remove this plan from the appliance's planId array
+            await Appliance.findByIdAndUpdate(
+                args.applianceId,
+                { $pull: { planId: args.planId } },
+                { new: true }
+            );
+
+            // Remove appliance from plan
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $pull: { [planField]: args.applianceId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        // Additional relationships
+        addAdditionalToPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; additionalId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                AdditionalOption,
+                args.additionalId,
+                args.planId,
+                'Additional option'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $addToSet: { additional: args.additionalId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        removeAdditionalFromPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; additionalId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                AdditionalOption,
+                args.additionalId,
+                args.planId,
+                'Additional option'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $pull: { additional: args.additionalId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        // Color Scheme relationships
+        addColorSchemeToPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; colorSchemeId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                ColorScheme,
+                args.colorSchemeId,
+                args.planId,
+                'Color scheme'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $addToSet: { colorScheme: args.colorSchemeId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        removeColorSchemeFromPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; colorSchemeId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            await validateOptionBelongsToPlan(
+                ColorScheme,
+                args.colorSchemeId,
+                args.planId,
+                'Color scheme'
+            );
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $pull: { colorScheme: args.colorSchemeId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        // Lot Pricing relationships
+        addLotPricingToPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; lotPricingId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            // LotPricing uses 'plan' field instead of 'planId'
+            const lotPricing = await LotPricing.findById(args.lotPricingId);
+
+            if (!lotPricing) {
+                throw new GraphQLError('Lot pricing not found', {
+                    extensions: { code: 'NOT_FOUND' }
+                });
+            }
+
+            if (lotPricing.plan.toString() !== args.planId.toString()) {
+                throw new GraphQLError(
+                    'This lot pricing belongs to a different plan and cannot be added here',
+                    { extensions: { code: 'INVALID_OPERATION' } }
+                );
+            }
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $addToSet: { lot: args.lotPricingId } },
+                { new: true }
+            );
+
+            return plan;
+        },
+
+        removeLotPricingFromPlan: async (
+            _parent: unknown,
+            args: { planId: Types.ObjectId; lotPricingId: Types.ObjectId },
+            context: Context
+        ): Promise<PlanTypeDocument | null> => {
+            requireAdmin(context);
+
+            // LotPricing uses 'plan' field instead of 'planId'
+            const lotPricing = await LotPricing.findById(args.lotPricingId);
+
+            if (!lotPricing) {
+                throw new GraphQLError('Lot pricing not found', {
+                    extensions: { code: 'NOT_FOUND' }
+                });
+            }
+
+            if (lotPricing.plan.toString() !== args.planId.toString()) {
+                throw new GraphQLError(
+                    'This lot pricing does not belong to this plan',
+                    { extensions: { code: 'INVALID_OPERATION' } }
+                );
+            }
+
+            const plan = await Plan.findByIdAndUpdate(
+                args.planId,
+                { $pull: { lot: args.lotPricingId } },
+                { new: true }
+            );
+
+            return plan;
         },
 
     }

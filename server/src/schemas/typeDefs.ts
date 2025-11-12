@@ -285,7 +285,7 @@ const typeDefs = gql`
         interiorPackages: [InteriorPackage]
         interiorOptions: [InteriorOption]
         structuralOptions: [Structural]
-        additional: [Additional]
+        additionalOptions: [Additional]
         appliances: [Appliance]
         colorSchemes: [ColorScheme]
         lots: [Lot]
@@ -300,6 +300,18 @@ const typeDefs = gql`
         planAdditional(planId: ObjectId!): [Additional]
         planColorSchemes(planId: ObjectId!): [ColorScheme]
         planLotPricing(planId: ObjectId!): [LotPricing]
+
+        # Single option queries
+        elevationOption(_id: ObjectId!): Elevation
+        colorSchemeOption(_id: ObjectId!): ColorScheme
+        interiorOption(id: ObjectId!): InteriorOption
+        interiorPackage(id: ObjectId!): InteriorPackage
+        baseInteriorPackage(planId: ObjectId!): InteriorPackage
+        structuralOption(_id: ObjectId!): Structural
+        additionalOption(_id: ObjectId!): Additional
+        appliance(_id: ObjectId!): Appliance
+        lot(_id: ObjectId!): Lot
+        singleLotPricing(_id: ObjectId!): LotPricing
         
         # Search plan options across all plans
         searchOptions(query: String!, type: String!): [SearchResult]
