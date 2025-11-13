@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import InteriorPackage, { InteriorPackageDocument } from '../models/OptionSchemas/InteriorPackageOption';
+import InteriorPackage, { InteriorPackageDocument } from '../models/OptionSchemas/InteriorPackageOption.js';
 
 /**
  * Calculate total cost of a package by summing all option costs

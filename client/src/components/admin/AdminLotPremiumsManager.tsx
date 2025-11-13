@@ -1,57 +1,74 @@
 import React, { useState } from 'react';
 import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_LOT_PREMIUMS } from '../utils/queries';
-import { CREATE_LOT_PREMIUM, UPDATE_LOT_PREMIUM, DELETE_LOT_PREMIUM } from '../utils/mutations';
-import { cleanLotPremiumForMutation } from '../utils/cleanGraphQLObject';
+import { GET_LOTS } from '../../graphQl/queries';
+import { CREATE_LOT, UPDATE_LOT, DELETE_LOT } from '../../graphQl/mutations';
 
-interface LotPremium {
+interface Lot {
   _id: string;
-  filing: string;
-  lot: string;
+  filing: number;
+  lot: number;
   width: number;
   length: number;
-  price: number;
+  lotSqft: number;
+  streetNumber: string;
+  streetName: string;
+  garageDir: string;
+  parcelNumber: string;
+  notes?: string;
+  isActive: boolean;
 }
 
 const AdminLotPremiumsManager = () => {
-  const { loading, error, data, refetch } = useQuery(GET_LOT_PREMIUMS);
-  const [createLotPremium] = useMutation(CREATE_LOT_PREMIUM);
-  const [updateLotPremium] = useMutation(UPDATE_LOT_PREMIUM);
-  const [deleteLotPremium] = useMutation(DELETE_LOT_PREMIUM);
+  const { loading, error, data, refetch } = useQuery(GET_LOTS);
+  const [createLot] = useMutation(CREATE_LOT);
+  const [updateLot] = useMutation(UPDATE_LOT);
+  const [deleteLot] = useMutation(DELETE_LOT);
 
   const [showModal, setShowModal] = useState(false);
-  const [editingLotPremium, setEditingLotPremium] = useState<LotPremium | null>(null);
+  const [editingLot, setEditingLot] = useState<Lot | null>(null);
   const [formData, setFormData] = useState({
-    filing: '',
-    lot: '',
+    filing: 0,
+    lot: 0,
     width: 0,
     length: 0,
-    price: 0
+    streetNumber: '',
+    streetName: '',
+    garageDir: '',
+    parcelNumber: '',
+    notes: ''
   });
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const lotPremiums = data?.lotPremiums || [];
+  const lots = data?.lots || [];
 
-  const handleShowModal = (lotPremium?: LotPremium) => {
-    if (lotPremium) {
-      setEditingLotPremium(lotPremium);
+  const handleShowModal = (lot?: Lot) => {
+    if (lot) {
+      setEditingLot(lot);
       setFormData({
-        filing: lotPremium.filing,
-        lot: lotPremium.lot,
-        width: lotPremium.width,
-        length: lotPremium.length,
-        price: lotPremium.price
+        filing: lot.filing,
+        lot: lot.lot,
+        width: lot.width,
+        length: lot.length,
+        streetNumber: lot.streetNumber,
+        streetName: lot.streetName,
+        garageDir: lot.garageDir,
+        parcelNumber: lot.parcelNumber,
+        notes: lot.notes || ''
       });
     } else {
-      setEditingLotPremium(null);
+      setEditingLot(null);
       setFormData({
-        filing: '',
-        lot: '',
+        filing: 0,
+        lot: 0,
         width: 0,
         length: 0,
-        price: 0
+        streetNumber: '',
+        streetName: '',
+        garageDir: '',
+        parcelNumber: '',
+        notes: ''
       });
     }
     setFormError('');
@@ -60,15 +77,15 @@ const AdminLotPremiumsManager = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingLotPremium(null);
+    setEditingLot(null);
     setFormError('');
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: ['width', 'length', 'price'].includes(name) ? parseFloat(value) || 0 : value
+      [name]: ['filing', 'lot', 'width', 'length'].includes(name) ? parseInt(value) || 0 : value
     }));
   };
 
@@ -78,29 +95,41 @@ const AdminLotPremiumsManager = () => {
     setSubmitting(true);
 
     if (!formData.filing || !formData.lot) {
-      setFormError('Filing and lot are required');
+      setFormError('Filing and lot number are required');
       setSubmitting(false);
       return;
     }
 
     try {
-      const cleanedLotPremium = cleanLotPremiumForMutation(formData);
-      
-      if (editingLotPremium) {
-        await updateLotPremium({
+      const lotInput = {
+        filing: formData.filing,
+        lot: formData.lot,
+        width: formData.width,
+        length: formData.length,
+        lotSqft: formData.width * formData.length,
+        streetNumber: formData.streetNumber,
+        streetName: formData.streetName,
+        garageDir: formData.garageDir,
+        parcelNumber: formData.parcelNumber,
+        notes: formData.notes || undefined,
+        isActive: true
+      };
+
+      if (editingLot) {
+        await updateLot({
           variables: {
-            id: editingLotPremium._id,
-            lotPremium: cleanedLotPremium
+            id: editingLot._id,
+            lot: lotInput
           }
         });
       } else {
-        await createLotPremium({
+        await createLot({
           variables: {
-            lotPremium: cleanedLotPremium
+            lot: lotInput
           }
         });
       }
-      
+
       await refetch();
       handleCloseModal();
     } catch (err: any) {
@@ -110,15 +139,15 @@ const AdminLotPremiumsManager = () => {
     }
   };
 
-  const handleDelete = async (lotPremiumId: string, filing: string, lot: string) => {
+  const handleDelete = async (lotId: string, filing: number, lot: number) => {
     if (window.confirm(`Are you sure you want to delete lot "${lot}" in filing "${filing}"?`)) {
       try {
-        await deleteLotPremium({
-          variables: { id: lotPremiumId }
+        await deleteLot({
+          variables: { id: lotId }
         });
         await refetch();
       } catch (err: any) {
-        alert(`Error deleting lot premium: ${err.message}`);
+        alert(`Error deleting lot: ${err.message}`);
       }
     }
   };
@@ -127,7 +156,7 @@ const AdminLotPremiumsManager = () => {
     return (
       <div className="text-center py-4">
         <Spinner animation="border" />
-        <p className="mt-2">Loading lot premiums...</p>
+        <p className="mt-2">Loading lots...</p>
       </div>
     );
   }
@@ -135,7 +164,7 @@ const AdminLotPremiumsManager = () => {
   if (error) {
     return (
       <Alert variant="danger">
-        Error loading lot premiums: {error.message}
+        Error loading lots: {error.message}
       </Alert>
     );
   }
@@ -143,17 +172,17 @@ const AdminLotPremiumsManager = () => {
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3>Lot Premiums Management</h3>
+        <h3>Lot Management</h3>
         <Button variant="primary" onClick={() => handleShowModal()}>
-          Add New Lot Premium
+          Add New Lot
         </Button>
       </div>
 
       <Card>
         <Card.Body>
-          {lotPremiums.length === 0 ? (
+          {lots.length === 0 ? (
             <div className="text-center py-4 text-muted">
-              No lot premiums found. Add your first lot premium to get started.
+              No lots found. Add your first lot to get started.
             </div>
           ) : (
             <Table responsive hover>
@@ -161,37 +190,35 @@ const AdminLotPremiumsManager = () => {
                 <tr>
                   <th>Filing</th>
                   <th>Lot</th>
+                  <th>Address</th>
                   <th>Dimensions</th>
                   <th>Square Footage</th>
-                  <th>Premium Price</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {lotPremiums.map((lotPremium: LotPremium) => (
-                  <tr key={lotPremium._id}>
-                    <td className="fw-semibold">{lotPremium.filing}</td>
+                {lots.map((lot: Lot) => (
+                  <tr key={lot._id}>
+                    <td className="fw-semibold">{lot.filing}</td>
                     <td>
-                      <span className="badge bg-info">{lotPremium.lot}</span>
+                      <span className="badge bg-info">{lot.lot}</span>
                     </td>
-                    <td>{lotPremium.width}' × {lotPremium.length}'</td>
-                    <td>{(lotPremium.width * lotPremium.length).toLocaleString()} sq ft</td>
-                    <td className={lotPremium.price > 0 ? 'text-success fw-semibold' : 'text-muted'}>
-                      {lotPremium.price > 0 ? `+$${lotPremium.price.toLocaleString()}` : 'No premium'}
-                    </td>
+                    <td>{lot.streetNumber} {lot.streetName}</td>
+                    <td>{lot.width}' × {lot.length}'</td>
+                    <td>{lot.lotSqft.toLocaleString()} sq ft</td>
                     <td>
                       <div className="btn-group" role="group">
                         <Button
                           variant="outline-primary"
                           size="sm"
-                          onClick={() => handleShowModal(lotPremium)}
+                          onClick={() => handleShowModal(lot)}
                         >
                           Edit
                         </Button>
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          onClick={() => handleDelete(lotPremium._id, lotPremium.filing, lotPremium.lot)}
+                          onClick={() => handleDelete(lot._id, lot.filing, lot.lot)}
                         >
                           Delete
                         </Button>
@@ -208,7 +235,7 @@ const AdminLotPremiumsManager = () => {
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
-            {editingLotPremium ? 'Edit Lot Premium' : 'Add New Lot Premium'}
+            {editingLot ? 'Edit Lot' : 'Add New Lot'}
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
@@ -216,17 +243,17 @@ const AdminLotPremiumsManager = () => {
             {formError && (
               <Alert variant="danger">{formError}</Alert>
             )}
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Filing *</Form.Label>
                   <Form.Control
-                    type="text"
+                    type="number"
                     name="filing"
                     value={formData.filing}
                     onChange={handleInputChange}
-                    placeholder="e.g., Mayberry Phase 1"
+                    placeholder="e.g., 1, 2, 3"
                     required
                   />
                 </Form.Group>
@@ -234,56 +261,88 @@ const AdminLotPremiumsManager = () => {
                 <Form.Group className="mb-3">
                   <Form.Label>Lot Number *</Form.Label>
                   <Form.Control
-                    type="text"
+                    type="number"
                     name="lot"
                     value={formData.lot}
                     onChange={handleInputChange}
-                    placeholder="e.g., 101, A-1, etc."
+                    placeholder="e.g., 101"
                     required
                   />
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Premium Price</Form.Label>
+                  <Form.Label>Street Number *</Form.Label>
                   <Form.Control
-                    type="number"
-                    name="price"
-                    value={formData.price}
+                    type="text"
+                    name="streetNumber"
+                    value={formData.streetNumber}
                     onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
-                    placeholder="0.00"
+                    placeholder="e.g., 123"
+                    required
                   />
-                  <Form.Text className="text-muted">
-                    Additional cost for this lot (enter 0 for no premium)
-                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Street Name *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="streetName"
+                    value={formData.streetName}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Main Street"
+                    required
+                  />
                 </Form.Group>
               </Col>
-              
+
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Lot Width (ft)</Form.Label>
+                  <Form.Label>Lot Width (ft) *</Form.Label>
                   <Form.Control
                     type="number"
                     name="width"
                     value={formData.width}
                     onChange={handleInputChange}
                     min="0"
-                    step="0.1"
                     placeholder="0"
+                    required
                   />
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Lot Length (ft)</Form.Label>
+                  <Form.Label>Lot Length (ft) *</Form.Label>
                   <Form.Control
                     type="number"
                     name="length"
                     value={formData.length}
                     onChange={handleInputChange}
                     min="0"
-                    step="0.1"
                     placeholder="0"
+                    required
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Garage Direction *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="garageDir"
+                    value={formData.garageDir}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Front, Side, Rear"
+                    required
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Parcel Number *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="parcelNumber"
+                    value={formData.parcelNumber}
+                    onChange={handleInputChange}
+                    placeholder="e.g., 123-456-789"
+                    required
                   />
                 </Form.Group>
 
@@ -294,6 +353,18 @@ const AdminLotPremiumsManager = () => {
                 )}
               </Col>
             </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Notes</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                placeholder="Optional notes about this lot"
+              />
+            </Form.Group>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>
@@ -303,10 +374,10 @@ const AdminLotPremiumsManager = () => {
               {submitting ? (
                 <>
                   <Spinner animation="border" size="sm" className="me-2" />
-                  {editingLotPremium ? 'Updating...' : 'Creating...'}
+                  {editingLot ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                editingLotPremium ? 'Update Lot Premium' : 'Create Lot Premium'
+                editingLot ? 'Update Lot' : 'Create Lot'
               )}
             </Button>
           </Modal.Footer>

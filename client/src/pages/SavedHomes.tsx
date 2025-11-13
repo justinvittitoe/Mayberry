@@ -1,14 +1,14 @@
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_ME } from '../graphQl/queries';
-import { DELETE_USER_HOME } from '../graphQl/mutations';
+import { DELETE_USER_PLAN } from '../graphQl/mutations';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AuthService from '../utils/auth';
 import { removeHomeId } from '../utils/localStorage';
 
 const SavedHomes = () => {
   const { loading, data, error } = useQuery(GET_ME);
-  const [deleteHome] = useMutation(DELETE_USER_HOME);
+  const [deleteHome] = useMutation(DELETE_USER_PLAN);
   const { getProfile } = AuthService;
 
   const userData = data?.me;

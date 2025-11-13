@@ -63,6 +63,17 @@ interiorOptionSchema.pre('save', function () {
     }
 });
 
+//Calculate Client Price
+interiorOptionSchema.pre('save', function () {
+    if (this.cost == null && this.markup == null && this.minMarkup == null) {
+        throw Error('cost, markup, and/or minMarkup are required')
+    } 
+    const markupPrice = this.cost * this.markup;
+    this.clientPrice = markupPrice > this.minMarkup ? 
+    this.cost + markupPrice : 
+    this.cost + this.minMarkup
+});
+
 
 interiorOptionSchema.index({ material: 1 });
 interiorOptionSchema.index({ planId: 1, material: 1 });

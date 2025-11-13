@@ -32,6 +32,16 @@ const additionalOptionSchema = new Schema<AdditionalOptionDocument>({
   _id: true
 });
 
+additionalOptionSchema.pre('save', function () {
+  if (this.totalCost == null && this.markup == null && this.minMarkup == null) {
+    throw Error('cost, markup, and/or minMarkup are required')
+  }
+  const markupPrice = this.totalCost * this.markup;
+  this.clientPrice = markupPrice > this.minMarkup ?
+    this.totalCost + markupPrice :
+    this.totalCost + this.minMarkup
+});
+
 // Add indexes for sorting and category filtering
 additionalOptionSchema.index({ category: 1, sortOrder: 1, name: 1 });
 additionalOptionSchema.index({ sortOrder: 1, name: 1 });

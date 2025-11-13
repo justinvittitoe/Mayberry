@@ -1,17 +1,20 @@
 import { gql } from '@apollo/client';
 
-// Plan-specific option management mutations
+// Plan-option relationship mutations
+// These mutations add/remove existing options to/from plans by ID
 
-// Elevation mutations
+// Elevation relationship mutations
 export const ADD_ELEVATION_TO_PLAN = gql`
-    mutation addElevationToPlan($planId: ID!, $elevation: PlanElevationOptionInput!) {
-        addElevationToPlan(planId: $planId, elevation: $elevation) {
+    mutation addElevationToPlan($planId: ObjectId!, $elevationId: ID!) {
+        addElevationToPlan(planId: $planId, elevationId: $elevationId) {
             _id
             name
             elevations {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 description
                 img
                 isActive
@@ -21,15 +24,17 @@ export const ADD_ELEVATION_TO_PLAN = gql`
     }
 `;
 
-export const UPDATE_PLAN_ELEVATION = gql`
-    mutation updatePlanElevation($planId: ID!, $elevationId: ID!, $elevation: PlanElevationOptionInput!) {
-        updatePlanElevation(planId: $planId, elevationId: $elevationId, elevation: $elevation) {
+export const REMOVE_ELEVATION_FROM_PLAN = gql`
+    mutation removeElevationFromPlan($planId: ObjectId!, $elevationId: ID!) {
+        removeElevationFromPlan(planId: $planId, elevationId: $elevationId) {
             _id
             name
             elevations {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 description
                 img
                 isActive
@@ -39,34 +44,18 @@ export const UPDATE_PLAN_ELEVATION = gql`
     }
 `;
 
-export const REMOVE_PLAN_ELEVATION = gql`
-    mutation removePlanElevation($planId: ID!, $elevationId: ID!) {
-        removePlanElevation(planId: $planId, elevationId: $elevationId) {
-            _id
-            name
-            elevations {
-                _id
-                name
-                price
-                description
-                img
-                isActive
-                sortOrder
-            }
-        }
-    }
-`;
-
-// Structural mutations
+// Structural relationship mutations
 export const ADD_STRUCTURAL_TO_PLAN = gql`
-    mutation addStructuralToPlan($planId: ID!, $structural: PlanStructuralOptionInput!) {
-        addStructuralToPlan(planId: $planId, structural: $structural) {
+    mutation addStructuralToPlan($planId: ObjectId!, $structuralId: ID!) {
+        addStructuralToPlan(planId: $planId, structuralId: $structuralId) {
             _id
             name
             structural {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 description
                 img
                 garage
@@ -83,15 +72,17 @@ export const ADD_STRUCTURAL_TO_PLAN = gql`
     }
 `;
 
-export const UPDATE_PLAN_STRUCTURAL = gql`
-    mutation updatePlanStructural($planId: ID!, $structuralId: ID!, $structural: PlanStructuralOptionInput!) {
-        updatePlanStructural(planId: $planId, structuralId: $structuralId, structural: $structural) {
+export const REMOVE_STRUCTURAL_FROM_PLAN = gql`
+    mutation removeStructuralFromPlan($planId: ObjectId!, $structuralId: ID!) {
+        removeStructuralFromPlan(planId: $planId, structuralId: $structuralId) {
             _id
             name
             structural {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 description
                 img
                 garage
@@ -108,53 +99,20 @@ export const UPDATE_PLAN_STRUCTURAL = gql`
     }
 `;
 
-export const REMOVE_PLAN_STRUCTURAL = gql`
-    mutation removePlanStructural($planId: ID!, $structuralId: ID!) {
-        removePlanStructural(planId: $planId, structuralId: $structuralId) {
-            _id
-            name
-            structural {
-                _id
-                name
-                price
-                description
-                img
-                garage
-                bedrooms
-                bathrooms
-                width
-                length
-                totalSqft
-                resSqft
-                isActive
-                sortOrder
-            }
-        }
-    }
-`;
-
-// Interior mutations
-export const ADD_INTERIOR_TO_PLAN = gql`
-    mutation addInteriorToPlan($planId: ID!, $interior: PlanInteriorOptionInput!) {
-        addInteriorToPlan(planId: $planId, interior: $interior) {
+// Interior Package relationship mutations
+export const ADD_INTERIOR_PACKAGE_TO_PLAN = gql`
+    mutation addInteriorPackageToPlan($planId: ObjectId!, $interiorPackageId: ObjectId!) {
+        addInteriorPackageToPlan(planId: $planId, interiorPackageId: $interiorPackageId) {
             _id
             name
             interiors {
                 _id
                 name
-                totalPrice
+                totalCost
                 clientPrice
+                markup
                 description
                 img
-                fixtures
-                lvp
-                carpet
-                backsplash
-                masterBathTile
-                countertop
-                primaryCabinets
-                secondaryCabinets
-                upgrade
                 basePackage
                 isActive
                 sortOrder
@@ -163,27 +121,19 @@ export const ADD_INTERIOR_TO_PLAN = gql`
     }
 `;
 
-export const UPDATE_PLAN_INTERIOR = gql`
-    mutation updatePlanInterior($planId: ID!, $interiorId: ID!, $interior: PlanInteriorOptionInput!) {
-        updatePlanInterior(planId: $planId, interiorId: $interiorId, interior: $interior) {
+export const REMOVE_INTERIOR_PACKAGE_FROM_PLAN = gql`
+    mutation removeInteriorPackageFromPlan($planId: ObjectId!, $interiorPackageId: ObjectId!) {
+        removeInteriorPackageFromPlan(planId: $planId, interiorPackageId: $interiorPackageId) {
             _id
             name
             interiors {
                 _id
                 name
-                totalPrice
+                totalCost
                 clientPrice
+                markup
                 description
                 img
-                fixtures
-                lvp
-                carpet
-                backsplash
-                masterBathTile
-                countertop
-                primaryCabinets
-                secondaryCabinets
-                upgrade
                 basePackage
                 isActive
                 sortOrder
@@ -192,27 +142,20 @@ export const UPDATE_PLAN_INTERIOR = gql`
     }
 `;
 
-export const REMOVE_PLAN_INTERIOR = gql`
-    mutation removePlanInterior($planId: ID!, $interiorId: ID!) {
-        removePlanInterior(planId: $planId, interiorId: $interiorId) {
+// Interior Option relationship mutations (for individual interior options, not packages)
+export const ADD_INTERIOR_OPTION_TO_PLAN = gql`
+    mutation addInteriorOptionToPlan($planId: ObjectId!, $interiorOptionId: ID!) {
+        addInteriorOptionToPlan(planId: $planId, interiorOptionId: $interiorOptionId) {
             _id
             name
             interiors {
                 _id
                 name
-                totalPrice
+                totalCost
                 clientPrice
+                markup
                 description
                 img
-                fixtures
-                lvp
-                carpet
-                backsplash
-                masterBathTile
-                countertop
-                primaryCabinets
-                secondaryCabinets
-                upgrade
                 basePackage
                 isActive
                 sortOrder
@@ -221,35 +164,56 @@ export const REMOVE_PLAN_INTERIOR = gql`
     }
 `;
 
-// Appliance mutations
+export const REMOVE_INTERIOR_OPTION_FROM_PLAN = gql`
+    mutation removeInteriorOptionFromPlan($planId: ObjectId!, $interiorOptionId: ID!) {
+        removeInteriorOptionFromPlan(planId: $planId, interiorOptionId: $interiorOptionId) {
+            _id
+            name
+            interiors {
+                _id
+                name
+                totalCost
+                clientPrice
+                markup
+                description
+                img
+                basePackage
+                isActive
+                sortOrder
+            }
+        }
+    }
+`;
+
+// Appliance relationship mutations
 export const ADD_APPLIANCE_TO_PLAN = gql`
-    mutation addApplianceToPlan($planId: ID!, $appliance: PlanApplianceOptionInput!) {
-        addApplianceToPlan(planId: $planId, appliance: $appliance) {
+    mutation addApplianceToPlan($planId: ObjectId!, $applianceId: ObjectId!) {
+        addApplianceToPlan(planId: $planId, applianceId: $applianceId) {
             _id
             name
             kitchenAppliance {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 type
                 description
                 img
                 brand
-                model
-                appliances
                 isActive
                 sortOrder
             }
             laundryAppliance {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 type
                 description
                 img
                 brand
-                model
-                appliances
                 isActive
                 sortOrder
             }
@@ -257,34 +221,34 @@ export const ADD_APPLIANCE_TO_PLAN = gql`
     }
 `;
 
-export const UPDATE_PLAN_APPLIANCE = gql`
-    mutation updatePlanAppliance($planId: ID!, $applianceId: ID!, $appliance: PlanApplianceOptionInput!) {
-        updatePlanAppliance(planId: $planId, applianceId: $applianceId, appliance: $appliance) {
+export const REMOVE_APPLIANCE_FROM_PLAN = gql`
+    mutation removeApplianceFromPlan($planId: ObjectId!, $applianceId: ObjectId!) {
+        removeApplianceFromPlan(planId: $planId, applianceId: $applianceId) {
             _id
             name
             kitchenAppliance {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 type
                 description
                 img
                 brand
-                model
-                appliances
                 isActive
                 sortOrder
             }
             laundryAppliance {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 type
                 description
                 img
                 brand
-                model
-                appliances
                 isActive
                 sortOrder
             }
@@ -292,54 +256,20 @@ export const UPDATE_PLAN_APPLIANCE = gql`
     }
 `;
 
-export const REMOVE_PLAN_APPLIANCE = gql`
-    mutation removePlanAppliance($planId: ID!, $applianceId: ID!) {
-        removePlanAppliance(planId: $planId, applianceId: $applianceId) {
-            _id
-            name
-            kitchenAppliance {
-                _id
-                name
-                price
-                type
-                description
-                img
-                brand
-                model
-                appliances
-                isActive
-                sortOrder
-            }
-            laundryAppliance {
-                _id
-                name
-                price
-                type
-                description
-                img
-                brand
-                model
-                appliances
-                isActive
-                sortOrder
-            }
-        }
-    }
-`;
-
-// Additional mutations
+// Additional Option relationship mutations
 export const ADD_ADDITIONAL_TO_PLAN = gql`
-    mutation addAdditionalToPlan($planId: ID!, $additional: PlanAdditionalOptionInput!) {
-        addAdditionalToPlan(planId: $planId, additional: $additional) {
+    mutation addAdditionalToPlan($planId: ObjectId!, $additionalId: ObjectId!) {
+        addAdditionalToPlan(planId: $planId, additionalId: $additionalId) {
             _id
             name
             additional {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 description
                 img
-                category
                 isActive
                 sortOrder
             }
@@ -347,18 +277,19 @@ export const ADD_ADDITIONAL_TO_PLAN = gql`
     }
 `;
 
-export const UPDATE_PLAN_ADDITIONAL = gql`
-    mutation updatePlanAdditional($planId: ID!, $additionalId: ID!, $additional: PlanAdditionalOptionInput!) {
-        updatePlanAdditional(planId: $planId, additionalId: $additionalId, additional: $additional) {
+export const REMOVE_ADDITIONAL_FROM_PLAN = gql`
+    mutation removeAdditionalFromPlan($planId: ObjectId!, $additionalId: ObjectId!) {
+        removeAdditionalFromPlan(planId: $planId, additionalId: $additionalId) {
             _id
             name
             additional {
                 _id
                 name
-                price
+                totalCost
+                clientPrice
+                markup
                 description
                 img
-                category
                 isActive
                 sortOrder
             }
@@ -366,18 +297,96 @@ export const UPDATE_PLAN_ADDITIONAL = gql`
     }
 `;
 
-export const REMOVE_PLAN_ADDITIONAL = gql`
-    mutation removePlanAdditional($planId: ID!, $additionalId: ID!) {
-        removePlanAdditional(planId: $planId, additionalId: $additionalId) {
+// Lot Pricing relationship mutations
+// Note: lot field in Plan contains LotPricing documents (which reference both Lot and Plan)
+export const ADD_LOT_PRICING_TO_PLAN = gql`
+    mutation addLotPricingToPlan($planId: ObjectId!, $lotPricingId: ObjectId!) {
+        addLotPricingToPlan(planId: $planId, lotPricingId: $lotPricingId) {
             _id
             name
-            additional {
+            lot {
+                _id
+                lotPremium
+                isActive
+                lot {
+                    _id
+                    filing
+                    lot
+                    width
+                    length
+                    lotSqft
+                    streetNumber
+                    streetName
+                    garageDir
+                    parcelNumber
+                    notes
+                    isActive
+                }
+                plan {
+                    _id
+                    name
+                }
+            }
+        }
+    }
+`;
+
+export const REMOVE_LOT_PRICING_FROM_PLAN = gql`
+    mutation removeLotPricingFromPlan($planId: ObjectId!, $lotPricingId: ObjectId!) {
+        removeLotPricingFromPlan(planId: $planId, lotPricingId: $lotPricingId) {
+            _id
+            name
+            lot {
+                _id
+                lotPremium
+                isActive
+                lot {
+                    _id
+                    filing
+                    lot
+                    width
+                    length
+                    lotSqft
+                    streetNumber
+                    streetName
+                    garageDir
+                    parcelNumber
+                    notes
+                    isActive
+                }
+                plan {
+                    _id
+                    name
+                }
+            }
+        }
+    }
+`;
+
+// Color Scheme relationship mutations
+export const ADD_COLOR_SCHEME_TO_PLAN = gql`
+    mutation addColorSchemeToPlan($planId: ObjectId!, $colorSchemeId: ObjectId!) {
+        addColorSchemeToPlan(planId: $planId, colorSchemeId: $colorSchemeId) {
+            _id
+            name
+            colorScheme {
                 _id
                 name
+                planId
+                description
                 price
-                description
-                img
-                category
+                primaryName
+                primaryCode
+                secondaryName
+                secondaryCode
+                trimName
+                trimCode
+                doorName
+                doorCode
+                shingleBrand
+                shingleColor
+                stone
+                stoneColor
                 isActive
                 sortOrder
             }
@@ -385,24 +394,28 @@ export const REMOVE_PLAN_ADDITIONAL = gql`
     }
 `;
 
-// Lot mutations
-export const ADD_LOT_TO_PLAN = gql`
-    mutation addLotToPlan($planId: ID!, $lot: PlanLotPremiumInput!) {
-        addLotToPlan(planId: $planId, lot: $lot) {
+export const REMOVE_COLOR_SCHEME_FROM_PLAN = gql`
+    mutation removeColorSchemeFromPlan($planId: ObjectId!, $colorSchemeId: ObjectId!) {
+        removeColorSchemeFromPlan(planId: $planId, colorSchemeId: $colorSchemeId) {
             _id
             name
-            lotPremium {
-                _id
-                filing
-                lot
-                width
-                length
-                lotSqft
-                premium
-                address
-                parcelNumber
+            colorScheme {
+                name
+                planId
                 description
-                features
+                price
+                primaryName
+                primaryCode
+                secondaryName
+                secondaryCode
+                trimName
+                trimCode
+                doorName
+                doorCode
+                shingleBrand
+                shingleColor
+                stone
+                stoneColor
                 isActive
                 sortOrder
             }
@@ -410,55 +423,25 @@ export const ADD_LOT_TO_PLAN = gql`
     }
 `;
 
-export const UPDATE_PLAN_LOT = gql`
-    mutation updatePlanLot($planId: ID!, $lotId: ID!, $lot: PlanLotPremiumInput!) {
-        updatePlanLot(planId: $planId, lotId: $lotId, lot: $lot) {
-            _id
-            name
-            lotPremium {
-                _id
-                filing
-                lot
-                width
-                length
-                lotSqft
-                premium
-                address
-                parcelNumber
-                description
-                features
-                isActive
-                sortOrder
-            }
-        }
-    }
-`;
+// Legacy export aliases for backward compatibility
+export const REMOVE_PLAN_ELEVATION = REMOVE_ELEVATION_FROM_PLAN;
+export const REMOVE_PLAN_STRUCTURAL = REMOVE_STRUCTURAL_FROM_PLAN;
+export const REMOVE_PLAN_INTERIOR = REMOVE_INTERIOR_PACKAGE_FROM_PLAN;
+export const REMOVE_PLAN_APPLIANCE = REMOVE_APPLIANCE_FROM_PLAN;
+export const REMOVE_PLAN_ADDITIONAL = REMOVE_ADDITIONAL_FROM_PLAN;
+export const REMOVE_PLAN_LOT = REMOVE_LOT_PRICING_FROM_PLAN;
 
-export const REMOVE_PLAN_LOT = gql`
-    mutation removePlanLot($planId: ID!, $lotId: ID!) {
-        removePlanLot(planId: $planId, lotId: $lotId) {
-            _id
-            name
-            lotPremium {
-                _id
-                filing
-                lot
-                width
-                length
-                lotSqft
-                premium
-                address
-                parcelNumber
-                description
-                features
-                isActive
-                sortOrder
-            }
-        }
-    }
-`;
+// Backward compatibility aliases for old naming conventions
+export const ADD_LOT_TO_PLAN = ADD_LOT_PRICING_TO_PLAN;
+export const UPDATE_PLAN_ELEVATION = ADD_ELEVATION_TO_PLAN;
+export const UPDATE_PLAN_STRUCTURAL = ADD_STRUCTURAL_TO_PLAN;
+export const UPDATE_PLAN_INTERIOR = ADD_INTERIOR_PACKAGE_TO_PLAN;
+export const UPDATE_PLAN_APPLIANCE = ADD_APPLIANCE_TO_PLAN;
+export const UPDATE_PLAN_ADDITIONAL = ADD_ADDITIONAL_TO_PLAN;
+export const UPDATE_PLAN_LOT = ADD_LOT_PRICING_TO_PLAN;
 
-// Bulk operations
+// Note: Bulk operations like REORDER_PLAN_OPTIONS and COPY_OPTIONS_FROM_PLAN
+// are not implemented in the current backend schema
 export const REORDER_PLAN_OPTIONS = gql`
     mutation reorderPlanOptions($planId: ID!, $optionType: String!, $optionIds: [ID!]!) {
         reorderPlanOptions(planId: $planId, optionType: $optionType, optionIds: $optionIds) {

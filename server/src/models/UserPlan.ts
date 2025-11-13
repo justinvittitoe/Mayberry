@@ -36,6 +36,8 @@ export interface UserPlanSelectionDocument extends Document {
     customerNotes?: string;
     createdAt: Date;
     updatedAt: Date;
+
+    calculatePricing(): Promise<this>
 }
 
 const userPlanSchema = new Schema<UserPlanSelectionDocument>({
@@ -62,6 +64,33 @@ const userPlanSchema = new Schema<UserPlanSelectionDocument>({
     notes: { type: String, maxlength: 1000},
     customerNotes: { type: String, maxlength: 500},
 }, { timestamps: true });
+
+userPlanSchema.methods.calculatePricing = async function () {
+    const [elevation, colorScheme, interiorPackage, kitchenAppliance, laundryAppliance, lot, structuralOptions, additionalOptions] = await Promise.all([
+        this.db.model('Elevation').findById(this.elevation),
+        this.db.model('ColorScheme').findById(this.colorScheme),
+        this.db.model('InteriorPackage').findById(this.interiorPackage),
+        this.db.model('Appliance').findById(this.kitchenAppliance),
+        this.laundryAppliance ? this.db.model('Appliance').findById(this.laundryAppliance) : null,
+        this.lot ? this.db.model('LotPricing').findById(this.lot) : null,
+        this.structuralOptions?.length ? this.db.model('Structural').find({ _id: { $in: this.structuralOptions } }) : [],
+        this.additionalOptions?.length ? this.db.model('Additional').find({ _id: { $in: this.additionalOptions } }) : []
+    ]);
+
+    this.optionsTotalPrice =
+        (elevation?.price || 0) +
+        (colorScheme?.price || 0) +
+        (interiorPackage?.price || 0) +
+        (kitchenAppliance?.price || 0) +
+        (laundryAppliance?.price || 0) +
+        (lot?.price || 0) +
+        (structuralOptions?.reduce((sum: number, opt: any) => sum + (opt.price || 0), 0) || 0) +
+        (additionalOptions?.reduce((sum: number, opt: any) => sum + (opt.price || 0), 0) || 0);
+
+    this.totalPrice = (this.basePlanPrice || 0) + this.optionsTotalPrice;
+
+    return this;
+};
 
 // Pre-save validation to ensure selected options are valid for the plan
 userPlanSchema.pre('save', async function() {
@@ -132,5 +161,4 @@ userPlanSchema.statics.findActiveByUser = function (userId: Types.ObjectId) {
 
 const UserPlan = model<UserPlanSelectionDocument>('UserPlan', userPlanSchema);
 
-export const userPlanSelectionSchema = userPlanSchema;
 export default UserPlan;

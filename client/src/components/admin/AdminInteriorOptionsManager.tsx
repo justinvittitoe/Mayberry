@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col, Badge, ButtonGroup, Tabs, Tab } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_OPTIONS } from '../utils/queries';
-import { CREATE_OPTION, UPDATE_OPTION, DELETE_OPTION } from '../utils/mutations';
-import { cleanOptionForMutation } from '../utils/cleanGraphQLObject';
+import { GET_INTERIOR_OPTIONS } from '../../graphQl/queries';
+import { CREATE_INTERIOR_OPTION, UPDATE_INTERIOR_OPTION, DELETE_INTERIOR_OPTION } from '../../graphQl/mutations';
+import { cleanOptionForMutation } from '../../graphQl/cleanGraphQLObject';
 
 interface InteriorOption {
   _id: string;
@@ -24,10 +24,10 @@ const INTERIOR_CLASSIFICATIONS = [
 ];
 
 const AdminInteriorOptionsManager = () => {
-  const { loading, error, data, refetch } = useQuery(GET_OPTIONS);
-  const [createOption] = useMutation(CREATE_OPTION);
-  const [updateOption] = useMutation(UPDATE_OPTION);
-  const [deleteOption] = useMutation(DELETE_OPTION);
+  const { loading, error, data, refetch } = useQuery(GET_INTERIOR_OPTIONS);
+  const [createOption] = useMutation(CREATE_INTERIOR_OPTION);
+  const [updateOption] = useMutation(UPDATE_INTERIOR_OPTION);
+  const [deleteOption] = useMutation(DELETE_INTERIOR_OPTION);
 
   const [showModal, setShowModal] = useState(false);
   const [editingOption, setEditingOption] = useState<InteriorOption | null>(null);
@@ -43,7 +43,7 @@ const AdminInteriorOptionsManager = () => {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const allOptions = data?.options || [];
+  const allOptions = data?.interiorOptions || [];
   
   // Filter to only interior options
   const interiorOptions = useMemo(() => {

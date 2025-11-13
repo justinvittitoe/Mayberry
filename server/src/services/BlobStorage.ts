@@ -1,6 +1,8 @@
-import { BlobServiceClient } from '@azure/storage-blob';
+import { BlobServiceClient, ContainerClient, BlockBlobClient } from '@azure/storage-blob';
+import { v4 as uuidv4 } from 'uuid';
 import { MongoClient } from 'mongodb';
 import dotenv from 'dotenv'
+import path from 'path';
 
 dotenv.config()
 
@@ -14,7 +16,99 @@ if(!accountName || !sasToken || !containerName) {
 
 //connect to blob storage
 const blobServiceClient = new BlobServiceClient(`https://${accountName}.blob.core.windows.net/?${sasToken}`)
-const containerClient = blobServiceClient.getContainerClient(containerName)
+const containerClient: ContainerClient = blobServiceClient.getContainerClient(containerName)
+
+export interface UploadResult {
+    url: string;
+    blobName: string;
+    contentType: string;
+}
+
+export async function uploadImage(
+    buffer: Buffer,
+    originalName: string,
+    mimetype: string,
+    folder?: string
+): Promise<UploadResult> {
+    try {
+        //check file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!allowedTypes.includes(mimetype)) {
+            throw new Error(`Invalid file type: ${mimetype}. Allowed types: ${allowedTypes.join(', ')}`)
+        }
+
+        //Generate Blob Name
+        const fileExtension = path.extname(originalName)
+        const uniqueId = uuidv4();
+        const blobName = folder
+            ? `${folder}/${uniqueId}${fileExtension}`
+            : `${uniqueId}${fileExtension}`;
+
+        // Get blob client
+        const BlockBlobClient: BlockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+        // Upload with metadata
+        await BlockBlobClient.upload(buffer, buffer.length, {
+            blobHTTPHeaders: {
+                blobContentType: mimetype
+            },
+            metadata:{
+                originalName: originalName,
+                uploadedAt: new Date().toISOString()
+            }
+        });
+
+        const url = BlockBlobClient.url.split('?')[0]; //remove SAS token from url
+
+        return {
+            url,
+            blobName,
+            contentType: mimetype
+        };
+    } catch (error) {
+        console.error('Error uploading to Azure BlobStorage:', error);
+        throw new Error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+export async function deleteImage(blobName: string): Promise<void> {
+    try {
+        const BlockBlobClient = containerClient.getBlockBlobClient(blobName);
+        await BlockBlobClient.delete();
+    } catch (error) {
+        console.error('Error deletingfrom Azure blob storage:', error);
+        throw new Error(`Failed to delete image: ${error instanceof Error ? error.message : ' Unknown error'}`);
+    }
+}
+
+export async function deleteImageByUrl(imageUrl: string): Promise<void> {
+    try {
+        const url = new URL(imageUrl);
+        const blobName = url.pathname.substring(url.pathname.indexOf('/') + 1);
+        await deleteImage(blobName);
+    } catch (error) {
+        console.error('Error deleting image by URL: ', error);
+        throw new Error(`Failed to delete image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+export async function imageExists(blobName: string): Promise<boolean> {
+    try {
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+        return await blockBlobClient.exists();
+    } catch (error) {
+        console.error('Error checking blob existence:', error);
+        return false;
+    }
+}
+
+export default {
+    uploadImage,
+    deleteImage,
+    deleteImageByUrl,
+    imageExists
+};
+
 
 
 async function extractMetaData(headers:any) {

@@ -1,17 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Card, Button, Table, Modal, Form, Alert, Spinner, Row, Col, Badge, ButtonGroup } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_OPTIONS } from '../../graphQl/queries';
-import { CREATE_OPTION, UPDATE_OPTION, DELETE_OPTION } from '../../graphQl/mutations';
+import { GET_INTERIOR_OPTIONS } from '../../graphQl/queries';
+import { CREATE_INTERIOR_OPTION, UPDATE_INTERIOR_OPTION, DELETE_INTERIOR_OPTION } from '../../graphQl/mutations';
 import { cleanOptionForMutation } from '../../graphQl/cleanGraphQLObject';
 import { InteriorOption, Option, Structural } from '../../models/graphql';
 
 
 const AdminOptionsManager = () => {
-  const { loading, error, data, refetch } = useQuery<Option | null>(GET_OPTIONS);
-  const [createOption] = useMutation(CREATE_OPTION);
-  const [updateOption] = useMutation(UPDATE_OPTION);
-  const [deleteOption] = useMutation(DELETE_OPTION);
+  const { loading, error, data, refetch } = useQuery(GET_INTERIOR_OPTIONS);
+  const [createOption] = useMutation(CREATE_INTERIOR_OPTION);
+  const [updateOption] = useMutation(UPDATE_INTERIOR_OPTION);
+  const [deleteOption] = useMutation(DELETE_INTERIOR_OPTION);
 
   const [showModal, setShowModal] = useState(false);
   const [editingOption, setEditingOption] = useState<Option | null>(null);
@@ -33,7 +33,7 @@ const AdminOptionsManager = () => {
   const [selectedClassification, setSelectedClassification] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const options = data || [];
+  const options = data?.interiorOptions || [];
 
   // Get unique classifications for filtering
   const classifications = useMemo(() => {

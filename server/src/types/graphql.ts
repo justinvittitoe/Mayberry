@@ -22,9 +22,7 @@ export interface UserType {
     savedPlans?: UserPlanPopulated[];
 }
 
-export interface UserInput {
 
-}
 
 //CORRECT
 export interface ElevationType {
@@ -365,6 +363,7 @@ export interface LotPricingType {
     _id: ObjectId;
     lot: ObjectId
     plan: ObjectId;
+    lotPremium: number;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;

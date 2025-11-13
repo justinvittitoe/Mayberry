@@ -21,8 +21,6 @@ import {
     LotPricingInput,
     PlanInput,
     UserPlanInput,
-    CustomizationSelectionsInput,
-    UserInput,
     AuthType
 } from '../types/graphql.js'
 
@@ -333,6 +331,12 @@ const resolvers = {
                 .populate('structuralOptions')
                 .populate('additionalOptions')
                 .sort({ createdAt: -1 });
+
+            userPlans.forEach(Plan => {
+                Plan.calculatePricing()
+                Plan.save()
+            });
+
             return userPlans;
         },
 
@@ -348,6 +352,10 @@ const resolvers = {
                 .populate('lot')
                 .populate('structuralOptions')
                 .populate('additionalOptions');
+
+            userPlan?.calculatePricing()
+            userPlan?.save()
+
             return userPlan;
         },
 
@@ -807,12 +815,44 @@ const resolvers = {
         },
 
         // User Plan mutations
-        createUserPlan: async (_parent: unknown, args: { userPlan: UserPlanInput }, context: Context): Promise<UserPlanSelectionDocument|null> => {
+        createUserPlan: async (_parent: unknown, args: { planId: Types.ObjectId, userPlan: UserPlanInput }, context: Context): Promise<UserPlanSelectionDocument|null> => {
             requireAuth(context);
+            const basePlan = await Plan.findById(args.planId)
+
             const userPlan = await UserPlan.create({
                 ...args.userPlan,
-                userId: context.user?._id
+                userId: context.user?._id,
+                basePlanPrice: basePlan?.basePrice
             });
+
+            // const [elevation, colorScheme, interiorPackage, kitchenAppliance, laundryAppliance, lot, structuralOptions, additionalOptions]= await Promise.all([
+            //     ElevationOption.findById(args.userPlan.elevation),
+            //     ColorScheme.findById(args.userPlan.colorScheme),
+            //     InteriorPackage.findById(args.userPlan.interiorPackage),
+            //     Appliance.findById(args.userPlan.kitchenAppliance),
+            //     args.userPlan.laundryAppliance ? Appliance.findById(args.userPlan.laundryAppliance): null,
+            //     args.userPlan.lot ? LotPricing.findById(args.userPlan.lot) : null,
+            //     args.userPlan.structuralOptions?.length ? StructuralOption.find({ _id: { $in: args.userPlan.structuralOptions }}) : [],
+            //     args.userPlan.additionalOptions?.length ? AdditionalOption.find({ _id: { $in: args.userPlan.additionalOptions } }) : [],
+            // ]);
+
+            // // calculate options total
+            // const optionsTotalPrice = 
+            //     (elevation?.totalCost || 0) +
+            //     (colorScheme?.price || 0) +
+            //     (interiorPackage?.clientPrice || 0) +
+            //     (kitchenAppliance?.clientPrice || 0) +
+            //     (laundryAppliance?.clientPrice || 0) +
+            //     (lot?.lotPremium || 0) +
+            //     (structuralOptions?.reduce(( sum, opt ) => sum + (opt.clientPrice || 0), 0) || 0) +
+            //     (additionalOptions?.reduce((sum,opt) => sum + (opt.clientPrice || 0), 0) || 0);
+
+            // //Update pricing
+            // userPlan.optionsTotalPrice = optionsTotalPrice;
+            // userPlan.totalPrice = (basePlan?.basePrice || 0) + optionsTotalPrice
+
+            await userPlan.calculatePricing()
+            await userPlan.save()
 
             const populatedPlan = await UserPlan.findById(userPlan._id)
                 .populate('planId')
@@ -824,7 +864,7 @@ const resolvers = {
                 .populate('lot')
                 .populate('structuralOptions')
                 .populate('additionalOptions');
-
+            
             return populatedPlan;
         },
 
@@ -834,7 +874,18 @@ const resolvers = {
                 { _id: args.id, userId: context.user?._id },
                 args.userPlan,
                 { new: true }
-            )
+            );
+            
+
+            if(!updatedPlan) {
+                throw new Error('User plan not found')
+            }
+            
+            //Recaculate Pricing
+            await updatedPlan.calculatePricing()
+            await updatedPlan.save()
+
+            const userPlan = await UserPlan.findById(args.id)
                 .populate('planId')
                 .populate('elevation')
                 .populate('colorScheme')
@@ -845,7 +896,7 @@ const resolvers = {
                 .populate('structuralOptions')
                 .populate('additionalOptions');
 
-            return updatedPlan;
+            return userPlan;
         },
 
         deleteUserPlan: async (_parent: unknown, args: { id: string }, context: Context): Promise<Boolean> => {
@@ -899,6 +950,10 @@ const resolvers = {
                 customerNotes: originalPlan.customerNotes
             });
 
+            //Caculate Pricing
+            duplicatedPlan.calculatePricing();
+            duplicatedPlan.save();
+
             // Populate the duplicated plan
             const populatedPlan = await UserPlan.findById(duplicatedPlan._id)
                 .populate('planId')
@@ -940,7 +995,7 @@ const resolvers = {
         },
 
         //Interior Option mutations
-        createInteriorOption: async (_parent: any, { input }: { input: any }, _context: Context):Promise<InteriorOptionDocument|null> => {    
+        createInteriorOption: async (_parent: any, { input }: { input: InteriorOptionInput }, _context: Context):Promise<InteriorOptionDocument|null> => {    
             try {
                 const newOption = new InteriorOption(input);
                 await newOption.save();
@@ -952,7 +1007,7 @@ const resolvers = {
             }
         },
 
-        updateInteriorOption: async (_parent: any, { id, input }: { id: Types.ObjectId; input: any }, _context: Context):Promise<InteriorOptionDocument|null> => {
+        updateInteriorOption: async (_parent: any, { id, input }: { id: Types.ObjectId; input: InteriorOptionInput }, _context: Context):Promise<InteriorOptionDocument|null> => {
             try {
                 const option = await InteriorOption.findByIdAndUpdate(
                     id,

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, ProgressBar, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-import { SAVE_USER_HOME, SAVE_USER_HOME_PROGRESS } from '../graphQl/mutations';
+import { CREATE_USER_PLAN, UPDATE_USER_PLAN } from '../graphQl/mutations';
 import AuthService from '../utils/auth';
 import { cleanUserHomeForMutation, validateUserHomeForSave } from '../graphQl/cleanGraphQLObject';
 
@@ -35,8 +35,8 @@ const CustomizationWizard: React.FC<CustomizationWizardProps> = ({
 }) => {
     const navigate = useNavigate();
     const isAuthenticated = AuthService.loggedIn();
-    const [saveHome] = useMutation(SAVE_USER_HOME);
-    const [saveProgress] = useMutation(SAVE_USER_HOME_PROGRESS);
+    const [createUserPlan] = useMutation(CREATE_USER_PLAN);
+    const [updateUserPlan] = useMutation(UPDATE_USER_PLAN);
 
     const [currentStep, setCurrentStep] = useState(0);
     const [customization, setCustomization] = useState<CustomizationSelections>({
