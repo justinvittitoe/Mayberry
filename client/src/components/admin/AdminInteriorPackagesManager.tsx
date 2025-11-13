@@ -15,18 +15,18 @@ const AdminInteriorPackagesManager = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [editingPackage, setEditingPackage] = useState<InteriorPackage | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     name: '',
-    totalPrice: 0,
-    fitures: '',
+    clientPrice: 0,
+    fixtures: '',
     lvp: '',
     carpet: '',
-    kitchenBackspash: '',
+    backsplash: '',
     masterBathTile: '',
     countertop: '',
     primaryCabinets: '',
     secondaryCabinets: '',
-    upgrade: ''
+    softClose: ''
   });
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -41,42 +41,42 @@ const AdminInteriorPackagesManager = () => {
   };
 
   // Helper function to clean GraphQL objects
-  const cleanGraphQLObject = (obj: any) => {
-    if (!obj || typeof obj !== 'object') return obj;
-    const { __typename, ...cleaned } = obj;
-    return cleaned;
-  };
+  // const cleanGraphQLObject = (obj: any) => {
+  //   if (!obj || typeof obj !== 'object') return obj;
+  //   const { __typename, ...cleaned } = obj;
+  //   return cleaned;
+  // };
 
   const handleShowModal = (pkg?: InteriorPackage) => {
     if (pkg) {
       setEditingPackage(pkg);
       setFormData({
         name: typeof pkg.name === 'string' ? pkg.name : '',
-        totalPrice: typeof pkg.totalPrice === 'number' ? pkg.totalPrice : 0,
-        fitures: renderOptionArray(pkg.fixtures || ''),
+        clientPrice: typeof pkg.clientPrice === 'number' ? pkg.clientPrice : 0,
+        fixtures: renderOptionArray(pkg.fixtures || ''),
         lvp: renderOptionArray(pkg.lvp || ''),
         carpet: renderOptionArray(pkg.carpet || ''),
-        kitchenBackspash: renderOptionArray(pkg.backsplash || ''),
+        backsplash: renderOptionArray(pkg.backsplash || ''),
         masterBathTile: renderOptionArray(pkg.masterBathTile || ''),
         countertop: renderOptionArray(pkg.countertop || ''),
         primaryCabinets: renderOptionArray(pkg.primaryCabinets || ''),
         secondaryCabinets: renderOptionArray(pkg.secondaryCabinets || ''),
-        upgrade: typeof pkg.upgrade === 'boolean' ? (pkg.upgrade ? 'Yes' : 'No') : (pkg.upgrade || '')
+        softClose: typeof pkg.softClose === 'number' ? pkg.softClose : 1
       });
     } else {
       setEditingPackage(null);
       setFormData({
         name: '',
-        totalPrice: 0,
-        fitures: '',
+        clientPrice: 0,
+        fixtures: '',
         lvp: '',
         carpet: '',
-        kitchenBackspash: '',
+        backsplash: '',
         masterBathTile: '',
         countertop: '',
         primaryCabinets: '',
         secondaryCabinets: '',
-        upgrade: ''
+        softClose: 1
       });
     }
     setFormError('');
@@ -93,7 +93,7 @@ const AdminInteriorPackagesManager = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'totalPrice' ? parseFloat(value) || 0 : value
+      [name]: name === 'clientPrice' ? parseFloat(value) || 0 : value
     }));
   };
 
@@ -185,7 +185,7 @@ const AdminInteriorPackagesManager = () => {
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Total Price</th>
+                  <th>Client Price</th>
                   <th>Fixtures</th>
                   <th>Flooring</th>
                   <th>Cabinets</th>
@@ -196,7 +196,7 @@ const AdminInteriorPackagesManager = () => {
                 {packages.map((pkg: InteriorPackage) => (
                   <tr key={pkg._id}>
                     <td className="fw-semibold">{typeof pkg.name === 'string' ? pkg.name : 'Unknown Package'}</td>
-                    <td>${typeof pkg.totalPrice === 'number' ? pkg.totalPrice.toLocaleString() : '0'}</td>
+                    <td>${typeof pkg.clientPrice === 'number' ? pkg.clientPrice.toLocaleString() : '0'}</td>
                     <td className="text-truncate" style={{ maxWidth: '150px' }}>
                       {renderOptionArray(pkg.fixtures || '')}
                     </td>
@@ -205,9 +205,6 @@ const AdminInteriorPackagesManager = () => {
                     </td>
                     <td className="text-truncate" style={{ maxWidth: '150px' }}>
                       {renderOptionArray(pkg.primaryCabinets || 'NO PRIMARY CABINETS')}
-                    </td>
-                    <td className="text-truncate" style={{ maxWidth: '150px' }}>
-                      {renderOptionArray(pkg.secondaryCabinets || 'NO SECONDARY CABINETS')}
                     </td>
                     <td>
                       <div className="btn-group" role="group">
@@ -261,11 +258,11 @@ const AdminInteriorPackagesManager = () => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Total Price</Form.Label>
+                  <Form.Label>Client Price</Form.Label>
                   <Form.Control
                     type="number"
-                    name="totalPrice"
-                    value={formData.totalPrice}
+                    name="clientPrice"
+                    value={formData.clientPrice}
                     onChange={handleInputChange}
                     min="0"
                     step="0.01"
@@ -276,8 +273,8 @@ const AdminInteriorPackagesManager = () => {
                   <Form.Label>Fixtures</Form.Label>
                   <Form.Control
                     type="text"
-                    name="fitures"
-                    value={formData.fitures}
+                    name="fixtures"
+                    value={formData.fixtures}
                     onChange={handleInputChange}
                   />
                 </Form.Group>
@@ -306,8 +303,8 @@ const AdminInteriorPackagesManager = () => {
                   <Form.Label>Kitchen Backsplash</Form.Label>
                   <Form.Control
                     type="text"
-                    name="kitchenBackspash"
-                    value={formData.kitchenBackspash}
+                    name="backsplash"
+                    value={formData.backsplash}
                     onChange={handleInputChange}
                   />
                 </Form.Group>
@@ -355,12 +352,14 @@ const AdminInteriorPackagesManager = () => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Upgrade</Form.Label>
+                  <Form.Label>Soft Close</Form.Label>
                   <Form.Control
-                    type="text"
-                    name="upgrade"
-                    value={formData.upgrade}
+                    type="number"
+                    name="softClose"
+                    value={formData.softClose}
                     onChange={handleInputChange}
+                    min="0"
+                    step="1"
                   />
                 </Form.Group>
               </Col>

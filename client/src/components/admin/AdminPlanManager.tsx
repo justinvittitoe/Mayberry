@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, Button, Modal, Form, Alert, Table, Badge } f
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_PLANS_WITH_OPTIONS } from '../../graphQl/planOptionQueries';
 import { CREATE_PLAN, UPDATE_PLAN, DELETE_PLAN } from '../../graphQl/mutations';
-import PlanOptionManager from './PlanOptionManager';
+import SimplePlanOptionSelector from './SimplePlanOptionSelector';
 import './AdminPlanManager.css';
 import { Plan } from '../../models/graphql';
 
@@ -552,9 +552,9 @@ const AdminPlanManager = () => {
             <Modal.Title>Manage Options - {selectedPlan.name}</Modal.Title>
           </Modal.Header>
           <Modal.Body style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-            <PlanOptionManager
+            <SimplePlanOptionSelector
               plan={selectedPlan}
-              onPlanUpdate={handlePlanUpdate}
+              onUpdate={handlePlanUpdate}
             />
           </Modal.Body>
           <Modal.Footer>

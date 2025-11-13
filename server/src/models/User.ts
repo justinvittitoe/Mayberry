@@ -1,6 +1,6 @@
 import { Schema, model, type Document, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { userPlanSelectionSchema, UserPlanSelectionDocument } from './UserPlan.js';
+import { UserPlanSelectionDocument } from './UserPlan.js';
 
 
 export interface UserDocument extends Document {
@@ -39,7 +39,7 @@ const userSchema = new Schema<UserDocument>(
       default: 'user',
     },
     // set savedHomes to be an array of data that adheres to the userHomeSelectionSchema
-    savedPlans: [userPlanSelectionSchema],
+    savedPlans: [{ type: Schema.Types.ObjectId, ref: 'UserPlan'}],
   },
   // set this to use virtual below
   {

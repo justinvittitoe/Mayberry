@@ -21,7 +21,6 @@ import {
     LotPricingInput,
     PlanInput,
     UserPlanInput,
-    CustomizationSelectionsInput,
     AuthType
 } from '../types/graphql.js'
 

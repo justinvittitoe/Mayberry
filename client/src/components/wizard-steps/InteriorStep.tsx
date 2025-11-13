@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Row, Col, Card, Badge, Button, ButtonGroup, Modal, Form, Table } from 'react-bootstrap';
 import { useQuery } from '@apollo/client';
-import { GET_OPTIONS } from '../../graphQl/queries';
+import { GET_INTERIOR_OPTIONS } from '../../graphQl/queries';
 
 interface InteriorStepProps {
     interiors: any[];
@@ -28,8 +28,8 @@ const InteriorStep: React.FC<InteriorStepProps> = ({
     });
 
     // Get interior options for custom selection
-    const { data: optionsData } = useQuery(GET_OPTIONS);
-    const allOptions = optionsData?.options || [];
+    const { data: optionsData } = useQuery(GET_INTERIOR_OPTIONS);
+    const allOptions = optionsData?.interiorOptions || [];
 
     const interiorOptions = {
         fixtures: allOptions.filter((opt: any) => opt.classification === 'fixture'),

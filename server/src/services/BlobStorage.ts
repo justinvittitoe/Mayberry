@@ -1,4 +1,4 @@
-import { BlobServiceClient, ContainerClient, BlockBlobClient, Block } from '@azure/storage-blob';
+import { BlobServiceClient, ContainerClient, BlockBlobClient } from '@azure/storage-blob';
 import { v4 as uuidv4 } from 'uuid';
 import { MongoClient } from 'mongodb';
 import dotenv from 'dotenv'
