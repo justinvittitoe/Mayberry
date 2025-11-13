@@ -24,6 +24,8 @@ export interface StructuralDocument extends Document{
     sortOrder: number;
     createdAt?: Date;
     updatedAt?:Date;
+
+    calculatePricing(): Promise<this>
 }
 
 //CORRECT
@@ -64,6 +66,16 @@ structuralSchema.pre('save', function() {
         this.totalSqft = this.width * this.length;
     }
 })
+
+structuralSchema.pre('save', function () {
+    if (this.totalCost == null && this.markup == null && this.minMarkup == null) {
+        throw Error('cost, markup, and/or minMarkup are required')
+    }
+    const markupPrice = this.totalCost * this.markup;
+    this.clientPrice = markupPrice > this.minMarkup ?
+        this.totalCost + markupPrice :
+        this.totalCost + this.minMarkup
+});
 
 
 structuralSchema.index({bedroom: 1, bathroom: 1});

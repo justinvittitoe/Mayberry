@@ -33,6 +33,17 @@ const applianceSchema = new Schema<ApplianceDocument>({
     sortOrder: {type: Number, default: 0},
 }, {timestamps: true, _id: true});
 
+applianceSchema.pre('save', function () {
+    if (this.totalCost == null && this.markup == null && this.minMarkup == null && this.baseCost == null) {
+        throw Error('total cost, base cost, markup, and/or minMarkup are required')
+    }
+    const addToCost = this.totalCost - this.baseCost
+    const markupPrice = addToCost * this.markup;
+    this.clientPrice = markupPrice > this.minMarkup ?
+        this.totalCost + markupPrice :
+        this.totalCost + this.minMarkup
+});
+
 
 const Appliance = model<ApplianceDocument>('Appliance', applianceSchema);
 
